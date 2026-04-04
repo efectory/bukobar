@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bukovar — pokladna</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f1ea;
+    --surface: #ffffff;
+    --text: #1a1610;
+    --muted: #7a7167;
+    --border: rgba(26,22,16,0.12);
+    --border-strong: rgba(26,22,16,0.25);
+    --accent: #b5381a;
+    --accent-light: #fdf0ec;
+    --warn-bg: #fdf7ed;
+    --warn-text: #8a5a0a;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--text); color: #f5f1ea; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 12px; }
+  header .logo { font-family: 'DM Serif Display', serif; font-size: 22px; letter-spacing: .02em; }
+  header .logo span { color: var(--accent); }
+  header .subtitle { font-size: 12px; opacity: .55; margin-top: 1px; }
+  main { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1rem; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .875rem; }
+  #video { width: 100%; border-radius: var(--radius); background: #1a1610; display: block; max-height: 300px; object-fit: cover; }
+  #snap-canvas { display: none; width: 100%; border-radius: var(--radius); }
+  .btn-row { display: flex; gap: 8px; margin-top: .875rem; flex-wrap: wrap; }
+  button { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 9px 18px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-strong); background: transparent; color: var(--text); transition: background .15s, opacity .15s; }
+  button:hover { background: var(--bg); }
+  button:active { opacity: .75; }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { background: #9c2e14; border-color: #9c2e14; }
+  button.dark { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+  button.dark:hover { opacity: .85; }
+  .hidden { display: none !important; }
+  #status { font-size: 13px; color: var(--muted); margin-top: .625rem; min-height: 20px; display: flex; align-items: center; gap: 6px; }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .api-notice { background: var(--accent-light); border: 1px solid rgba(181,56,26,.2); border-radius: var(--radius); padding: .875rem 1rem; font-size: 13px; color: #7a2e10; margin-bottom: 1rem; line-height: 1.5; }
+  .api-notice strong { font-weight: 500; }
+  #api-key-input { font-family: 'DM Sans', monospace; font-size: 13px; width: 100%; margin-top: .5rem; padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); outline: none; }
+  #api-key-input:focus { border-color: var(--accent); }
+
+  .receipt-header { text-align: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--border-strong); margin-bottom: 1rem; }
+  .receipt-header h2 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 2px; }
+  .receipt-header p { font-size: 12px; color: var(--muted); }
+
+  .receipt-item {
+    display: grid;
+    grid-template-columns: 52px 1fr auto 32px;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 6px;
+  }
+  .receipt-item:last-child { border-bottom: none; }
+
+  .item-qty-input {
+    width: 48px;
+    padding: 5px 6px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+  }
+  .item-qty-input:focus { border-color: var(--accent); }
+
+  .item-name-input {
+    width: 100%;
+    padding: 5px 6px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    outline: none;
+  }
+  .item-name-input:focus { border-color: var(--border-strong); background: var(--surface); }
+
+  .item-price { font-weight: 500; white-space: nowrap; text-align: right; font-size: 14px; }
+
+  .item-del {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; line-height: 1;
+    transition: background .1s, color .1s;
+  }
+  .item-del:hover { background: #ffeaea; color: var(--accent); border-color: var(--accent); }
+
+  .warn-row { background: var(--warn-bg); border-radius: 6px; padding: 2px 4px; }
+  .warn-row .item-name-input { color: var(--warn-text); }
+
+  .add-item-row { display: flex; gap: 6px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+  .add-item-row input { padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
+  .add-item-row input:focus { border-color: var(--accent); }
+
+  .receipt-total { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 4px; border-top: 2px solid var(--text); margin-top: 8px; font-size: 17px; font-weight: 500; }
+  .receipt-actions { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
+
+  .instructions { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .instructions strong { color: var(--text); font-weight: 500; }
+  .step { display: flex; gap: 10px; margin-bottom: .5rem; }
+  .step:last-child { margin-bottom: 0; }
+  .step-num { width: 20px; height: 20px; background: var(--text); color: #f5f1ea; border-radius: 50%; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+  @media print {
+    header, .instructions, #cam-card, .receipt-actions, .api-notice, .add-item-row, .item-del, .item-qty-input, .item-name-input { display: none !important; }
+    .receipt-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #ccc; }
+    .item-price { display: block; }
+    body { background: white; }
+    .card { border: none; padding: 0; }
+    main { padding: 0; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Buko<span>var</span></div>
+    <div class="subtitle">systém pro číšníka</div>
+  </div>
+</header>
+
+<main>
+
+  <div class="api-notice" id="api-notice">
+    <strong>API klíč Anthropic</strong> — potřebný pro AI rozpoznávání objednávek.<br>
+    Klíč se ukládá pouze v paměti prohlížeče a nikam se neodesílá.
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+  </div>
+
+  <div class="instructions">
+    <div class="step"><div class="step-num">1</div><div>Napište objednávku na papír, např. <strong>2x Kohoutí, 1x Mojito, Chipsy</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div>Vyfotit papír kamerou níže</div></div>
+    <div class="step"><div class="step-num">3</div><div>AI přiřadí položky k menu Bukovaru a spočítá účet — pak ho lze upravit</div></div>
+  </div>
+
+  <div class="card" id="cam-card">
+    <div class="section-label">Kamera</div>
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="snap-canvas"></canvas>
+    <div id="status"></div>
+    <div class="btn-row">
+      <button id="btnStart" onclick="startCam()">Spustit kameru</button>
+      <button id="btnSnap" class="primary hidden" onclick="takeSnap()">Vyfotit</button>
+      <button id="btnRetake" class="hidden" onclick="retake()">Znovu vyfotit</button>
+      <button id="btnAnalyze" class="dark hidden" onclick="analyze()">Rozpoznat objednávku</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="receipt-card">
+    <div class="receipt-header">
+      <h2>Bukovar</h2>
+      <p id="receipt-time"></p>
+    </div>
+    <div id="receipt-lines"></div>
+    <div class="add-item-row">
+      <input type="number" id="new-qty" value="1" min="1" style="width:56px;" placeholder="ks" />
+      <input type="text" id="new-name" placeholder="Název položky..." style="flex:1;min-width:120px;" />
+      <input type="number" id="new-price" placeholder="Kč" style="width:72px;" />
+      <button onclick="addItem()" style="white-space:nowrap;padding:8px 14px;">+ Přidat</button>
+    </div>
+    <div class="receipt-total">
+      <span>Celkem</span>
+      <span id="total-val"></span>
+    </div>
+    <div class="receipt-actions">
+      <button onclick="printReceipt()">Tisknout</button>
+      <button onclick="resetApp()">Nová objednávka</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const MENU = [
+  {n:"Bukovar z tanku",c:"Piva",p:49,u:"0,4l"},
+  {n:"Čepovaný radler",c:"Piva",p:49,u:"0,4l"},
+  {n:"Nealko pivo Birrel",c:"Piva",p:49,u:"0,5l"},
+  {n:"Nealko pivo Birrel ochucené",c:"Piva",p:49,u:"0,5l"},
+  {n:"Maisel's Weisse Alkoholfrei",c:"Piva",p:65,u:"0,5l"},
+  {n:"Pivo v PET",c:"Piva",p:105,u:"1,0l"},
+  {n:"Pivo s sebou do džbánku 2l",c:"Piva",p:196,u:"2l"},
+  {n:"Pivo s sebou do džbánku 5l",c:"Piva",p:490,u:"5l"},
+  {n:"Pivo v sudu 15l",c:"Piva",p:960,u:"15l"},
+  {n:"Pivo v sudu 30l",c:"Piva",p:2049,u:"30l"},
+  {n:"Hraďák 10°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Mezulánka 11°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Šedá vlčice 11°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Kohoutí 12°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Nelson 12°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Štamgast 11°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Zlatka 11°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Dublin 13°",c:"Piva",p:49,u:"0,4l"},
+  {n:"Espresso",c:"Horké nápoje",p:49},
+  {n:"Espresso Lungo",c:"Horké nápoje",p:49},
+  {n:"Doppio",c:"Horké nápoje",p:55},
+  {n:"Cappuccino",c:"Horké nápoje",p:65},
+  {n:"Latté Macchiato",c:"Horké nápoje",p:65},
+  {n:"Flat white",c:"Horké nápoje",p:65},
+  {n:"Čaj Ahmad Tea",c:"Horké nápoje",p:39},
+  {n:"Turecká káva",c:"Horké nápoje",p:39},
+  {n:"Ledová káva",c:"Horké nápoje",p:75},
+  {n:"Točená kofola 0,3l",c:"Nealkoholické nápoje",p:39},
+  {n:"Točená kofola 0,5l",c:"Nealkoholické nápoje",p:49},
+  {n:"Frizzante 0,3l",c:"Nealkoholické nápoje",p:39},
+  {n:"Frizzante 0,5l",c:"Nealkoholické nápoje",p:49},
+  {n:"Royal crown cola",c:"Nealkoholické nápoje",p:39},
+  {n:"ChitoTonic",c:"Nealkoholické nápoje",p:39},
+  {n:"Džus pomeranč",c:"Nealkoholické nápoje",p:39},
+  {n:"Džus jablko",c:"Nealkoholické nápoje",p:39},
+  {n:"Perlivá voda",c:"Nealkoholické nápoje",p:39},
+  {n:"Bukovská voda",c:"Nealkoholické nápoje",p:0},
+  {n:"Rozlévané víno",c:"Víno",p:69,u:"0,2l"},
+  {n:"Vinný střik",c:"Víno",p:79,u:"0,3l"},
+  {n:"Lahvové víno",c:"Víno",p:299,u:"0,7l"},
+  {n:"Prosecco Mionetto",c:"Víno",p:299,u:"0,7l"},
+  {n:"Prosecco Treviso",c:"Víno",p:199,u:"0,7l"},
+  {n:"Prosecco rozlévané",c:"Víno",p:59,u:"0,15l"},
+  {n:"Gin s tonikem",c:"Míchané nápoje",p:99,u:"0,3l"},
+  {n:"Hugo Spritz",c:"Míchané nápoje",p:99,u:"0,3l"},
+  {n:"Cuba libre",c:"Míchané nápoje",p:109,u:"0,3l"},
+  {n:"Aperol Spritz",c:"Míchané nápoje",p:159,u:"0,3l"},
+  {n:"Mojito",c:"Míchané nápoje",p:159,u:"0,3l"},
+  {n:"Utopenec",c:"Občerstvení",p:85},
+  {n:"Pizza Della Casa",c:"Občerstvení",p:155},
+  {n:"Nakládaný hermelín",c:"Občerstvení",p:85},
+  {n:"Chipsy",c:"Občerstvení",p:59},
+  {n:"Slané tyčinky",c:"Občerstvení",p:29},
+  {n:"Arašídy",c:"Občerstvení",p:39},
+  {n:"Paštiky Čongrády",c:"Občerstvení",p:99},
+  {n:"Paštika ve skle Čongrády",c:"Občerstvení",p:109},
+  {n:"Škvarky v sádle Čongrády",c:"Občerstvení",p:139},
+  {n:"Rum standard (Republica, Heffron...)",c:"Destiláty",p:79,u:"0,05l"},
+  {n:"Rum premium (Kraken, Espero...)",c:"Destiláty",p:99,u:"0,05l"},
+  {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"}
+];
+
+let stream, snapB64, receiptItems = [];
+
+(function() {
+  const saved = localStorage.getItem('bukovar_api_key');
+  if (saved) document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('api-key-input').value = saved;
+  });
+})();
+
+function getApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (key) localStorage.setItem('bukovar_api_key', key);
+  return key;
+}
+
+function setStatus(msg, spin) {
+  const el = document.getElementById('status');
+  if (spin) {
+    el.innerHTML = '';
+    const s = document.createElement('div');
+    s.className = 'spinner';
+    el.appendChild(s);
+    el.appendChild(document.createTextNode(msg));
+  } else {
+    el.textContent = msg;
+  }
+}
+
+async function startCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    document.getElementById('video').srcObject = stream;
+    document.getElementById('btnStart').classList.add('hidden');
+    document.getElementById('btnSnap').classList.remove('hidden');
+    setStatus('Namiřte kameru na papír s objednávkou.');
+  } catch(e) {
+    setStatus('Kamera nedostupná: ' + e.message);
+  }
+}
+
+function takeSnap() {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('snap-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  snapB64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  document.getElementById('video').style.display = 'none';
+  canvas.style.display = 'block';
+  document.getElementById('btnSnap').classList.add('hidden');
+  document.getElementById('btnRetake').classList.remove('hidden');
+  document.getElementById('btnAnalyze').classList.remove('hidden');
+  setStatus('Fotka pořízena. Klikněte Rozpoznat objednávku.');
+}
+
+function retake() {
+  document.getElementById('snap-canvas').style.display = 'none';
+  document.getElementById('video').style.display = 'block';
+  document.getElementById('btnRetake').classList.add('hidden');
+  document.getElementById('btnAnalyze').classList.add('hidden');
+  snapB64 = null;
+  startCam();
+}
+
+async function analyze() {
+  const apiKey = getApiKey();
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+    setStatus('Zadejte platný Anthropic API klíč (sk-ant-...) výše.');
+    return;
+  }
+  document.getElementById('btnAnalyze').disabled = true;
+  document.getElementById('btnRetake').disabled = true;
+  setStatus('Rozpoznávám objednávku…', true);
+
+  const menuStr = MENU.map(m => '"' + m.n + '" (' + m.c + ', ' + m.p + ' Kč' + (m.u ? ', ' + m.u : '') + ')').join('\n');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: snapB64 } },
+            { type: 'text', text: 'Na obrazku je rucne psana objednavka cisnika pivovaru Bukovar.\n\nDatabaze polozek menu:\n' + menuStr + '\n\nRozpoznej z obrazku objednane polozky a priradte je PRESNE k polozkam v databazi.\nOdpovez POUZE jako JSON (bez markdown backticks, bez komentaru):\n{"polozky": [{"menu_nazev": "...", "pocet": 1, "cena_kus": 49, "kategorie": "..."}, ...], "nerozpoznano": ["..."]}\n\nPokud je polozka podobna polozce v menu (i zkracene nebo s preklepy), priradte ji. Pokud ji nelze priradit, dej do "nerozpoznano".' }
+          ]
+        }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || resp.statusText);
+    }
+
+    const data = await resp.json();
+    const text = data.content.map(c => c.text || '').join('');
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    renderReceipt(parsed);
+
+  } catch(e) {
+    setStatus('Chyba: ' + e.message);
+    document.getElementById('btnAnalyze').disabled = false;
+    document.getElementById('btnRetake').disabled = false;
+  }
+}
+
+function renderReceipt(data) {
+  receiptItems = [];
+  (data.polozky || []).forEach(function(p) {
+    receiptItems.push({ nazev: p.menu_nazev, pocet: p.pocet, cena: p.cena_kus, warn: false });
+  });
+  if (data.nerozpoznano && data.nerozpoznano.length) {
+    data.nerozpoznano.forEach(function(n) {
+      receiptItems.push({ nazev: n, pocet: 1, cena: 0, warn: true });
+    });
+  }
+  var now = new Date();
+  document.getElementById('receipt-time').textContent =
+    now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('receipt-card').classList.remove('hidden');
+  document.getElementById('cam-card').classList.add('hidden');
+  setStatus('');
+  renderItems();
+}
+
+function renderItems() {
+  var lines = document.getElementById('receipt-lines');
+  lines.innerHTML = '';
+  receiptItems.forEach(function(item, i) {
+    var sub = item.pocet * item.cena;
+    var row = document.createElement('div');
+    row.className = 'receipt-item' + (item.warn ? ' warn-row' : '');
+    var safeName = item.nazev.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    row.innerHTML =
+      '<input class="item-qty-input" type="number" min="0" value="' + item.pocet + '" oninput="updateQty(' + i + ', this.value)" />' +
+      '<input class="item-name-input" type="text" value="' + safeName + '" oninput="updateName(' + i + ', this.value)" />' +
+      '<span class="item-price" id="price-' + i + '">' + sub + ' Kč</span>' +
+      '<button class="item-del" onclick="deleteItem(' + i + ')">×</button>';
+    lines.appendChild(row);
+  });
+  updateTotal();
+}
+
+function updateQty(i, val) {
+  receiptItems[i].pocet = parseInt(val) || 0;
+  var el = document.getElementById('price-' + i);
+  if (el) el.textContent = (receiptItems[i].pocet * receiptItems[i].cena) + ' Kč';
+  updateTotal();
+}
+
+function updateName(i, val) {
+  receiptItems[i].nazev = val;
+}
+
+function deleteItem(i) {
+  receiptItems.splice(i, 1);
+  renderItems();
+}
+
+function addItem() {
+  var qty = parseInt(document.getElementById('new-qty').value) || 1;
+  var name = document.getElementById('new-name').value.trim();
+  var price = parseInt(document.getElementById('new-price').value) || 0;
+  if (!name) { document.getElementById('new-name').focus(); return; }
+  receiptItems.push({ nazev: name, pocet: qty, cena: price, warn: false });
+  document.getElementById('new-qty').value = 1;
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-price').value = '';
+  renderItems();
+}
+
+function updateTotal() {
+  var total = receiptItems.reduce(function(s, it) { return s + (it.pocet * it.cena); }, 0);
+  document.getElementById('total-val').textContent = total + ' Kč';
+}
+
+function printReceipt() {
+  window.print();
+}
+
+function resetApp() {
+  document.getElementById('receipt-card').classList.add('hidden');
+  document.getElementById('cam-card').classList.remove('hidden');
+  document.getElementById('snap-canvas').style.display = 'none';
+  document.getElementById('video').style.display = 'block';
+  document.getElementById('btnStart').classList.remove('hidden');
+  document.getElementById('btnSnap').classList.add('hidden');
+  document.getElementById('btnRetake').classList.add('hidden');
+  document.getElementById('btnAnalyze').classList.add('hidden');
+  document.getElementById('btnAnalyze').disabled = false;
+  document.getElementById('btnRetake').disabled = false;
+  snapB64 = null;
+  receiptItems = [];
+  setStatus('');
+}
+</script>
+</body>
+</html>
