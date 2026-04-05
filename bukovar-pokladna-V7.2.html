@@ -191,15 +191,13 @@
 </head>
 <body>
 
-<header style="justify-content:space-between;">
-  <div class="logo">Buko<span>var</span></div>
-  <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:12px;padding:4px 10px;border-radius:6px;">⚙ API</button>
-</header>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('kasa',this)">Kasa</button>
-  <button class="tab-btn" onclick="switchTab('uctenky',this)">Účtenky</button>
-  <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
+<div class="tabs" style="justify-content:space-between;">
+  <div style="display:flex;">
+    <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
+    <button class="tab-btn" onclick="switchTab('uctenky',this)">Historie účtenek</button>
+    <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
+  </div>
+  <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
 </div>
 
 <div class="tab-content active" id="tab-kasa">
