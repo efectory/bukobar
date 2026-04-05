@@ -176,17 +176,34 @@
   .wf-col button { font-size: 14px; padding: 13px 12px; text-align: center; width: 100%; min-height: 58px; }
   .payment-method-line { font-size: 13px; color: var(--muted); padding: 4px 0; }
   .payment-btn.active { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
+  .wf-col.wf-error { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(181,56,26,.18); }
+  .pay-wait-icon { font-size: 54px; text-align: center; margin: .25rem 0 .75rem; line-height: 1; }
+  .pay-wait-title { font-family: 'DM Serif Display', serif; font-size: 20px; text-align: center; margin-bottom: .5rem; }
+  .pay-wait-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 1.25rem; line-height: 1.6; }
+
+  /* Tiskový náhled — styl účtenky v modalu */
+  .receipt-print { font-family: 'Courier New', monospace; font-size: 13px; width: 100%; }
+  .rp-center { text-align: center; }
+  .rp-line { border: none; border-top: 1px dashed #aaa; margin: 6px 0; }
+  .rp-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .rp-total { display: flex; justify-content: space-between; padding: 4px 0; font-weight: 700; font-size: 15px; border-top: 1px solid #000; margin-top: 4px; }
+  .rp-footer { text-align: center; margin-top: 8px; font-size: 12px; color: #555; }
 
   @media print {
-    header, .tabs, #cam-card, #confirm-card, .workflow-grid, .api-notice,
-    .quick-add, .item-del, .qty-btn, .modal-overlay, .stamgast-badge { display: none !important; }
-    .receipt-item { display: grid; grid-template-columns: 36px 1fr auto; padding: 5px 0; border-bottom: 1px solid #ccc; gap: 4px; }
-    .item-qty-input { border: none; background: none; padding: 0; width: auto; }
-    .item-name-btn { border: none; background: none; padding: 0; font-size: 13px; }
-    .item-price { display: block; }
-    body { background: white; }
-    .card { border: none; padding: 0; }
-    main { padding: 0; max-width: 100%; }
+    @page { size: 80mm auto; margin: 3mm; }
+    body { visibility: hidden; }
+    #print-area {
+      visibility: visible;
+      position: absolute; left: 0; top: 0;
+      width: 74mm;
+      font-family: 'Courier New', monospace;
+      font-size: 12px; color: #000; background: #fff;
+    }
+    #print-area .rp-center { text-align: center; }
+    #print-area .rp-line { border: none; border-top: 1px dashed #000; margin: 5px 0; }
+    #print-area .rp-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 12px; }
+    #print-area .rp-total { display: flex; justify-content: space-between; padding: 3px 0; font-weight: 700; font-size: 14px; border-top: 1px solid #000; margin-top: 3px; }
+    #print-area .rp-footer { text-align: center; margin-top: 6px; font-size: 11px; }
   }
 </style>
 </head>
@@ -243,23 +260,29 @@
       <!-- Levý sloupec: workflow -->
       <div class="kasa-left">
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Přidat položku</div></div>
+          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Přidat položky</div></div>
           <button onclick="retakeFromReceipt()">Načti účtenku</button>
         </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Výběr slevy</div></div>
-          <button id="btn-stamgast" class="payment-btn" onclick="showStamgastModal()">Štamgast</button>
+          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Sleva štamgasta</div></div>
+          <button id="btn-stamgast-ano" class="payment-btn" onclick="setStamgast(true)">Ano</button>
+          <button id="btn-stamgast-ne" class="payment-btn" onclick="setStamgast(false)">Ne</button>
         </div>
-        <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Platba</div></div>
-          <button onclick="showQrModal()">QR Platba</button>
+        <div class="wf-col" id="wf-platba">
+          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Způsob platby</div></div>
+          <button id="btn-qr" class="payment-btn" onclick="setPayment('QR')">QR Platba</button>
           <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
           <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
         </div>
+        <div class="wf-col" id="wf-uctenka">
+          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Účtenka</div></div>
+          <button id="btn-opt-print" class="payment-btn" onclick="setReceiptOption('print')">Tisknout</button>
+          <button id="btn-opt-noprint" class="payment-btn" onclick="setReceiptOption('noprint')">Netisknout</button>
+          <button id="btn-opt-qr" class="payment-btn" onclick="setReceiptOption('qr')">QR účtenka</button>
+        </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavření účtu</div></div>
-          <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
-          <button onclick="closeWithoutPrint()">Bez tisku</button>
+          <div class="wf-head"><div class="wf-n">5</div><div class="wf-lbl">Uzavřít</div></div>
+          <button class="primary" onclick="uzavrit()">Uzavřít</button>
         </div>
       </div>
 
@@ -346,16 +369,55 @@
     <div id="qr-num" style="font-size:11px;color:var(--muted);margin-top:.5rem;"></div>
     <div style="font-size:11px;color:var(--muted);margin-top:.25rem;">Naskenujte v bankovní aplikaci</div>
     <div class="modal-actions center" style="margin-top:1rem;">
-      <button onclick="closeQrModal()">Zavřít</button>
+      <button onclick="closeQrModal()">Zpět</button>
+      <button class="primary" onclick="finalizeAfterPayment()">Platba přijata</button>
+    </div>
+  </div>
+</div>
+
+<!-- Čeká se na platbu kartou -->
+<div class="modal-overlay hidden" id="pay-karta-modal">
+  <div class="modal" style="text-align:center;">
+    <div class="pay-wait-icon">💳</div>
+    <div class="pay-wait-title">Platba kartou</div>
+    <div class="pay-wait-sub">Platba probíhá na terminálu.<br>Po dokončení transakce potvrďte níže.</div>
+    <div class="modal-actions center">
+      <button onclick="document.getElementById('pay-karta-modal').classList.add('hidden')">Zpět</button>
+      <button class="primary" onclick="finalizeAfterPayment()">Platba přijata</button>
+    </div>
+  </div>
+</div>
+
+<!-- Čeká se na platbu hotovostí -->
+<div class="modal-overlay hidden" id="pay-hotovost-modal">
+  <div class="modal" style="text-align:center;">
+    <div class="pay-wait-icon">💵</div>
+    <div class="pay-wait-title">Platba hotovostí</div>
+    <div class="pay-wait-sub">Přijměte hotovost od zákazníka<br>a potvrďte tlačítkem níže.</div>
+    <div class="modal-actions center">
+      <button onclick="document.getElementById('pay-hotovost-modal').classList.add('hidden')">Zpět</button>
+      <button class="primary" onclick="finalizeAfterPayment()">Platba přijata</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR účtenka pro zákazníka -->
+<div class="modal-overlay hidden" id="receipt-qr-modal">
+  <div class="modal" style="text-align:center;">
+    <h3>QR účtenka</h3>
+    <p>Zákazník může naskenovat pro digitální účtenku.</p>
+    <div id="receipt-qr-container" style="display:inline-block;margin:0 auto 1rem;"></div>
+    <div class="modal-actions center">
+      <button class="primary" onclick="closeReceiptQrModal()">Zavřít</button>
     </div>
   </div>
 </div>
 
 <!-- Náhled před tiskem -->
 <div class="modal-overlay hidden" id="print-modal">
-  <div class="modal">
-    <h3>Bukovar</h3>
-    <div id="print-preview"></div>
+  <div class="modal" style="max-width:420px;">
+    <h3 style="margin-bottom:1rem;">Náhled účtenky</h3>
+    <div id="print-preview" style="background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:12px;max-height:70vh;overflow-y:auto;"></div>
     <div class="modal-actions">
       <button onclick="closePrintModal()">Zpět</button>
       <button class="primary" onclick="doPrint()">Tisknout</button>
@@ -853,11 +915,27 @@ function showStamgastModal() {
 
 function applyStamgast(isStamgast) {
   document.getElementById('stamgast-modal').classList.add('hidden');
-  if (!isStamgast) return;
-  receiptItems.forEach(function(item) {
-    var m = MENU.find(function(m) { return m.n === item.nazev; });
-    if (m && m.c === 'Piva') { item.cena = 39; item.stamgast = true; }
+  setStamgast(isStamgast);
+}
+
+function setStamgast(isStamgast) {
+  ['ano','ne'].forEach(function(o) {
+    document.getElementById('btn-stamgast-' + o).classList.remove('active');
   });
+  document.getElementById('btn-stamgast-' + (isStamgast ? 'ano' : 'ne')).classList.add('active');
+  if (isStamgast) {
+    receiptItems.forEach(function(item) {
+      var m = MENU.find(function(m) { return m.n === item.nazev; });
+      if (m && m.c === 'Piva') { item.cena = 39; item.stamgast = true; }
+    });
+  } else {
+    receiptItems.forEach(function(item) {
+      if (item.stamgast) {
+        var m = MENU.find(function(m) { return m.n === item.nazev; });
+        if (m) { item.cena = m.p; item.stamgast = false; }
+      }
+    });
+  }
   renderItems();
 }
 
@@ -907,16 +985,88 @@ function closeItemPickerModal() {
 // --- Způsob platby ---
 
 var paymentMethod = '';
+var receiptOption = '';
+var lastUctenkaNum = null;
 
 function setPayment(method) {
   paymentMethod = method;
-  ['karta','hotovost'].forEach(function(m) {
+  ['qr','karta','hotovost'].forEach(function(m) {
     document.getElementById('btn-' + m).classList.remove('active');
   });
   document.getElementById('btn-' + method.toLowerCase()).classList.add('active');
   var line = document.getElementById('payment-method-line');
   line.textContent = 'Způsob platby: ' + method;
   line.classList.remove('hidden');
+}
+
+function setReceiptOption(opt) {
+  receiptOption = opt;
+  ['print','noprint','qr'].forEach(function(o) {
+    document.getElementById('btn-opt-' + o).classList.remove('active');
+  });
+  document.getElementById('btn-opt-' + opt).classList.add('active');
+}
+
+function uzavrit() {
+  if (!paymentMethod) {
+    var el = document.getElementById('wf-platba');
+    el.classList.add('wf-error');
+    setTimeout(function() { el.classList.remove('wf-error'); }, 1500);
+    return;
+  }
+  if (!receiptOption) {
+    var el2 = document.getElementById('wf-uctenka');
+    el2.classList.add('wf-error');
+    setTimeout(function() { el2.classList.remove('wf-error'); }, 1500);
+    return;
+  }
+  if (paymentMethod === 'QR') {
+    showQrModal();
+  } else if (paymentMethod === 'Karta') {
+    document.getElementById('pay-karta-modal').classList.remove('hidden');
+  } else if (paymentMethod === 'Hotovost') {
+    document.getElementById('pay-hotovost-modal').classList.remove('hidden');
+  }
+}
+
+function finalizeAfterPayment() {
+  ['pay-karta-modal','pay-hotovost-modal'].forEach(function(id) {
+    document.getElementById(id).classList.add('hidden');
+  });
+  closeQrModal();
+  saveUctenka();
+  if (receiptOption === 'print') {
+    var html = buildReceiptHtml();
+    printReceiptIframe(html);
+    resetApp();
+  } else if (receiptOption === 'qr') {
+    showReceiptQrModal();
+  } else {
+    resetApp();
+  }
+}
+
+function showReceiptQrModal() {
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  var now = new Date();
+  var dateStr = now.getDate() + '.' + (now.getMonth()+1) + '.' + now.getFullYear();
+  var timeStr = now.getHours() + ':' + now.getMinutes().toString().padStart(2,'0');
+  var text = 'BUKOBAR s.r.o.\n' +
+    'Uct.' + (lastUctenkaNum || '') + ' ' + dateStr + ' ' + timeStr + '\n';
+  receiptItems.forEach(function(item) {
+    text += item.pocet + 'x ' + item.nazev + ' ' + (item.pocet * item.cena) + 'Kc\n';
+  });
+  text += 'CELKEM:' + total + 'Kc\n';
+  if (paymentMethod) text += paymentMethod;
+  var container = document.getElementById('receipt-qr-container');
+  container.innerHTML = '';
+  new QRCode(container, { text: text, width: 200, height: 200, colorDark: '#1a1610', colorLight: '#ffffff' });
+  document.getElementById('receipt-qr-modal').classList.remove('hidden');
+}
+
+function closeReceiptQrModal() {
+  document.getElementById('receipt-qr-modal').classList.add('hidden');
+  resetApp();
 }
 
 // --- QR Platba ---
@@ -956,33 +1106,95 @@ function closeQrModal() {
 
 // --- Tisk ---
 
-function printReceipt() {
-  var preview = document.getElementById('print-preview');
-  preview.innerHTML = '';
-  receiptItems.forEach(function(item) {
-    var row = document.createElement('div');
-    row.className = 'print-row';
-    row.innerHTML = '<span>' + item.pocet + '× ' + item.nazev + '</span><span>' + (item.pocet * item.cena) + ' Kč</span>';
-    preview.appendChild(row);
-  });
+var RECEIPT_CSS =
+  'body{font-family:"Courier New",monospace;font-size:12px;width:74mm;margin:0;padding:3mm;color:#000;background:#fff;}' +
+  '.rp-center{text-align:center;}' +
+  '.rp-line{border:none;border-top:1px dashed #000;margin:5px 0;}' +
+  '.rp-row{display:flex;justify-content:space-between;padding:1px 0;}' +
+  '.rp-total{display:flex;justify-content:space-between;padding:3px 0;font-weight:700;font-size:14px;border-top:1px solid #000;margin-top:3px;}' +
+  '.rp-footer{text-align:center;margin-top:6px;font-size:11px;}' +
+  '@page{size:80mm auto;margin:3mm;}';
+
+function printReceiptIframe(html) {
+  var iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:none;';
+  document.body.appendChild(iframe);
+  var doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + RECEIPT_CSS + '</style></head><body>' + html + '</body></html>');
+  doc.close();
+  setTimeout(function() {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(function() {
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }, 1000);
+  }, 250);
+}
+
+
+function buildReceiptHtml() {
+  var now = new Date();
+  var d = now.getDate().toString().padStart(2,'0');
+  var mo = (now.getMonth()+1).toString().padStart(2,'0');
+  var y = now.getFullYear();
+  var h = now.getHours().toString().padStart(2,'0');
+  var mi = now.getMinutes().toString().padStart(2,'0');
+  var dateStr = d + '.' + mo + '.' + y;
+  var timeStr = h + ':' + mi;
   var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
-  var totalRow = document.createElement('div');
-  totalRow.className = 'print-row print-total';
-  totalRow.innerHTML = '<span>Celkem</span><span>' + total + ' Kč</span>';
-  preview.appendChild(totalRow);
+  var numStr = lastUctenkaNum ? String(lastUctenkaNum) : String(parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000') + 1);
+
+  var html = '<div class="receipt-print">';
+  // Hlavička
+  html += '<div class="rp-center"><strong>BUKOBAR s.r.o.</strong></div>';
+  html += '<div class="rp-center">nám. Jiráskovo 54</div>';
+  html += '<div class="rp-center">Dolní Bukovsko, 373 65</div>';
+  html += '<div class="rp-center">IČO: 24035491</div>';
+  html += '<hr class="rp-line">';
+  // Číslo a datum
+  html += '<div class="rp-center">Účtenka č. ' + numStr + '</div>';
+  html += '<div class="rp-center">' + dateStr + '&nbsp;&nbsp;' + timeStr + '</div>';
+  html += '<hr class="rp-line">';
+  // Položky
+  receiptItems.forEach(function(item) {
+    var sub = item.pocet * item.cena;
+    var name = item.nazev.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var label = item.pocet > 1 ? item.pocet + '× ' + name : name;
+    html += '<div class="rp-row"><span>' + label + '</span><span>' + sub + ' Kč</span></div>';
+  });
+  // Celkem
+  html += '<div class="rp-total"><span>CELKEM</span><span>' + total + ' Kč</span></div>';
+  // Způsob platby
   if (paymentMethod) {
-    var pmRow = document.createElement('div');
-    pmRow.className = 'print-row';
-    pmRow.style.cssText = 'font-size:12px;color:#666;border-bottom:none;padding-top:6px;';
-    pmRow.innerHTML = '<span>Způsob platby</span><span>' + paymentMethod + '</span>';
-    preview.appendChild(pmRow);
+    html += '<div class="rp-row" style="margin-top:4px;"><span>Způsob platby</span><span>' + paymentMethod + '</span></div>';
   }
+  html += '<hr class="rp-line">';
+  // Patička
+  html += '<div class="rp-footer">Děkujeme za návštěvu!</div>';
+  html += '<div class="rp-footer">Bukobar s.r.o.</div>';
+  // Prázdné řádky pro odtrhnutí
+  html += '<div style="height:32px;"></div>';
+  html += '</div>';
+  return html;
+}
+
+function printReceipt() {
+  var html = buildReceiptHtml();
+  document.getElementById('print-preview').innerHTML = html;
   document.getElementById('print-modal').classList.remove('hidden');
 }
 
-function doPrint() { closePrintModal(); window.print(); if (document._printAndReset) { document._printAndReset = false; resetApp(); } }
+function doPrint() {
+  saveUctenka();
+  var receiptHtml = buildReceiptHtml();
+  closePrintModal();
+  printReceiptIframe(receiptHtml);
+  resetApp();
+}
+
 function closePrintModal() { document.getElementById('print-modal').classList.add('hidden'); }
-function closeWithPrint() { saveUctenka(); printReceipt(); document._printAndReset = true; }
+function closeWithPrint() { printReceipt(); }
 function closeWithoutPrint() { saveUctenka(); resetApp(); }
 
 // --- Účtenky ---
@@ -997,9 +1209,10 @@ function nextUctenkaNum() {
 function saveUctenka() {
   if (!receiptItems.length) return;
   var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  lastUctenkaNum = nextUctenkaNum();
   var record = {
     id: Date.now(),
-    num: nextUctenkaNum(),
+    num: lastUctenkaNum,
     cas: new Date().toISOString(),
     polozky: receiptItems.map(function(it) { return { nazev: it.nazev, pocet: it.pocet, cena: it.cena, stamgast: it.stamgast }; }),
     celkem: total,
@@ -1071,13 +1284,22 @@ function resetApp() {
   openCategory = null; pendingData = null; uncertainItems = [];
   pickerCallback = null;
   paymentMethod = '';
+  receiptOption = '';
+  lastUctenkaNum = null;
   document.getElementById('payment-method-line').classList.add('hidden');
   document.getElementById('payment-method-line').textContent = '';
-  ['karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
+  ['ano','ne'].forEach(function(o) { document.getElementById('btn-stamgast-' + o).classList.remove('active'); });
+  ['qr','karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
+  ['print','noprint','qr'].forEach(function(o) { document.getElementById('btn-opt-' + o).classList.remove('active'); });
+  ['pay-karta-modal','pay-hotovost-modal','receipt-qr-modal'].forEach(function(id) { document.getElementById(id).classList.add('hidden'); });
   setStatus('');
   showReceipt();
   renderItems();
 }
 </script>
+
+<!-- Oblast pro tisk — skrytá, zobrazí se jen při tisku -->
+<div id="print-area" style="display:none;"></div>
+
 </body>
 </html>
