@@ -162,21 +162,18 @@
   .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
-  /* Workflow */
-  .workflow-steps { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; position: relative; }
-  .workflow-steps::before { content: ''; position: absolute; top: 14px; left: 14px; right: 14px; height: 2px; background: var(--border); z-index: 0; }
-  .wf-step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; position: relative; z-index: 1; }
-  .wf-num { width: 28px; height: 28px; border-radius: 50%; background: var(--border-strong); color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-  .wf-step.done .wf-num { background: var(--success-text); }
-  .wf-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: center; }
-  .wf-section { border-top: 1px solid var(--border); padding-top: .875rem; margin-top: .875rem; }
-  .wf-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .625rem; display: flex; align-items: center; gap: 6px; }
-  .wf-section-title .wf-num-small { width: 18px; height: 18px; border-radius: 50%; background: var(--border-strong); color: #fff; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .payment-method-line { font-size: 12px; color: var(--muted); margin-top: 4px; padding: 4px 0; }
+  /* Workflow grid */
+  .workflow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 1rem; }
+  .wf-col { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+  .wf-head { display: flex; flex-direction: column; align-items: center; gap: 3px; padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
+  .wf-n { width: 22px; height: 22px; border-radius: 50%; background: var(--text); color: #f5f1ea; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .wf-lbl { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); text-align: center; }
+  .wf-col button { font-size: 11px; padding: 6px 4px; text-align: center; width: 100%; }
+  .payment-method-line { font-size: 12px; color: var(--muted); padding: 4px 0; }
   .payment-btn.active { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
 
   @media print {
-    header, .tabs, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
+    header, .tabs, #cam-card, #confirm-card, .workflow-grid, .api-notice,
     .quick-add, .item-del, .qty-btn, .modal-overlay, .stamgast-badge { display: none !important; }
     .receipt-item { display: grid; grid-template-columns: 36px 1fr auto; padding: 5px 0; border-bottom: 1px solid #ccc; gap: 4px; }
     .item-qty-input { border: none; background: none; padding: 0; width: auto; }
@@ -190,8 +187,9 @@
 </head>
 <body>
 
-<header>
+<header style="justify-content:space-between;">
   <div class="logo">Buko<span>var</span></div>
+  <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:12px;padding:4px 10px;border-radius:6px;">⚙ API</button>
 </header>
 
 <div class="tabs">
@@ -203,12 +201,7 @@
 <div class="tab-content active" id="tab-kasa">
 <main>
 
-  <div class="api-ok hidden" id="api-ok">
-    <span class="api-ok-icon">✓</span>
-    <span>API klíč nastaven</span>
-    <button onclick="editApiKey()">změnit</button>
-  </div>
-  <div class="api-notice" id="api-notice">
+  <div class="api-notice hidden" id="api-notice">
     <strong>API klíč Anthropic</strong> — potřebný pro AI rozpoznávání objednávek.<br>
     Klíč se ukládá pouze v paměti prohlížeče a nikam se neodesílá.
     <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" onchange="saveApiKey()" />
@@ -243,19 +236,30 @@
   <!-- Účtenka -->
   <div class="card hidden" id="receipt-card">
 
-    <!-- Workflow indikátor -->
-    <div class="workflow-steps">
-      <div class="wf-step" id="wf-1"><div class="wf-num">1</div><div class="wf-label">Načtení</div></div>
-      <div class="wf-step" id="wf-2"><div class="wf-num">2</div><div class="wf-label">Sleva</div></div>
-      <div class="wf-step" id="wf-3"><div class="wf-num">3</div><div class="wf-label">Platba</div></div>
-      <div class="wf-step" id="wf-4"><div class="wf-num">4</div><div class="wf-label">Uzavření</div></div>
+    <!-- Workflow grid -->
+    <div class="workflow-grid">
+      <div class="wf-col">
+        <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Načtení</div></div>
+        <button onclick="retakeFromReceipt()">Vyfotit</button>
+      </div>
+      <div class="wf-col">
+        <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Sleva</div></div>
+        <button id="btn-stamgast" class="payment-btn" onclick="showStamgastModal()">Štamgast</button>
+      </div>
+      <div class="wf-col">
+        <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Platba</div></div>
+        <button onclick="showQrModal()">QR Platba</button>
+        <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
+        <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
+      </div>
+      <div class="wf-col">
+        <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavření</div></div>
+        <button class="primary" onclick="closeWithPrint()">Uzavřít+tisk</button>
+        <button onclick="closeWithoutPrint()">Bez tisku</button>
+      </div>
     </div>
 
-    <!-- Účtenka -->
-    <div class="receipt-header">
-      <h2>Bukovar</h2>
-      <p id="receipt-time"></p>
-    </div>
+    <!-- Položky -->
     <div id="receipt-lines"></div>
 
     <div class="quick-add">
@@ -274,41 +278,6 @@
       <span id="total-val"></span>
     </div>
     <div id="payment-method-line" class="payment-method-line hidden"></div>
-
-    <!-- Krok 1: Načtení -->
-    <div class="wf-section">
-      <div class="wf-section-title"><div class="wf-num-small">1</div>Načtení</div>
-      <div class="btn-row">
-        <button onclick="retakeFromReceipt()">Vyfotit</button>
-      </div>
-    </div>
-
-    <!-- Krok 2: Sleva -->
-    <div class="wf-section">
-      <div class="wf-section-title"><div class="wf-num-small">2</div>Sleva</div>
-      <div class="btn-row">
-        <button id="btn-stamgast" class="payment-btn" onclick="showStamgastModal()">Štamgast</button>
-      </div>
-    </div>
-
-    <!-- Krok 3: Platba -->
-    <div class="wf-section">
-      <div class="wf-section-title"><div class="wf-num-small">3</div>Platba</div>
-      <div class="btn-row">
-        <button onclick="showQrModal()">QR Platba</button>
-        <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
-        <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
-      </div>
-    </div>
-
-    <!-- Krok 4: Uzavření -->
-    <div class="wf-section">
-      <div class="wf-section-title"><div class="wf-num-small">4</div>Uzavření</div>
-      <div class="btn-row">
-        <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
-        <button onclick="closeWithoutPrint()">Uzavřít bez tisku</button>
-      </div>
-    </div>
 
   </div>
 
@@ -481,7 +450,8 @@ function initApiKey() {
   if (saved && saved.startsWith('sk-ant-')) {
     document.getElementById('api-key-input').value = saved;
     document.getElementById('api-notice').classList.add('hidden');
-    document.getElementById('api-ok').classList.remove('hidden');
+  } else {
+    document.getElementById('api-notice').classList.remove('hidden');
   }
 }
 
@@ -490,14 +460,17 @@ function saveApiKey() {
   if (key && key.startsWith('sk-ant-')) {
     localStorage.setItem('bukovar_api_key', key);
     document.getElementById('api-notice').classList.add('hidden');
-    document.getElementById('api-ok').classList.remove('hidden');
   }
 }
 
-function editApiKey() {
-  document.getElementById('api-ok').classList.add('hidden');
-  document.getElementById('api-notice').classList.remove('hidden');
-  document.getElementById('api-key-input').focus();
+function toggleApiKey() {
+  const el = document.getElementById('api-notice');
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+    document.getElementById('api-key-input').focus();
+  } else {
+    el.classList.add('hidden');
+  }
 }
 
 function getApiKey() {
