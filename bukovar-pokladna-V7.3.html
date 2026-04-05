@@ -270,14 +270,8 @@
           <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
           <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
         </div>
-        <div class="wf-col" id="wf-uctenka">
-          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Účtenka</div></div>
-          <button id="btn-opt-print" class="payment-btn" onclick="setReceiptOption('print')">Tisknout</button>
-          <button id="btn-opt-noprint" class="payment-btn" onclick="setReceiptOption('noprint')">Netisknout</button>
-          <button id="btn-opt-qr" class="payment-btn" onclick="setReceiptOption('qr')">QR účtenka</button>
-        </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavřít</div></div>
+          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Uzavřít</div></div>
           <button class="primary" onclick="uzavrit()">Uzavřít</button>
         </div>
       </div>
@@ -397,17 +391,6 @@
   </div>
 </div>
 
-<!-- QR účtenka pro zákazníka -->
-<div class="modal-overlay hidden" id="receipt-qr-modal">
-  <div class="modal" style="text-align:center;">
-    <h3>QR účtenka</h3>
-    <p>Zákazník může naskenovat pro digitální účtenku.</p>
-    <div id="receipt-qr-container" style="display:inline-block;margin:0 auto 1rem;"></div>
-    <div class="modal-actions center">
-      <button class="primary" onclick="closeReceiptQrModal()">Zavřít</button>
-    </div>
-  </div>
-</div>
 
 <!-- Náhled před tiskem -->
 <div class="modal-overlay hidden" id="print-modal">
@@ -927,7 +910,7 @@ function setStamgast(isStamgast) {
   if (isStamgast) {
     receiptItems.forEach(function(item) {
       var m = MENU.find(function(m) { return m.n === item.nazev; });
-      if (m && m.c === 'Piva') { item.cena = 39; item.stamgast = true; }
+      if (m && (m.n === 'Bukovar' || m.n === 'Radler')) { item.cena = 39; item.stamgast = true; }
     });
   } else {
     receiptItems.forEach(function(item) {
@@ -986,7 +969,6 @@ function closeItemPickerModal() {
 // --- Způsob platby ---
 
 var paymentMethod = '';
-var receiptOption = '';
 var lastUctenkaNum = null;
 
 function setPayment(method) {
@@ -1000,25 +982,12 @@ function setPayment(method) {
   line.classList.remove('hidden');
 }
 
-function setReceiptOption(opt) {
-  receiptOption = opt;
-  ['print','noprint','qr'].forEach(function(o) {
-    document.getElementById('btn-opt-' + o).classList.remove('active');
-  });
-  document.getElementById('btn-opt-' + opt).classList.add('active');
-}
 
 function uzavrit() {
   if (!paymentMethod) {
     var el = document.getElementById('wf-platba');
     el.classList.add('wf-error');
     setTimeout(function() { el.classList.remove('wf-error'); }, 1500);
-    return;
-  }
-  if (!receiptOption) {
-    var el2 = document.getElementById('wf-uctenka');
-    el2.classList.add('wf-error');
-    setTimeout(function() { el2.classList.remove('wf-error'); }, 1500);
     return;
   }
   if (paymentMethod === 'QR') {
@@ -1036,39 +1005,10 @@ function finalizeAfterPayment() {
   });
   closeQrModal();
   saveUctenka();
-  if (receiptOption === 'print') {
-    var html = buildReceiptHtml();
-    printReceiptIframe(html);
-    resetApp();
-  } else if (receiptOption === 'qr') {
-    showReceiptQrModal();
-  } else {
-    resetApp();
-  }
-}
-
-function showReceiptQrModal() {
-  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
-  var now = new Date();
-  var dateStr = now.getDate() + '.' + (now.getMonth()+1) + '.' + now.getFullYear();
-  var timeStr = now.getHours() + ':' + now.getMinutes().toString().padStart(2,'0');
-  var text = 'BUKOBAR s.r.o.\n' +
-    'Uct.' + (lastUctenkaNum || '') + ' ' + dateStr + ' ' + timeStr + '\n';
-  receiptItems.forEach(function(item) {
-    text += item.pocet + 'x ' + item.nazev + ' ' + (item.pocet * item.cena) + 'Kc\n';
-  });
-  text += 'CELKEM:' + total + 'Kc\n';
-  if (paymentMethod) text += paymentMethod;
-  var container = document.getElementById('receipt-qr-container');
-  container.innerHTML = '';
-  new QRCode(container, { text: text, width: 200, height: 200, colorDark: '#1a1610', colorLight: '#ffffff' });
-  document.getElementById('receipt-qr-modal').classList.remove('hidden');
-}
-
-function closeReceiptQrModal() {
-  document.getElementById('receipt-qr-modal').classList.add('hidden');
+  printReceiptIframe(buildReceiptHtml());
   resetApp();
 }
+
 
 // --- QR Platba ---
 
@@ -1285,14 +1225,12 @@ function resetApp() {
   openCategory = null; pendingData = null; uncertainItems = [];
   pickerCallback = null;
   paymentMethod = '';
-  receiptOption = '';
   lastUctenkaNum = null;
   document.getElementById('payment-method-line').classList.add('hidden');
   document.getElementById('payment-method-line').textContent = '';
   ['ano','ne'].forEach(function(o) { document.getElementById('btn-stamgast-' + o).classList.remove('active'); });
   ['qr','karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
-  ['print','noprint','qr'].forEach(function(o) { document.getElementById('btn-opt-' + o).classList.remove('active'); });
-  ['pay-karta-modal','pay-hotovost-modal','receipt-qr-modal'].forEach(function(id) { document.getElementById(id).classList.add('hidden'); });
+  ['pay-karta-modal','pay-hotovost-modal'].forEach(function(id) { document.getElementById(id).classList.add('hidden'); });
   setStatus('');
   showReceipt();
   renderItems();
