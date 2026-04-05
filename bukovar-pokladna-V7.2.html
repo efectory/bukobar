@@ -772,9 +772,6 @@ function finishConfirm() {
 // --- Účtenka ---
 
 function showReceipt() {
-  var now = new Date();
-  document.getElementById('receipt-time').textContent =
-    now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
   document.getElementById('receipt-card').classList.remove('hidden');
   document.getElementById('cam-card').classList.add('hidden');
 }
