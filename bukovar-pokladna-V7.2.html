@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bukovar — pokladna</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   :root {
     --bg: #f5f1ea;
@@ -162,6 +162,19 @@
   .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
+  /* Workflow */
+  .workflow-steps { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; position: relative; }
+  .workflow-steps::before { content: ''; position: absolute; top: 14px; left: 14px; right: 14px; height: 2px; background: var(--border); z-index: 0; }
+  .wf-step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; position: relative; z-index: 1; }
+  .wf-num { width: 28px; height: 28px; border-radius: 50%; background: var(--border-strong); color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .wf-step.done .wf-num { background: var(--success-text); }
+  .wf-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: center; }
+  .wf-section { border-top: 1px solid var(--border); padding-top: .875rem; margin-top: .875rem; }
+  .wf-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .625rem; display: flex; align-items: center; gap: 6px; }
+  .wf-section-title .wf-num-small { width: 18px; height: 18px; border-radius: 50%; background: var(--border-strong); color: #fff; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .payment-method-line { font-size: 12px; color: var(--muted); margin-top: 4px; padding: 4px 0; }
+  .payment-btn.active { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
+
   @media print {
     header, .tabs, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
     .quick-add, .item-del, .qty-btn, .modal-overlay, .stamgast-badge { display: none !important; }
@@ -229,16 +242,16 @@
 
   <!-- Účtenka -->
   <div class="card hidden" id="receipt-card">
-    <div class="receipt-actions" style="margin-top:0;margin-bottom:.5rem;">
-      <button onclick="retakeFromReceipt()">Vyfotit</button>
-      <button onclick="showStamgastModal()">Štamgast</button>
-      <button onclick="showQrModal()">QR Platba</button>
+
+    <!-- Workflow indikátor -->
+    <div class="workflow-steps">
+      <div class="wf-step" id="wf-1"><div class="wf-num">1</div><div class="wf-label">Načtení</div></div>
+      <div class="wf-step" id="wf-2"><div class="wf-num">2</div><div class="wf-label">Sleva</div></div>
+      <div class="wf-step" id="wf-3"><div class="wf-num">3</div><div class="wf-label">Platba</div></div>
+      <div class="wf-step" id="wf-4"><div class="wf-num">4</div><div class="wf-label">Uzavření</div></div>
     </div>
-    <div class="receipt-actions" style="margin-top:0;margin-bottom:1rem;">
-      <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
-      <button onclick="closeWithoutPrint()">Uzavřít bez tisku</button>
-      <button onclick="resetApp()">Nová objednávka</button>
-    </div>
+
+    <!-- Účtenka -->
     <div class="receipt-header">
       <h2>Bukovar</h2>
       <p id="receipt-time"></p>
@@ -250,10 +263,8 @@
       <div class="cat-btns" id="cat-btns"></div>
       <div class="cat-items hidden" id="cat-items"></div>
       <div class="custom-form hidden" id="custom-form">
-        <input type="text" id="custom-name" placeholder="Název položky..." style="flex:1;min-width:120px;"
-          onkeydown="customFormKey(event)" />
-        <input type="number" id="custom-price" placeholder="Kč" style="width:72px;"
-          onkeydown="customFormKey(event)" />
+        <input type="text" id="custom-name" placeholder="Název položky..." style="flex:1;min-width:120px;" onkeydown="customFormKey(event)" />
+        <input type="number" id="custom-price" placeholder="Kč" style="width:72px;" onkeydown="customFormKey(event)" />
         <button onclick="addCustomItem()" style="white-space:nowrap;padding:8px 14px;">+ Přidat</button>
       </div>
     </div>
@@ -262,6 +273,43 @@
       <span>Celkem</span>
       <span id="total-val"></span>
     </div>
+    <div id="payment-method-line" class="payment-method-line hidden"></div>
+
+    <!-- Krok 1: Načtení -->
+    <div class="wf-section">
+      <div class="wf-section-title"><div class="wf-num-small">1</div>Načtení</div>
+      <div class="btn-row">
+        <button onclick="retakeFromReceipt()">Vyfotit</button>
+      </div>
+    </div>
+
+    <!-- Krok 2: Sleva -->
+    <div class="wf-section">
+      <div class="wf-section-title"><div class="wf-num-small">2</div>Sleva</div>
+      <div class="btn-row">
+        <button id="btn-stamgast" class="payment-btn" onclick="showStamgastModal()">Štamgast</button>
+      </div>
+    </div>
+
+    <!-- Krok 3: Platba -->
+    <div class="wf-section">
+      <div class="wf-section-title"><div class="wf-num-small">3</div>Platba</div>
+      <div class="btn-row">
+        <button onclick="showQrModal()">QR Platba</button>
+        <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
+        <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
+      </div>
+    </div>
+
+    <!-- Krok 4: Uzavření -->
+    <div class="wf-section">
+      <div class="wf-section-title"><div class="wf-num-small">4</div>Uzavření</div>
+      <div class="btn-row">
+        <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
+        <button onclick="closeWithoutPrint()">Uzavřít bez tisku</button>
+      </div>
+    </div>
+
   </div>
 
 </main>
@@ -326,7 +374,7 @@
           oninput="setDyskoCustom(this.value)" />
       </div>
     </div>
-    <img id="qr-img" style="max-width:220px;width:100%;display:block;margin:0 auto;" src="" alt="QR kód" />
+    <div id="qr-container" style="display:inline-block;margin:0 auto;"></div>
     <div id="qr-num" style="font-size:11px;color:var(--muted);margin-top:.5rem;"></div>
     <div style="font-size:11px;color:var(--muted);margin-top:.25rem;">Naskenujte v bankovní aplikaci</div>
     <div class="modal-actions center" style="margin-top:1rem;">
@@ -885,12 +933,28 @@ function closeItemPickerModal() {
   pickerCallback = null; pickerModalCat = null;
 }
 
+// --- Způsob platby ---
+
+var paymentMethod = '';
+
+function setPayment(method) {
+  paymentMethod = method;
+  ['karta','hotovost'].forEach(function(m) {
+    document.getElementById('btn-' + m).classList.remove('active');
+  });
+  document.getElementById('btn-' + method.toLowerCase()).classList.add('active');
+  var line = document.getElementById('payment-method-line');
+  line.textContent = 'Způsob platby: ' + method;
+  line.classList.remove('hidden');
+}
+
 // --- QR Platba ---
 
 const QR_IBAN = 'CZ2355000000006310215004';
 const QR_MSG = 'Bukobar s.r.o.';
 var qrBaseTotal = 0;
 var qrDysko = 0;
+var qrInstance = null;
 
 function showQrModal() {
   qrBaseTotal = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
@@ -900,6 +964,8 @@ function showQrModal() {
   document.getElementById('dysko-0').classList.add('active');
   document.getElementById('dysko-custom-wrap').style.display = 'none';
   document.getElementById('dysko-custom-input').value = '';
+  qrInstance = null;
+  document.getElementById('qr-container').innerHTML = '';
   document.getElementById('qr-modal').classList.remove('hidden');
   renderQr();
 }
@@ -926,17 +992,17 @@ function setDyskoCustom(val) {
 function renderQr() {
   var total = qrBaseTotal + qrDysko;
   var num = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
-  if (qrDysko > 0) {
-    document.getElementById('qr-breakdown').textContent = 'Účet: ' + qrBaseTotal + ' Kč + Dýško: ' + qrDysko + ' Kč';
-  } else {
-    document.getElementById('qr-breakdown').textContent = '';
-  }
+  document.getElementById('qr-breakdown').textContent = qrDysko > 0 ? 'Účet: ' + qrBaseTotal + ' Kč + Dýško: ' + qrDysko + ' Kč' : '';
   document.getElementById('qr-total').textContent = total + ' Kč';
   document.getElementById('qr-num').textContent = 'VS: ' + num;
   var spd = 'SPD*1.0*ACC:' + QR_IBAN + '*AM:' + total.toFixed(2) + '*CC:CZK*MSG:' + QR_MSG + '*X-VS:' + num;
-  QRCode.toDataURL(spd, { width: 220, margin: 2, color: { dark: '#1a1610', light: '#ffffff' } }, function(err, url) {
-    if (!err) document.getElementById('qr-img').src = url;
-  });
+  var container = document.getElementById('qr-container');
+  if (qrInstance) {
+    qrInstance.clear();
+    qrInstance.makeCode(spd);
+  } else {
+    qrInstance = new QRCode(container, { text: spd, width: 220, height: 220, colorDark: '#1a1610', colorLight: '#ffffff' });
+  }
 }
 
 function closeQrModal() {
@@ -959,6 +1025,13 @@ function printReceipt() {
   totalRow.className = 'print-row print-total';
   totalRow.innerHTML = '<span>Celkem</span><span>' + total + ' Kč</span>';
   preview.appendChild(totalRow);
+  if (paymentMethod) {
+    var pmRow = document.createElement('div');
+    pmRow.className = 'print-row';
+    pmRow.style.cssText = 'font-size:12px;color:#666;border-bottom:none;padding-top:6px;';
+    pmRow.innerHTML = '<span>Způsob platby</span><span>' + paymentMethod + '</span>';
+    preview.appendChild(pmRow);
+  }
   document.getElementById('print-modal').classList.remove('hidden');
 }
 
@@ -1052,6 +1125,10 @@ function resetApp() {
   snapB64 = null; receiptItems = [];
   openCategory = null; pendingData = null; uncertainItems = [];
   pickerCallback = null;
+  paymentMethod = '';
+  document.getElementById('payment-method-line').classList.add('hidden');
+  document.getElementById('payment-method-line').textContent = '';
+  ['karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
   setStatus('');
   showReceipt();
   renderItems();
