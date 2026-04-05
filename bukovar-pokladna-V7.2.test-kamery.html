@@ -529,15 +529,20 @@ async function startCam() {
   setStatus('Spouštím kameru…');
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
     });
-    document.getElementById('video').srcObject = stream;
-    document.getElementById('btnSnap').classList.remove('hidden');
-    setStatus('Namiřte kameru na papír s objednávkou.');
-  } catch(e) {
-    setStatus('Kamera nedostupná: ' + e.message);
-    document.getElementById('btnStart').classList.remove('hidden');
+  } catch(e1) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch(e2) {
+      setStatus('Kamera nedostupná: ' + e2.message);
+      document.getElementById('btnStart').classList.remove('hidden');
+      return;
+    }
   }
+  document.getElementById('video').srcObject = stream;
+  document.getElementById('btnSnap').classList.remove('hidden');
+  setStatus('Namiřte kameru na papír s objednávkou.');
 }
 
 function takeSnap() {
