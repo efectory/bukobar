@@ -132,8 +132,16 @@
   .step:last-child { margin-bottom: 0; }
   .step-num { width: 20px; height: 20px; background: var(--text); color: #f5f1ea; border-radius: 50%; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
 
+  /* Tabs */
+  .tabs { background: var(--text); display: flex; padding: 0 1.5rem; }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 10px 20px; border: none; border-bottom: 2px solid transparent; background: transparent; color: rgba(245,241,234,0.55); cursor: pointer; transition: color .15s, border-color .15s; }
+  .tab-btn:hover { color: #f5f1ea; background: transparent; }
+  .tab-btn.active { color: #f5f1ea; border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
   @media print {
-    header, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
+    header, .tabs, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
     .quick-add, .item-del, .qty-btn, .modal-overlay, .stamgast-badge { display: none !important; }
     .receipt-item { display: grid; grid-template-columns: 36px 1fr auto; padding: 5px 0; border-bottom: 1px solid #ccc; gap: 4px; }
     .item-qty-input { border: none; background: none; padding: 0; width: auto; }
@@ -151,6 +159,12 @@
   <div class="logo">Buko<span>var</span></div>
 </header>
 
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('kasa',this)">Kasa</button>
+  <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
+</div>
+
+<div class="tab-content active" id="tab-kasa">
 <main>
 
   <div class="api-ok hidden" id="api-ok">
@@ -192,6 +206,12 @@
 
   <!-- Účtenka -->
   <div class="card hidden" id="receipt-card">
+    <div class="receipt-actions" style="margin-top:0;margin-bottom:1rem;">
+      <button onclick="printReceipt()">Tisknout</button>
+      <button onclick="showStamgastModal()">Štamgast</button>
+      <button onclick="retakeFromReceipt()">Vyfotit</button>
+      <button onclick="resetApp()">Nová objednávka</button>
+    </div>
     <div class="receipt-header">
       <h2>Bukovar</h2>
       <p id="receipt-time"></p>
@@ -215,15 +235,14 @@
       <span>Celkem</span>
       <span id="total-val"></span>
     </div>
-    <div class="receipt-actions">
-      <button onclick="printReceipt()">Tisknout</button>
-      <button onclick="showStamgastModal()">Štamgast</button>
-      <button onclick="retakeFromReceipt()">Znovu nafotit</button>
-      <button onclick="resetApp()">Nová objednávka</button>
-    </div>
   </div>
 
 </main>
+</div><!-- /tab-kasa -->
+
+<div class="tab-content" id="tab-ostatni">
+  <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
+</div><!-- /tab-ostatni -->
 
 <!-- Štamgast modal -->
 <div class="modal-overlay hidden" id="stamgast-modal">
@@ -324,12 +343,21 @@ let analyzeController = null;
 let pickerCallback = null;
 let pickerModalCat = null;
 
+// --- Záložky ---
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
 // --- Init ---
 
 document.addEventListener('DOMContentLoaded', function() {
   initApiKey();
-  startCam();
   buildCategoryBtns();
+  startManual();
 });
 
 function initApiKey() {
@@ -515,7 +543,6 @@ function retakeFromReceipt() {
   document.getElementById('receipt-card').classList.add('hidden');
   document.getElementById('confirm-card').classList.add('hidden');
   document.getElementById('cam-card').classList.remove('hidden');
-  document.getElementById('instructions').classList.remove('hidden');
   document.getElementById('snap-canvas').style.display = 'none';
   document.getElementById('video').style.display = 'block';
   document.getElementById('btnRetake').classList.add('hidden');
@@ -589,7 +616,6 @@ function showConfirmCard(data) {
   renderConfirmItems();
   document.getElementById('confirm-card').classList.remove('hidden');
   document.getElementById('cam-card').classList.add('hidden');
-  document.getElementById('instructions').classList.add('hidden');
 }
 
 function renderConfirmItems() {
@@ -662,7 +688,6 @@ function showReceipt() {
     now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
   document.getElementById('receipt-card').classList.remove('hidden');
   document.getElementById('cam-card').classList.add('hidden');
-  document.getElementById('instructions').classList.add('hidden');
 }
 
 function renderReceipt(data) {
@@ -819,24 +844,18 @@ function closePrintModal() { document.getElementById('print-modal').classList.ad
 function resetApp() {
   closePrintModal(); closeItemPickerModal();
   document.getElementById('stamgast-modal').classList.add('hidden');
-  document.getElementById('receipt-card').classList.add('hidden');
   document.getElementById('confirm-card').classList.add('hidden');
-  document.getElementById('cam-card').classList.remove('hidden');
-  document.getElementById('instructions').classList.remove('hidden');
-  document.getElementById('snap-canvas').style.display = 'none';
-  document.getElementById('video').style.display = 'block';
-  ['btnStart','btnSnap','btnRetake','btnAnalyze'].forEach(function(id) {
-    document.getElementById(id).classList.add('hidden');
-    document.getElementById(id).disabled = false;
-  });
+  document.getElementById('cam-card').classList.add('hidden');
   document.getElementById('cat-items').classList.add('hidden');
   document.getElementById('custom-form').classList.add('hidden');
   document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   snapB64 = null; receiptItems = [];
   openCategory = null; pendingData = null; uncertainItems = [];
   pickerCallback = null;
   setStatus('');
-  startCam();
+  showReceipt();
+  renderItems();
 }
 </script>
 </body>
