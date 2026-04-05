@@ -81,7 +81,6 @@
   .receipt-actions { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
 
   /* Category quick add */
-  .quick-add { margin-bottom: 10px; }
   .quick-add-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
   .cat-btns { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
   .cat-btn { padding: 10px 14px; font-size: 14px; border-radius: 20px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; white-space: nowrap; transition: background .1s, border-color .1s, color .1s; }
@@ -165,7 +164,9 @@
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
   .kasa-left { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: .75rem; }
-  .kasa-right { flex: 1; min-width: 0; }
+  .kasa-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .quick-add { height: 160px; overflow: hidden; flex-shrink: 0; }
+  .receipt-items-wrap { flex: 1; overflow-y: auto; max-height: 420px; margin-top: .5rem; }
 
   /* Workflow — levý sloupec */
   .wf-col { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.2rem; display: flex; flex-direction: column; gap: 6px; }
@@ -264,7 +265,7 @@
 
       <!-- Pravý sloupec: účtenka -->
       <div class="kasa-right card">
-        <div id="receipt-lines"></div>
+        <!-- Nahoře: přidat položku (fixní výška) -->
         <div class="quick-add">
           <div class="quick-add-label">Přidat položku</div>
           <div class="cat-btns" id="cat-btns"></div>
@@ -274,6 +275,10 @@
             <input type="number" id="custom-price" placeholder="Kč" style="width:72px;" onkeydown="customFormKey(event)" />
             <button onclick="addCustomItem()" style="white-space:nowrap;padding:8px 14px;">+ Přidat</button>
           </div>
+        </div>
+        <!-- Dole: přidané položky (scrollovatelné) -->
+        <div class="receipt-items-wrap">
+          <div id="receipt-lines"></div>
         </div>
         <div class="receipt-total" style="display:none;">
           <span>Celkem</span>
