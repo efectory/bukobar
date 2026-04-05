@@ -140,6 +140,17 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
+  /* Účtenky */
+  .uctenka-row { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: .875rem 1rem; margin-bottom: .5rem; cursor: pointer; transition: border-color .15s; }
+  .uctenka-row:hover { border-color: var(--border-strong); }
+  .uctenka-row-header { display: flex; justify-content: space-between; align-items: center; }
+  .uctenka-row-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .uctenka-row-total { font-weight: 500; font-size: 15px; }
+  .uctenka-detail { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); display: none; }
+  .uctenka-detail.open { display: block; }
+  .uctenka-detail-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--muted); }
+  .uctenka-detail-row span:first-child { color: var(--text); }
+
   @media print {
     header, .tabs, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
     .quick-add, .item-del, .qty-btn, .modal-overlay, .stamgast-badge { display: none !important; }
@@ -161,6 +172,7 @@
 
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('kasa',this)">Kasa</button>
+  <button class="tab-btn" onclick="switchTab('uctenky',this)">Účtenky</button>
   <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
 </div>
 
@@ -242,6 +254,16 @@
 
 </main>
 </div><!-- /tab-kasa -->
+
+<div class="tab-content" id="tab-uctenky">
+  <main>
+    <div class="card" id="uctenky-summary" style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:var(--muted)">Celkem dnes</span>
+      <span style="font-size:18px;font-weight:500;" id="uctenky-total-day">0 Kč</span>
+    </div>
+    <div id="uctenky-list"></div>
+  </main>
+</div><!-- /tab-uctenky -->
 
 <div class="tab-content" id="tab-ostatni">
   <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
@@ -361,6 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initApiKey();
   buildCategoryBtns();
   startManual();
+  renderUctenky();
 });
 
 function initApiKey() {
@@ -841,8 +864,57 @@ function printReceipt() {
 
 function doPrint() { closePrintModal(); window.print(); if (document._printAndReset) { document._printAndReset = false; resetApp(); } }
 function closePrintModal() { document.getElementById('print-modal').classList.add('hidden'); }
-function closeWithPrint() { printReceipt(); document._printAndReset = true; }
-function closeWithoutPrint() { resetApp(); }
+function closeWithPrint() { saveUctenka(); printReceipt(); document._printAndReset = true; }
+function closeWithoutPrint() { saveUctenka(); resetApp(); }
+
+// --- Účtenky ---
+
+function saveUctenka() {
+  if (!receiptItems.length) return;
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  var record = {
+    id: Date.now(),
+    cas: new Date().toISOString(),
+    polozky: receiptItems.map(function(it) { return { nazev: it.nazev, pocet: it.pocet, cena: it.cena, stamgast: it.stamgast }; }),
+    celkem: total
+  };
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  data.unshift(record);
+  localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
+  renderUctenky();
+}
+
+function renderUctenky() {
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var list = document.getElementById('uctenky-list');
+  var totalDay = 0;
+  list.innerHTML = '';
+  data.forEach(function(rec) {
+    totalDay += rec.celkem;
+    var dt = new Date(rec.cas);
+    var casStr = dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
+    var div = document.createElement('div');
+    div.className = 'uctenka-row';
+    div.innerHTML =
+      '<div class="uctenka-row-header">' +
+        '<div><span style="font-weight:500">' + casStr + '</span>' +
+        '<div class="uctenka-row-meta">' + rec.polozky.length + ' položk' + (rec.polozky.length === 1 ? 'a' : rec.polozky.length < 5 ? 'y' : 'í') + '</div></div>' +
+        '<span class="uctenka-row-total">' + rec.celkem + ' Kč</span>' +
+      '</div>' +
+      '<div class="uctenka-detail" id="ud-' + rec.id + '">' +
+        rec.polozky.map(function(p) {
+          return '<div class="uctenka-detail-row"><span>' + p.pocet + '× ' + p.nazev + (p.stamgast ? ' <span style="font-size:10px;color:var(--success-text)">(š)</span>' : '') + '</span><span>' + (p.pocet * p.cena) + ' Kč</span></div>';
+        }).join('') +
+      '</div>';
+    div.addEventListener('click', function() {
+      var detail = document.getElementById('ud-' + rec.id);
+      detail.classList.toggle('open');
+    });
+    list.appendChild(div);
+  });
+  document.getElementById('uctenky-total-day').textContent = totalDay + ' Kč';
+}
+
 
 // --- Reset ---
 
