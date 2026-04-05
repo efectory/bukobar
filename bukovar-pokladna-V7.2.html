@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bukovar — pokladna</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   :root {
     --bg: #f5f1ea;
@@ -227,6 +228,7 @@
     <div class="receipt-actions" style="margin-top:0;margin-bottom:.5rem;">
       <button onclick="retakeFromReceipt()">Vyfotit</button>
       <button onclick="showStamgastModal()">Štamgast</button>
+      <button onclick="showQrModal()">QR Platba</button>
     </div>
     <div class="receipt-actions" style="margin-top:0;margin-bottom:1rem;">
       <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
@@ -295,6 +297,20 @@
     <div class="picker-items hidden" id="modal-picker-items"></div>
     <div class="modal-actions">
       <button onclick="closeItemPickerModal()">Zrušit</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Platba -->
+<div class="modal-overlay hidden" id="qr-modal">
+  <div class="modal" style="text-align:center;">
+    <h3>QR Platba</h3>
+    <div id="qr-amount" style="font-size:22px;font-weight:500;margin-bottom:.25rem;"></div>
+    <div id="qr-num" style="font-size:12px;color:var(--muted);margin-bottom:1rem;"></div>
+    <canvas id="qr-canvas" style="max-width:220px;width:100%;"></canvas>
+    <div style="font-size:11px;color:var(--muted);margin-top:.75rem;">Naskenujte v bankovní aplikaci</div>
+    <div class="modal-actions center" style="margin-top:1rem;">
+      <button onclick="closeQrModal()">Zavřít</button>
     </div>
   </div>
 </div>
@@ -847,6 +863,28 @@ function openPickerModalCat(cat, btn) {
 function closeItemPickerModal() {
   document.getElementById('item-picker-modal').classList.add('hidden');
   pickerCallback = null; pickerModalCat = null;
+}
+
+// --- QR Platba ---
+
+const QR_IBAN = 'CZ2355000000006310215004';
+const QR_MSG = 'Bukobar s.r.o.';
+
+function showQrModal() {
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  if (total <= 0) { alert('Účtenka je prázdná.'); return; }
+  var num = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
+  var spd = 'SPD*1.0*ACC:' + QR_IBAN + '*AM:' + total.toFixed(2) + '*CC:CZK*MSG:' + QR_MSG + '*X-VS:' + num;
+  document.getElementById('qr-amount').textContent = total + ' Kč';
+  document.getElementById('qr-num').textContent = 'VS: ' + num;
+  document.getElementById('qr-modal').classList.remove('hidden');
+  QRCode.toCanvas(document.getElementById('qr-canvas'), spd, { width: 220, margin: 2 }, function(err) {
+    if (err) console.error(err);
+  });
+}
+
+function closeQrModal() {
+  document.getElementById('qr-modal').classList.add('hidden');
 }
 
 // --- Tisk ---
