@@ -335,22 +335,12 @@
 <div class="modal-overlay hidden" id="qr-modal">
   <div class="modal" style="text-align:center;">
     <h3>QR Platba</h3>
-    <div id="qr-breakdown" style="font-size:13px;color:var(--muted);margin-bottom:.25rem;"></div>
-    <div id="qr-total" style="font-size:24px;font-weight:500;margin-bottom:1rem;"></div>
     <div style="margin-bottom:1rem;">
-      <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">Dýško</div>
-      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
-        <button onclick="setDysko(0)" id="dysko-0" class="dysko-btn active">Bez dýška</button>
-        <button onclick="setDysko(10)" id="dysko-10" class="dysko-btn">+10 Kč</button>
-        <button onclick="setDysko(20)" id="dysko-20" class="dysko-btn">+20 Kč</button>
-        <button onclick="setDysko(50)" id="dysko-50" class="dysko-btn">+50 Kč</button>
-        <button onclick="setDysko('custom')" id="dysko-custom" class="dysko-btn">Vlastní</button>
-      </div>
-      <div id="dysko-custom-wrap" style="display:none;margin-top:.5rem;">
-        <input type="number" id="dysko-custom-input" placeholder="Kč" min="0"
-          style="width:80px;padding:7px 10px;font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-strong);border-radius:var(--radius);text-align:center;"
-          oninput="setDyskoCustom(this.value)" />
-      </div>
+      <div style="font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">Částka k zaplacení</div>
+      <input type="number" id="qr-amount-input" min="0"
+        style="width:140px;padding:10px 14px;font-size:22px;font-family:'DM Sans',sans-serif;font-weight:500;border:1px solid var(--border-strong);border-radius:var(--radius);text-align:center;outline:none;"
+        oninput="renderQr()" />
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Kč</div>
     </div>
     <div id="qr-container" style="display:inline-block;margin:0 auto;"></div>
     <div id="qr-num" style="font-size:11px;color:var(--muted);margin-top:.5rem;"></div>
@@ -933,49 +923,23 @@ function setPayment(method) {
 
 const QR_IBAN = 'CZ2355000000006310215004';
 const QR_MSG = 'Bukobar s.r.o.';
-var qrBaseTotal = 0;
-var qrDysko = 0;
 var qrInstance = null;
 
 function showQrModal() {
-  qrBaseTotal = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
-  if (qrBaseTotal <= 0) { alert('Účtenka je prázdná.'); return; }
-  qrDysko = 0;
-  document.querySelectorAll('.dysko-btn').forEach(function(b) { b.classList.remove('active'); });
-  document.getElementById('dysko-0').classList.add('active');
-  document.getElementById('dysko-custom-wrap').style.display = 'none';
-  document.getElementById('dysko-custom-input').value = '';
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  if (total <= 0) { alert('Účtenka je prázdná.'); return; }
   qrInstance = null;
   document.getElementById('qr-container').innerHTML = '';
+  document.getElementById('qr-amount-input').value = total;
   document.getElementById('qr-modal').classList.remove('hidden');
   renderQr();
 }
 
-function setDysko(val) {
-  document.querySelectorAll('.dysko-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (val === 'custom') {
-    document.getElementById('dysko-custom').classList.add('active');
-    document.getElementById('dysko-custom-wrap').style.display = 'block';
-    document.getElementById('dysko-custom-input').focus();
-    return;
-  }
-  document.getElementById('dysko-custom-wrap').style.display = 'none';
-  document.getElementById('dysko-' + val).classList.add('active');
-  qrDysko = val;
-  renderQr();
-}
-
-function setDyskoCustom(val) {
-  qrDysko = parseInt(val) || 0;
-  renderQr();
-}
-
 function renderQr() {
-  var total = qrBaseTotal + qrDysko;
+  var total = parseInt(document.getElementById('qr-amount-input').value) || 0;
   var num = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
-  document.getElementById('qr-breakdown').textContent = qrDysko > 0 ? 'Účet: ' + qrBaseTotal + ' Kč + Dýško: ' + qrDysko + ' Kč' : '';
-  document.getElementById('qr-total').textContent = total + ' Kč';
   document.getElementById('qr-num').textContent = 'VS: ' + num;
+  if (total <= 0) { document.getElementById('qr-container').innerHTML = ''; qrInstance = null; return; }
   var spd = 'SPD*1.0*ACC:' + QR_IBAN + '*AM:' + total.toFixed(2) + '*CC:CZK*MSG:' + QR_MSG + '*X-VS:' + num;
   var container = document.getElementById('qr-container');
   if (qrInstance) {
