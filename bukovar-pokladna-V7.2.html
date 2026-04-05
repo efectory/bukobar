@@ -564,7 +564,7 @@ function addCustomItem() {
   var name = document.getElementById('custom-name').value.trim();
   var price = parseInt(document.getElementById('custom-price').value) || 0;
   if (!name) { document.getElementById('custom-name').focus(); return; }
-  receiptItems.push({ nazev: name, pocet: 1, cena: price, warn: false, stamgast: false });
+  receiptItems.unshift({ nazev: name, pocet: 1, cena: price, warn: false, stamgast: false });
   document.getElementById('custom-name').value = '';
   document.getElementById('custom-price').value = '';
   document.getElementById('custom-form').classList.add('hidden');
@@ -574,7 +574,7 @@ function addCustomItem() {
 function quickAdd(item) {
   var existing = receiptItems.find(function(r) { return r.nazev === item.n; });
   if (existing) { existing.pocet++; }
-  else { receiptItems.push({ nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false }); }
+  else { receiptItems.unshift({ nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false }); }
   renderItems();
 }
 
