@@ -158,6 +158,10 @@
   .btn-storno { font-size: 12px; padding: 5px 10px; margin-top: .75rem; color: var(--accent); border-color: rgba(181,56,26,.35); background: #fff8f7; }
   .btn-storno:hover { background: #ffeaea; border-color: var(--accent); }
 
+  .dysko-btn { padding: 6px 12px; font-size: 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; transition: background .1s, border-color .1s; }
+  .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+
   @media print {
     header, .tabs, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
     .quick-add, .item-del, .qty-btn, .modal-overlay, .stamgast-badge { display: none !important; }
@@ -305,10 +309,26 @@
 <div class="modal-overlay hidden" id="qr-modal">
   <div class="modal" style="text-align:center;">
     <h3>QR Platba</h3>
-    <div id="qr-amount" style="font-size:22px;font-weight:500;margin-bottom:.25rem;"></div>
-    <div id="qr-num" style="font-size:12px;color:var(--muted);margin-bottom:1rem;"></div>
-    <canvas id="qr-canvas" style="max-width:220px;width:100%;"></canvas>
-    <div style="font-size:11px;color:var(--muted);margin-top:.75rem;">Naskenujte v bankovní aplikaci</div>
+    <div id="qr-breakdown" style="font-size:13px;color:var(--muted);margin-bottom:.25rem;"></div>
+    <div id="qr-total" style="font-size:24px;font-weight:500;margin-bottom:1rem;"></div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">Dýško</div>
+      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+        <button onclick="setDysko(0)" id="dysko-0" class="dysko-btn active">Bez dýška</button>
+        <button onclick="setDysko(10)" id="dysko-10" class="dysko-btn">+10 Kč</button>
+        <button onclick="setDysko(20)" id="dysko-20" class="dysko-btn">+20 Kč</button>
+        <button onclick="setDysko(50)" id="dysko-50" class="dysko-btn">+50 Kč</button>
+        <button onclick="setDysko('custom')" id="dysko-custom" class="dysko-btn">Vlastní</button>
+      </div>
+      <div id="dysko-custom-wrap" style="display:none;margin-top:.5rem;">
+        <input type="number" id="dysko-custom-input" placeholder="Kč" min="0"
+          style="width:80px;padding:7px 10px;font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-strong);border-radius:var(--radius);text-align:center;"
+          oninput="setDyskoCustom(this.value)" />
+      </div>
+    </div>
+    <img id="qr-img" style="max-width:220px;width:100%;display:block;margin:0 auto;" src="" alt="QR kód" />
+    <div id="qr-num" style="font-size:11px;color:var(--muted);margin-top:.5rem;"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:.25rem;">Naskenujte v bankovní aplikaci</div>
     <div class="modal-actions center" style="margin-top:1rem;">
       <button onclick="closeQrModal()">Zavřít</button>
     </div>
@@ -869,17 +889,53 @@ function closeItemPickerModal() {
 
 const QR_IBAN = 'CZ2355000000006310215004';
 const QR_MSG = 'Bukobar s.r.o.';
+var qrBaseTotal = 0;
+var qrDysko = 0;
 
 function showQrModal() {
-  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
-  if (total <= 0) { alert('Účtenka je prázdná.'); return; }
-  var num = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
-  var spd = 'SPD*1.0*ACC:' + QR_IBAN + '*AM:' + total.toFixed(2) + '*CC:CZK*MSG:' + QR_MSG + '*X-VS:' + num;
-  document.getElementById('qr-amount').textContent = total + ' Kč';
-  document.getElementById('qr-num').textContent = 'VS: ' + num;
+  qrBaseTotal = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  if (qrBaseTotal <= 0) { alert('Účtenka je prázdná.'); return; }
+  qrDysko = 0;
+  document.querySelectorAll('.dysko-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('dysko-0').classList.add('active');
+  document.getElementById('dysko-custom-wrap').style.display = 'none';
+  document.getElementById('dysko-custom-input').value = '';
   document.getElementById('qr-modal').classList.remove('hidden');
-  QRCode.toCanvas(document.getElementById('qr-canvas'), spd, { width: 220, margin: 2 }, function(err) {
-    if (err) console.error(err);
+  renderQr();
+}
+
+function setDysko(val) {
+  document.querySelectorAll('.dysko-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (val === 'custom') {
+    document.getElementById('dysko-custom').classList.add('active');
+    document.getElementById('dysko-custom-wrap').style.display = 'block';
+    document.getElementById('dysko-custom-input').focus();
+    return;
+  }
+  document.getElementById('dysko-custom-wrap').style.display = 'none';
+  document.getElementById('dysko-' + val).classList.add('active');
+  qrDysko = val;
+  renderQr();
+}
+
+function setDyskoCustom(val) {
+  qrDysko = parseInt(val) || 0;
+  renderQr();
+}
+
+function renderQr() {
+  var total = qrBaseTotal + qrDysko;
+  var num = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
+  if (qrDysko > 0) {
+    document.getElementById('qr-breakdown').textContent = 'Účet: ' + qrBaseTotal + ' Kč + Dýško: ' + qrDysko + ' Kč';
+  } else {
+    document.getElementById('qr-breakdown').textContent = '';
+  }
+  document.getElementById('qr-total').textContent = total + ' Kč';
+  document.getElementById('qr-num').textContent = 'VS: ' + num;
+  var spd = 'SPD*1.0*ACC:' + QR_IBAN + '*AM:' + total.toFixed(2) + '*CC:CZK*MSG:' + QR_MSG + '*X-VS:' + num;
+  QRCode.toDataURL(spd, { width: 220, margin: 2, color: { dark: '#1a1610', light: '#ffffff' } }, function(err, url) {
+    if (!err) document.getElementById('qr-img').src = url;
   });
 }
 
