@@ -244,11 +244,11 @@
       <!-- Levý sloupec: workflow -->
       <div class="kasa-left">
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Načtení</div></div>
-          <button onclick="retakeFromReceipt()">Vyfotit</button>
+          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Přidat položku</div></div>
+          <button onclick="retakeFromReceipt()">Načti účtenku</button>
         </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Sleva</div></div>
+          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Výběr slevy</div></div>
           <button id="btn-stamgast" class="payment-btn" onclick="showStamgastModal()">Štamgast</button>
         </div>
         <div class="wf-col">
@@ -258,7 +258,7 @@
           <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
         </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavření</div></div>
+          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavření účtu</div></div>
           <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
           <button onclick="closeWithoutPrint()">Bez tisku</button>
         </div>
@@ -277,7 +277,7 @@
             <button onclick="addCustomItem()" style="white-space:nowrap;padding:8px 14px;">+ Přidat</button>
           </div>
         </div>
-        <div class="receipt-total">
+        <div class="receipt-total" style="display:none;">
           <span>Celkem</span>
           <span id="total-val"></span>
         </div>
@@ -848,6 +848,8 @@ function deleteItem(i) { receiptItems.splice(i, 1); renderItems(); }
 function updateTotal() {
   var total = receiptItems.reduce(function(s, it) { return s + (it.pocet * it.cena); }, 0);
   document.getElementById('total-val').textContent = total + ' Kč';
+  var totalEl = document.querySelector('.receipt-total');
+  if (totalEl) totalEl.style.display = receiptItems.length > 0 ? '' : 'none';
 }
 
 // --- Štamgast ---
