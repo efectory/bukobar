@@ -365,31 +365,6 @@
   </div>
 </div>
 
-<!-- Čeká se na platbu kartou -->
-<div class="modal-overlay hidden" id="pay-karta-modal">
-  <div class="modal" style="text-align:center;">
-    <div class="pay-wait-icon">💳</div>
-    <div class="pay-wait-title">Platba kartou</div>
-    <div class="pay-wait-sub">Platba probíhá na terminálu.<br>Po dokončení transakce potvrďte níže.</div>
-    <div class="modal-actions center">
-      <button onclick="document.getElementById('pay-karta-modal').classList.add('hidden')">Zpět</button>
-      <button class="primary" onclick="finalizeAfterPayment()">Platba přijata</button>
-    </div>
-  </div>
-</div>
-
-<!-- Čeká se na platbu hotovostí -->
-<div class="modal-overlay hidden" id="pay-hotovost-modal">
-  <div class="modal" style="text-align:center;">
-    <div class="pay-wait-icon">💵</div>
-    <div class="pay-wait-title">Platba hotovostí</div>
-    <div class="pay-wait-sub">Přijměte hotovost od zákazníka<br>a potvrďte tlačítkem níže.</div>
-    <div class="modal-actions center">
-      <button onclick="document.getElementById('pay-hotovost-modal').classList.add('hidden')">Zpět</button>
-      <button class="primary" onclick="finalizeAfterPayment()">Platba přijata</button>
-    </div>
-  </div>
-</div>
 
 
 <!-- Náhled před tiskem -->
@@ -992,17 +967,14 @@ function uzavrit() {
   }
   if (paymentMethod === 'QR') {
     showQrModal();
-  } else if (paymentMethod === 'Karta') {
-    document.getElementById('pay-karta-modal').classList.remove('hidden');
-  } else if (paymentMethod === 'Hotovost') {
-    document.getElementById('pay-hotovost-modal').classList.remove('hidden');
+  } else {
+    saveUctenka();
+    printReceiptIframe(buildReceiptHtml());
+    resetApp();
   }
 }
 
 function finalizeAfterPayment() {
-  ['pay-karta-modal','pay-hotovost-modal'].forEach(function(id) {
-    document.getElementById(id).classList.add('hidden');
-  });
   closeQrModal();
   saveUctenka();
   printReceiptIframe(buildReceiptHtml());
@@ -1230,7 +1202,6 @@ function resetApp() {
   document.getElementById('payment-method-line').textContent = '';
   ['ano','ne'].forEach(function(o) { document.getElementById('btn-stamgast-' + o).classList.remove('active'); });
   ['qr','karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
-  ['pay-karta-modal','pay-hotovost-modal'].forEach(function(id) { document.getElementById(id).classList.add('hidden'); });
   setStatus('');
   showReceipt();
   renderItems();

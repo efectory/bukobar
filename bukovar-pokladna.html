@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bukovar — pokladna</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   :root {
     --bg: #f5f1ea;
@@ -22,327 +23,210 @@
     --radius: 10px;
     --radius-lg: 16px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  header {
-    background: var(--text);
-    color: #f5f1ea;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  header .logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    letter-spacing: .02em;
-  }
-
-  header .logo span {
-    color: var(--accent);
-  }
-
-  header .subtitle {
-    font-size: 12px;
-    opacity: .55;
-    margin-top: 1px;
-  }
-
-  main {
-    max-width: 560px;
-    margin: 0 auto;
-    padding: 1.5rem 1rem 3rem;
-  }
-
-  .card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--muted);
-    margin-bottom: .875rem;
-  }
-
-  /* Camera */
-  #video {
-    width: 100%;
-    border-radius: var(--radius);
-    background: #1a1610;
-    display: block;
-    max-height: 300px;
-    object-fit: cover;
-  }
-
-  #snap-canvas {
-    display: none;
-    width: 100%;
-    border-radius: var(--radius);
-  }
-
-  .btn-row {
-    display: flex;
-    gap: 8px;
-    margin-top: .875rem;
-    flex-wrap: wrap;
-  }
-
-  button {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 9px 18px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    border: 1px solid var(--border-strong);
-    background: transparent;
-    color: var(--text);
-    transition: background .15s, opacity .15s;
-  }
-
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 17px; }
+  header { background: var(--text); color: #f5f1ea; padding: 1rem 2rem; display: flex; align-items: center; }
+  header .logo { font-family: 'DM Serif Display', serif; font-size: 26px; letter-spacing: .02em; }
+  header .logo span { color: var(--accent); }
+  main { max-width: 1760px; margin: 0 auto; padding: 2.1rem 2rem 3.6rem; }
+  .card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.8rem; margin-bottom: 1.2rem; }
+  .section-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 1rem; }
+  #video { width: 100%; border-radius: var(--radius); background: #1a1610; display: block; max-height: 380px; object-fit: cover; }
+  #snap-canvas { display: none; width: 100%; border-radius: var(--radius); }
+  .btn-row { display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; }
+  button { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; padding: 14px 22px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-strong); background: transparent; color: var(--text); transition: background .15s, opacity .15s; min-height: 58px; }
   button:hover { background: var(--bg); }
   button:active { opacity: .75; }
   button:disabled { opacity: .35; cursor: not-allowed; }
-
-  button.primary {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   button.primary:hover { background: #9c2e14; border-color: #9c2e14; }
-
-  button.dark {
-    background: var(--text);
-    color: #f5f1ea;
-    border-color: var(--text);
-  }
+  button.dark { background: var(--text); color: #f5f1ea; border-color: var(--text); }
   button.dark:hover { opacity: .85; }
-
   .hidden { display: none !important; }
-
-  /* Status */
-  #status {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: .625rem;
-    min-height: 20px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--border-strong);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    flex-shrink: 0;
-  }
+  #status { font-size: 13px; color: var(--muted); margin-top: .625rem; min-height: 20px; display: flex; align-items: center; gap: 6px; }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* API key */
-  .api-notice {
-    background: var(--accent-light);
-    border: 1px solid rgba(181,56,26,.2);
-    border-radius: var(--radius);
-    padding: .875rem 1rem;
-    font-size: 13px;
-    color: #7a2e10;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
+  .api-notice { background: var(--accent-light); border: 1px solid rgba(181,56,26,.2); border-radius: var(--radius); padding: .875rem 1rem; font-size: 13px; color: #7a2e10; margin-bottom: 1rem; line-height: 1.5; }
   .api-notice strong { font-weight: 500; }
-
-  #api-key-input {
-    font-family: 'DM Sans', monospace;
-    font-size: 13px;
-    width: 100%;
-    margin-top: .5rem;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text);
-    outline: none;
-  }
+  #api-key-input { font-family: 'DM Sans', monospace; font-size: 13px; width: 100%; margin-top: .5rem; padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); outline: none; }
   #api-key-input:focus { border-color: var(--accent); }
+  .api-ok { display: flex; align-items: center; gap: 8px; background: var(--success-bg); border: 1px solid rgba(26,107,58,.2); border-radius: var(--radius); padding: .625rem 1rem; font-size: 13px; color: var(--success-text); margin-bottom: 1rem; }
+  .api-ok-icon { font-size: 16px; }
+  .api-ok button { padding: 4px 10px; font-size: 12px; margin-left: auto; }
 
   /* Receipt */
-  .receipt-header {
-    text-align: center;
-    padding-bottom: 1rem;
-    border-bottom: 1px dashed var(--border-strong);
-    margin-bottom: 1rem;
-  }
-
-  .receipt-header h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    margin-bottom: 2px;
-  }
-
-  .receipt-header p {
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .receipt-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    gap: 8px;
-  }
-
+  .receipt-header { text-align: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--border-strong); margin-bottom: 1rem; }
+  .receipt-header h2 { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 2px; }
+  .receipt-header p { font-size: 12px; color: var(--muted); }
+  .receipt-item { display: grid; grid-template-columns: auto 1fr auto 36px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 8px; }
   .receipt-item:last-child { border-bottom: none; }
 
-  .item-left { display: flex; align-items: baseline; gap: 6px; flex: 1; }
+  /* +/- qty */
+  .qty-ctrl { display: flex; align-items: center; gap: 2px; }
+  .qty-btn { width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font-size: 18px; font-weight: 500; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .1s; }
+  .qty-btn:hover { background: var(--border-strong); }
+  .item-qty-input { width: 42px; padding: 5px 2px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; text-align: center; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); outline: none; }
+  .item-qty-input:focus { border-color: var(--accent); }
 
-  .item-qty {
-    font-size: 12px;
-    color: var(--muted);
-    min-width: 22px;
-  }
+  .item-name-btn { width: 100%; padding: 6px 10px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 400; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text); cursor: pointer; text-align: left; transition: border-color .1s, background .1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-name-btn:hover { border-color: var(--border-strong); background: var(--bg); }
+  .item-price { font-weight: 500; white-space: nowrap; text-align: right; font-size: 15px; }
+  .stamgast-badge { font-size: 11px; font-weight: 500; background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(26,107,58,.2); border-radius: 4px; padding: 2px 5px; margin-left: 4px; vertical-align: middle; }
+  .item-del { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; transition: background .1s, color .1s; }
+  .item-del:hover { background: #ffeaea; color: var(--accent); border-color: var(--accent); }
+  .warn-row .item-name-btn { color: var(--warn-text); background: var(--warn-bg); border-color: rgba(138,90,10,.2); }
+  .receipt-total { display: flex; justify-content: space-between; align-items: center; padding: 22px 0 5px; border-top: 2px solid var(--text); margin-top: 12px; font-size: 20px; font-weight: 500; }
+  .receipt-actions { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
 
-  .item-name { flex: 1; }
+  /* Category quick add */
+  .quick-add-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
+  .cat-btns { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .cat-btn { padding: 10px 14px; font-size: 14px; border-radius: 20px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; white-space: nowrap; transition: background .1s, border-color .1s, color .1s; }
+  .cat-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .cat-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+  .cat-btn.custom { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .cat-btn.custom:hover { background: var(--accent); color: #fff; }
+  .cat-items { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .quick-btn { padding: 6px 10px; font-size: 12px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer; white-space: nowrap; transition: background .1s; line-height: 1.3; text-align: left; }
+  .quick-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .custom-form { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .custom-form input { padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
+  .custom-form input:focus { border-color: var(--accent); }
 
-  .item-cat {
-    font-size: 11px;
-    color: var(--muted);
-    margin-left: 4px;
-  }
+  /* Confirm uncertain items */
+  .confirm-intro { font-size: 13px; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; }
+  .confirm-item { background: var(--warn-bg); border: 1px solid rgba(138,90,10,.2); border-radius: var(--radius); padding: .75rem; margin-bottom: .625rem; }
+  .ci-original { font-size: 12px; color: var(--warn-text); margin-bottom: .5rem; }
+  .ci-fields { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .ci-fields input { padding: 6px 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
+  .ci-fields input:focus { border-color: var(--accent); }
+  .ci-name-btn { flex: 1; min-width: 120px; padding: 6px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; text-align: left; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .1s; }
+  .ci-name-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+  .btn-approve { padding: 7px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(26,107,58,.3); border-radius: var(--radius); cursor: pointer; white-space: nowrap; transition: background .1s; }
+  .btn-approve:hover { background: #d4edda; }
+  .confirm-actions { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
 
-  .item-price {
-    font-weight: 500;
-    white-space: nowrap;
-  }
+  /* Modals */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,22,16,.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal { background: var(--surface); border-radius: var(--radius-lg); max-width: 400px; width: 100%; padding: 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,.2); max-height: 90vh; overflow-y: auto; }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 1rem; text-align: center; }
+  .modal p { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 1rem; line-height: 1.5; }
+  .picker-cats { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+  .picker-cat-btn { padding: 5px 10px; font-size: 12px; border-radius: 16px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; transition: background .1s; }
+  .picker-cat-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .picker-cat-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+  .picker-items { display: flex; gap: 5px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border); }
+  .picker-item-btn { padding: 5px 10px; font-size: 12px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer; text-align: left; line-height: 1.3; transition: background .1s; }
+  .picker-item-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; justify-content: flex-end; }
+  .modal-actions.center { justify-content: center; }
+  .print-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; gap: 8px; }
+  .print-row:last-child { border-bottom: none; }
+  .print-total { border-top: 2px solid var(--text) !important; border-bottom: none !important; margin-top: 4px; padding-top: 10px !important; font-size: 16px; font-weight: 500; }
 
-  .receipt-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 0 4px;
-    border-top: 2px solid var(--text);
-    margin-top: 8px;
-    font-size: 17px;
-    font-weight: 500;
-  }
-
-  .warn-row {
-    background: var(--warn-bg);
-    border-radius: 6px;
-    padding: 4px 8px;
-    margin: 4px 0;
-  }
-
-  .warn-row .item-name { color: var(--warn-text); }
-
-  .badge-warn {
-    font-size: 10px;
-    background: var(--warn-bg);
-    color: var(--warn-text);
-    border: 1px solid rgba(138,90,10,.2);
-    border-radius: 4px;
-    padding: 1px 6px;
-    margin-left: 6px;
-    white-space: nowrap;
-  }
-
-  .receipt-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 1.25rem;
-    flex-wrap: wrap;
-  }
-
-  /* Instructions */
-  .instructions {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
+  .instructions { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 13px; color: var(--muted); line-height: 1.6; }
   .instructions strong { color: var(--text); font-weight: 500; }
-
-  .step {
-    display: flex;
-    gap: 10px;
-    margin-bottom: .5rem;
-  }
-
+  .step { display: flex; gap: 10px; margin-bottom: .5rem; }
   .step:last-child { margin-bottom: 0; }
+  .step-num { width: 20px; height: 20px; background: var(--text); color: #f5f1ea; border-radius: 50%; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
 
-  .step-num {
-    width: 20px;
-    height: 20px;
-    background: var(--text);
-    color: #f5f1ea;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
+  /* Tabs */
+  .tabs { background: var(--text); display: flex; padding: 0 2rem; }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; padding: 17px 28px; border: none; border-bottom: 2px solid transparent; background: transparent; color: rgba(245,241,234,0.55); cursor: pointer; transition: color .15s, border-color .15s; min-height: unset; }
+  .tab-btn:hover { color: #f5f1ea; background: transparent; }
+  .tab-btn.active { color: #f5f1ea; border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Účtenky */
+  .uctenka-row { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: .875rem 1rem; margin-bottom: .5rem; cursor: pointer; transition: border-color .15s; }
+  .uctenka-row:hover { border-color: var(--border-strong); }
+  .uctenka-row.storno { opacity: .55; }
+  .uctenka-row-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .uctenka-row-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .uctenka-row-total { font-weight: 500; font-size: 15px; white-space: nowrap; }
+  .uctenka-row-total.storno { text-decoration: line-through; color: var(--muted); }
+  .storno-badge { font-size: 10px; font-weight: 600; background: #ffeaea; color: var(--accent); border: 1px solid rgba(181,56,26,.25); border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
+  .uctenka-num { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .03em; }
+  .uctenka-detail { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); display: none; }
+  .uctenka-detail.open { display: block; }
+  .uctenka-detail-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--muted); }
+  .uctenka-detail-row span:first-child { color: var(--text); }
+  .btn-storno { font-size: 12px; padding: 5px 10px; margin-top: .75rem; color: var(--accent); border-color: rgba(181,56,26,.35); background: #fff8f7; }
+  .btn-storno:hover { background: #ffeaea; border-color: var(--accent); }
+
+  .dysko-btn { padding: 6px 12px; font-size: 13px; border-radius: 20px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; transition: background .1s, border-color .1s; }
+  .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+
+  /* Dvousloupcový layout */
+  .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
+  .kasa-left { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: .75rem; }
+  .kasa-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .quick-add { height: 160px; overflow: hidden; flex-shrink: 0; }
+  .receipt-items-wrap { flex: 1; overflow-y: auto; max-height: 420px; margin-top: .5rem; }
+
+  /* Workflow — levý sloupec */
+  .wf-col { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.2rem; display: flex; flex-direction: column; gap: 6px; }
+  .wf-head { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
+  .wf-n { width: 24px; height: 24px; border-radius: 50%; background: var(--text); color: #f5f1ea; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .wf-lbl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .wf-col button { font-size: 14px; padding: 13px 12px; text-align: center; width: 100%; min-height: 58px; }
+  .payment-method-line { font-size: 13px; color: var(--muted); padding: 4px 0; }
+  .payment-btn.active { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
+  .wf-col.wf-error { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(181,56,26,.18); }
+  .pay-wait-icon { font-size: 54px; text-align: center; margin: .25rem 0 .75rem; line-height: 1; }
+  .pay-wait-title { font-family: 'DM Serif Display', serif; font-size: 20px; text-align: center; margin-bottom: .5rem; }
+  .pay-wait-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 1.25rem; line-height: 1.6; }
+
+  /* Tiskový náhled — styl účtenky v modalu */
+  .receipt-print { font-family: 'Courier New', monospace; font-size: 13px; width: 100%; }
+  .rp-center { text-align: center; }
+  .rp-line { border: none; border-top: 1px dashed #aaa; margin: 6px 0; }
+  .rp-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .rp-total { display: flex; justify-content: space-between; padding: 4px 0; font-weight: 700; font-size: 15px; border-top: 1px solid #000; margin-top: 4px; }
+  .rp-footer { text-align: center; margin-top: 8px; font-size: 12px; color: #555; }
 
   @media print {
-    header, .instructions, #cam-card, .receipt-actions, .api-notice { display: none !important; }
-    body { background: white; }
-    .card { border: none; padding: 0; box-shadow: none; }
-    main { padding: 0; max-width: 100%; }
+    @page { size: 80mm auto; margin: 3mm; }
+    body { visibility: hidden; }
+    #print-area {
+      visibility: visible;
+      position: absolute; left: 0; top: 0;
+      width: 74mm;
+      font-family: 'Courier New', monospace;
+      font-size: 12px; color: #000; background: #fff;
+    }
+    #print-area .rp-center { text-align: center; }
+    #print-area .rp-line { border: none; border-top: 1px dashed #000; margin: 5px 0; }
+    #print-area .rp-row { display: flex; justify-content: space-between; padding: 1px 0; font-size: 12px; }
+    #print-area .rp-total { display: flex; justify-content: space-between; padding: 3px 0; font-weight: 700; font-size: 14px; border-top: 1px solid #000; margin-top: 3px; }
+    #print-area .rp-footer { text-align: center; margin-top: 6px; font-size: 11px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <div class="logo">Buko<span>var</span></div>
-    <div class="subtitle">systém pro číšníka</div>
+<div class="tabs" style="justify-content:space-between;">
+  <div style="display:flex;">
+    <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
+    <button class="tab-btn" onclick="switchTab('uctenky',this)">Historie účtenek</button>
+    <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
   </div>
-</header>
+  <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
+</div>
 
+<div class="tab-content active" id="tab-kasa">
 <main>
 
-  <div class="api-notice" id="api-notice">
+  <div class="api-notice hidden" id="api-notice">
     <strong>API klíč Anthropic</strong> — potřebný pro AI rozpoznávání objednávek.<br>
     Klíč se ukládá pouze v paměti prohlížeče a nikam se neodesílá.
-    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" onchange="saveApiKey()" />
   </div>
 
-  <div class="instructions">
-    <div class="step"><div class="step-num">1</div><div>Napište objednávku na papír, např. <strong>2x Kohoutí, 1x Mojito, Chipsy</strong></div></div>
-    <div class="step"><div class="step-num">2</div><div>Vyfotit papír kamerou níže</div></div>
-    <div class="step"><div class="step-num">3</div><div>AI přiřadí položky k menu Bukovaru a spočítá účet</div></div>
-  </div>
 
   <div class="card" id="cam-card">
     <div class="section-label">Kamera</div>
@@ -350,51 +234,161 @@
     <canvas id="snap-canvas"></canvas>
     <div id="status"></div>
     <div class="btn-row">
-      <button id="btnStart" onclick="startCam()">Spustit kameru</button>
+      <button id="btnStart" class="hidden" onclick="startCam()">Spustit kameru</button>
       <button id="btnSnap" class="primary hidden" onclick="takeSnap()">Vyfotit</button>
       <button id="btnRetake" class="hidden" onclick="retake()">Znovu vyfotit</button>
       <button id="btnAnalyze" class="dark hidden" onclick="analyze()">Rozpoznat objednávku</button>
+      <button id="btnManual" onclick="startManual()">Zpět</button>
     </div>
   </div>
 
-  <div class="card hidden" id="receipt-card">
-    <div class="receipt-header">
-      <h2>Bukovar</h2>
-      <p id="receipt-time"></p>
+  <!-- Potvrzení nejistých položek -->
+  <div class="card hidden" id="confirm-card">
+    <div class="section-label">Potvrďte nejisté položky</div>
+    <p class="confirm-intro">AI si není jistá u následujících položek. Klikněte na název pro výběr ze seznamu.</p>
+    <div id="confirm-lines"></div>
+    <div class="confirm-actions">
+      <button class="primary" onclick="confirmAll()">Potvrdit vše a zobrazit účet</button>
+      <button onclick="skipAll()">Přeskočit vše</button>
     </div>
-    <div id="receipt-lines"></div>
-    <div class="receipt-total">
-      <span>Celkem</span>
-      <span id="total-val"></span>
-    </div>
-    <div class="receipt-actions">
-      <button onclick="printReceipt()">Tisknout</button>
-      <button onclick="resetApp()">Nová objednávka</button>
+  </div>
+
+  <!-- Účtenka -->
+  <div class="hidden" id="receipt-card">
+    <div class="kasa-layout">
+
+      <!-- Levý sloupec: workflow -->
+      <div class="kasa-left">
+        <div class="wf-col">
+          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Sleva štamgasta</div></div>
+          <button id="btn-stamgast-ano" class="payment-btn" onclick="setStamgast(true)">Ano</button>
+          <button id="btn-stamgast-ne" class="payment-btn" onclick="setStamgast(false)">Ne</button>
+        </div>
+        <div class="wf-col" id="wf-platba">
+          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Způsob platby</div></div>
+          <button id="btn-qr" class="payment-btn" onclick="setPayment('QR')">QR Platba</button>
+          <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
+          <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
+        </div>
+        <div class="wf-col">
+          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Uzavřít</div></div>
+          <button class="primary" onclick="uzavrit()">Uzavřít</button>
+        </div>
+      </div>
+
+      <!-- Pravý sloupec: účtenka -->
+      <div class="kasa-right card">
+        <!-- Nahoře: přidat položku (fixní výška) -->
+        <div class="quick-add">
+          <div class="quick-add-label">Přidat položku</div>
+          <div class="cat-btns" id="cat-btns"></div>
+          <div class="cat-items hidden" id="cat-items"></div>
+          <div class="custom-form hidden" id="custom-form">
+            <input type="text" id="custom-name" placeholder="Název položky..." style="flex:1;min-width:120px;" onkeydown="customFormKey(event)" />
+            <input type="number" id="custom-price" placeholder="Kč" style="width:72px;" onkeydown="customFormKey(event)" />
+            <button onclick="addCustomItem()" style="white-space:nowrap;padding:8px 14px;">+ Přidat</button>
+          </div>
+        </div>
+        <!-- Dole: přidané položky (scrollovatelné) -->
+        <div class="receipt-items-wrap">
+          <div id="receipt-lines"></div>
+        </div>
+        <div class="receipt-total" style="display:none;">
+          <span>Celkem</span>
+          <span id="total-val"></span>
+        </div>
+        <div id="payment-method-line" class="payment-method-line hidden"></div>
+      </div>
+
     </div>
   </div>
 
 </main>
+</div><!-- /tab-kasa -->
+
+<div class="tab-content" id="tab-uctenky">
+  <main>
+    <div class="card" id="uctenky-summary" style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:var(--muted)">Celkem dnes</span>
+      <span style="font-size:18px;font-weight:500;" id="uctenky-total-day">0 Kč</span>
+    </div>
+    <div id="uctenky-list"></div>
+  </main>
+</div><!-- /tab-uctenky -->
+
+<div class="tab-content" id="tab-ostatni">
+  <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
+</div><!-- /tab-ostatni -->
+
+<!-- Štamgast modal -->
+<div class="modal-overlay hidden" id="stamgast-modal">
+  <div class="modal">
+    <h3>Štamgast?</h3>
+    <p>Pivo bude účtováno za <strong>39 Kč</strong> za kus.</p>
+    <div class="modal-actions center">
+      <button class="primary" onclick="applyStamgast(true)">Ano — štamgast</button>
+      <button onclick="applyStamgast(false)">Ne</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal výběru položky -->
+<div class="modal-overlay hidden" id="item-picker-modal">
+  <div class="modal">
+    <div class="section-label">Vyberte položku</div>
+    <div class="picker-cats" id="modal-picker-cats"></div>
+    <div class="picker-items hidden" id="modal-picker-items"></div>
+    <div class="modal-actions">
+      <button onclick="closeItemPickerModal()">Zrušit</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Platba -->
+<div class="modal-overlay hidden" id="qr-modal">
+  <div class="modal" style="text-align:center;">
+    <h3>QR Platba</h3>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;">Částka k zaplacení</div>
+      <input type="number" id="qr-amount-input" min="0"
+        style="width:140px;padding:10px 14px;font-size:22px;font-family:'DM Sans',sans-serif;font-weight:500;border:1px solid var(--border-strong);border-radius:var(--radius);text-align:center;outline:none;"
+        oninput="renderQr()" />
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Kč</div>
+    </div>
+    <div id="qr-container" style="display:inline-block;margin:0 auto;"></div>
+    <div id="qr-num" style="font-size:11px;color:var(--muted);margin-top:.5rem;"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:.25rem;">Naskenujte v bankovní aplikaci</div>
+    <div class="modal-actions center" style="margin-top:1rem;">
+      <button onclick="closeQrModal()">Zpět</button>
+      <button class="primary" onclick="finalizeAfterPayment()">Platba přijata</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Náhled před tiskem -->
+<div class="modal-overlay hidden" id="print-modal">
+  <div class="modal" style="max-width:420px;">
+    <h3 style="margin-bottom:1rem;">Náhled účtenky</h3>
+    <div id="print-preview" style="background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:12px;max-height:70vh;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button onclick="closePrintModal()">Zpět</button>
+      <button class="primary" onclick="doPrint()">Tisknout</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const MENU = [
-  {n:"Bukovar z tanku",c:"Piva",p:49,u:"0,4l"},
-  {n:"Čepovaný radler",c:"Piva",p:49,u:"0,4l"},
-  {n:"Nealko pivo Birrel",c:"Piva",p:49,u:"0,5l"},
-  {n:"Nealko pivo Birrel ochucené",c:"Piva",p:49,u:"0,5l"},
+  {n:"Bukovar",c:"Piva",p:49,u:"0,4l"},
+  {n:"Radler",c:"Piva",p:49,u:"0,4l"},
+  {n:"Birel nealko neochucený",c:"Piva",p:49,u:"0,5l"},
+  {n:"Birel nealko ochucený",c:"Piva",p:49,u:"0,5l"},
   {n:"Maisel's Weisse Alkoholfrei",c:"Piva",p:65,u:"0,5l"},
-  {n:"Pivo v PET",c:"Piva",p:105,u:"1,0l"},
+  {n:"Bukovar v PET",c:"Piva",p:105,u:"1,0l"},
   {n:"Pivo s sebou do džbánku 2l",c:"Piva",p:196,u:"2l"},
   {n:"Pivo s sebou do džbánku 5l",c:"Piva",p:490,u:"5l"},
-  {n:"Pivo v sudu 15l",c:"Piva",p:960,u:"15l"},
-  {n:"Pivo v sudu 30l",c:"Piva",p:2049,u:"30l"},
-  {n:"Hraďák 10°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Mezulánka 11°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Šedá vlčice 11°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Kohoutí 12°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Nelson 12°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Štamgast 11°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Zlatka 11°",c:"Piva",p:49,u:"0,4l"},
-  {n:"Dublin 13°",c:"Piva",p:49,u:"0,4l"},
   {n:"Espresso",c:"Horké nápoje",p:49},
   {n:"Espresso Lungo",c:"Horké nápoje",p:49},
   {n:"Doppio",c:"Horké nápoje",p:55},
@@ -404,8 +398,8 @@ const MENU = [
   {n:"Čaj Ahmad Tea",c:"Horké nápoje",p:39},
   {n:"Turecká káva",c:"Horké nápoje",p:39},
   {n:"Ledová káva",c:"Horké nápoje",p:75},
-  {n:"Točená kofola 0,3l",c:"Nealkoholické nápoje",p:39},
-  {n:"Točená kofola 0,5l",c:"Nealkoholické nápoje",p:49},
+  {n:"Kofola 0,3l",c:"Nealkoholické nápoje",p:39},
+  {n:"Kofola 0,5l",c:"Nealkoholické nápoje",p:49},
   {n:"Frizzante 0,3l",c:"Nealkoholické nápoje",p:39},
   {n:"Frizzante 0,5l",c:"Nealkoholické nápoje",p:49},
   {n:"Royal crown cola",c:"Nealkoholické nápoje",p:39},
@@ -439,44 +433,194 @@ const MENU = [
   {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"}
 ];
 
-let stream, snapB64;
+const CAT_ORDER = ["Piva","Nealkoholické nápoje","Horké nápoje","Víno","Míchané nápoje","Občerstvení","Destiláty"];
+
+let stream, snapB64, receiptItems = [];
+let openCategory = null;
+let pendingData = null, uncertainItems = [];
+let analyzeController = null;
+let pickerCallback = null;
+let pickerModalCat = null;
+
+// --- Záložky ---
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// --- Init ---
+
+document.addEventListener('DOMContentLoaded', function() {
+  initApiKey();
+  buildCategoryBtns();
+  startManual();
+  renderUctenky();
+});
+
+function initApiKey() {
+  const saved = localStorage.getItem('bukovar_api_key');
+  if (saved && saved.startsWith('sk-ant-')) {
+    document.getElementById('api-key-input').value = saved;
+    document.getElementById('api-notice').classList.add('hidden');
+  } else {
+    document.getElementById('api-notice').classList.remove('hidden');
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (key && key.startsWith('sk-ant-')) {
+    localStorage.setItem('bukovar_api_key', key);
+    document.getElementById('api-notice').classList.add('hidden');
+  }
+}
+
+function toggleApiKey() {
+  const el = document.getElementById('api-notice');
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+    document.getElementById('api-key-input').focus();
+  } else {
+    el.classList.add('hidden');
+  }
+}
 
 function getApiKey() {
   return document.getElementById('api-key-input').value.trim();
 }
 
+// --- Zvuk ---
+
+function beep() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator(); var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
+  } catch(e) {}
+}
+
+// --- Kategorie ---
+
+function buildCategoryBtns() {
+  var wrap = document.getElementById('cat-btns');
+  wrap.innerHTML = '';
+  CAT_ORDER.forEach(function(cat) {
+    if (!MENU.some(function(m) { return m.c === cat; })) return;
+    var btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.textContent = cat;
+    btn.onclick = function() { toggleCategory(cat, btn); };
+    wrap.appendChild(btn);
+  });
+  var custom = document.createElement('button');
+  custom.className = 'cat-btn custom';
+  custom.textContent = '+ Vlastní';
+  custom.onclick = toggleCustomForm;
+  wrap.appendChild(custom);
+  var scan = document.createElement('button');
+  scan.className = 'cat-btn';
+  scan.textContent = '📷 Načti účtenku';
+  scan.onclick = retakeFromReceipt;
+  wrap.appendChild(scan);
+}
+
+function toggleCategory(cat, btn) {
+  document.getElementById('custom-form').classList.add('hidden');
+  var itemsEl = document.getElementById('cat-items');
+  if (openCategory === cat) {
+    openCategory = null; itemsEl.classList.add('hidden'); itemsEl.innerHTML = '';
+    btn.classList.remove('active'); return;
+  }
+  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active'); openCategory = cat;
+  var items = MENU.filter(function(m) { return m.c === cat; });
+  itemsEl.innerHTML = '';
+  items.forEach(function(item) {
+    var b = document.createElement('button');
+    b.className = 'quick-btn';
+    b.innerHTML = '<strong>' + item.n + '</strong>' +
+      (item.u ? ' <span style="color:var(--muted);font-size:11px">' + item.u + '</span>' : '') +
+      '<br><span style="color:var(--accent)">' + item.p + ' Kč</span>';
+    b.onclick = function() { quickAdd(item); };
+    itemsEl.appendChild(b);
+  });
+  itemsEl.classList.remove('hidden');
+}
+
+function toggleCustomForm() {
+  document.getElementById('cat-items').classList.add('hidden');
+  document.getElementById('cat-items').innerHTML = '';
+  openCategory = null;
+  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
+  var f = document.getElementById('custom-form');
+  if (f.classList.contains('hidden')) { f.classList.remove('hidden'); document.getElementById('custom-name').focus(); }
+  else { f.classList.add('hidden'); }
+}
+
+function customFormKey(e) {
+  if (e.key === 'Enter') {
+    if (e.target.id === 'custom-name') { document.getElementById('custom-price').focus(); }
+    else { addCustomItem(); }
+  }
+}
+
+function addCustomItem() {
+  var name = document.getElementById('custom-name').value.trim();
+  var price = parseInt(document.getElementById('custom-price').value) || 0;
+  if (!name) { document.getElementById('custom-name').focus(); return; }
+  receiptItems.unshift({ nazev: name, pocet: 1, cena: price, warn: false, stamgast: false });
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-price').value = '';
+  document.getElementById('custom-form').classList.add('hidden');
+  renderItems();
+}
+
+function quickAdd(item) {
+  var existing = receiptItems.find(function(r) { return r.nazev === item.n; });
+  if (existing) { existing.pocet++; }
+  else { receiptItems.unshift({ nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false }); }
+  renderItems();
+}
+
+// --- Status ---
+
 function setStatus(msg, spin) {
   const el = document.getElementById('status');
   if (spin) {
     el.innerHTML = '';
-    const s = document.createElement('div');
-    s.className = 'spinner';
-    el.appendChild(s);
-    el.appendChild(document.createTextNode(msg));
-  } else {
-    el.textContent = msg;
-  }
+    const s = document.createElement('div'); s.className = 'spinner';
+    el.appendChild(s); el.appendChild(document.createTextNode(msg));
+  } else { el.textContent = msg; }
 }
 
+// --- Kamera ---
+
 async function startCam() {
+  setStatus('Spouštím kameru…');
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
     });
     document.getElementById('video').srcObject = stream;
-    document.getElementById('btnStart').classList.add('hidden');
     document.getElementById('btnSnap').classList.remove('hidden');
     setStatus('Namiřte kameru na papír s objednávkou.');
   } catch(e) {
     setStatus('Kamera nedostupná: ' + e.message);
+    document.getElementById('btnStart').classList.remove('hidden');
   }
 }
 
 function takeSnap() {
   const video = document.getElementById('video');
   const canvas = document.getElementById('snap-canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
   snapB64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
   if (stream) stream.getTracks().forEach(t => t.stop());
@@ -484,139 +628,588 @@ function takeSnap() {
   canvas.style.display = 'block';
   document.getElementById('btnSnap').classList.add('hidden');
   document.getElementById('btnRetake').classList.remove('hidden');
-  document.getElementById('btnAnalyze').classList.remove('hidden');
-  setStatus('Fotka pořízena. Klikněte Rozpoznat objednávku.');
+  const apiKey = getApiKey();
+  if (apiKey && apiKey.startsWith('sk-ant-')) {
+    setStatus('Fotka pořízena, rozpoznávám…', true);
+    analyze();
+  } else {
+    setStatus('Fotka pořízena. Zadejte API klíč výše.');
+    document.getElementById('btnAnalyze').classList.remove('hidden');
+  }
 }
 
 function retake() {
+  if (analyzeController) { analyzeController.abort(); analyzeController = null; }
   document.getElementById('snap-canvas').style.display = 'none';
   document.getElementById('video').style.display = 'block';
   document.getElementById('btnRetake').classList.add('hidden');
   document.getElementById('btnAnalyze').classList.add('hidden');
-  snapB64 = null;
-  startCam();
+  snapB64 = null; startCam();
 }
+
+function retakeFromReceipt() {
+  receiptItems = [];
+  document.getElementById('receipt-card').classList.add('hidden');
+  document.getElementById('confirm-card').classList.add('hidden');
+  document.getElementById('cam-card').classList.remove('hidden');
+  document.getElementById('snap-canvas').style.display = 'none';
+  document.getElementById('video').style.display = 'block';
+  document.getElementById('btnRetake').classList.add('hidden');
+  document.getElementById('btnAnalyze').classList.add('hidden');
+  document.getElementById('btnAnalyze').disabled = false;
+  document.getElementById('btnRetake').disabled = false;
+  snapB64 = null; startCam();
+}
+
+function startManual() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  showReceipt();
+}
+
+// --- AI ---
 
 async function analyze() {
   const apiKey = getApiKey();
   if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-    setStatus('Zadejte platný Anthropic API klíč (sk-ant-...) výše.');
-    return;
+    setStatus('Zadejte platný Anthropic API klíč (sk-ant-...) výše.'); return;
   }
-
   document.getElementById('btnAnalyze').disabled = true;
   document.getElementById('btnRetake').disabled = true;
   setStatus('Rozpoznávám objednávku…', true);
 
-  const menuStr = MENU.map(m => `"${m.n}" (${m.c}, ${m.p} Kč${m.u ? ', ' + m.u : ''})`).join('\n');
+  const menuStr = MENU.map(m => '"' + m.n + '" (' + m.c + ', ' + m.p + ' Kč' + (m.u ? ', ' + m.u : '') + ')').join('\n');
+  analyzeController = new AbortController();
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+      method: 'POST', signal: analyzeController.signal,
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Content-Type': 'application/json', 'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
+        model: 'claude-sonnet-4-6', max_tokens: 1200,
         messages: [{
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: snapB64 } },
-            { type: 'text', text: `Na obrázku je ručně psaná objednávka číšníka pivovaru Bukovar.
-
-Databáze položek menu:
-${menuStr}
-
-Rozpoznej z obrázku objednané položky a přiřaď je PŘESNĚ k položkám v databázi.
-Odpověz POUZE jako JSON (bez markdown backticks, bez komentářů):
-{"polozky": [{"menu_nazev": "...", "pocet": 1, "cena_kus": 49, "kategorie": "..."}, ...], "nerozpoznano": ["..."]}
-
-Pokud je položka podobná položce v menu (i zkráceně nebo s překlepy), přiřaď ji. Pokud ji nelze přiřadit, dej do "nerozpoznano".` }
+            { type: 'text', text: 'Na obrazku je rucne psana objednavka cisnika pivovaru Bukovar.\n\nDULEZITE PRAVIDLO: Jakekoli pivo (vcetne generickych jako "pivo", "2x pivo", i konkretnich nazvu jako Kohoutí, Mezulánka, Hraďák, vlčice, Dublin atd.) VZDY mapuj jako polozku "Bukovar" (Piva, 49 Kc, 0,4l). Nikdy nepouzivej jine pivo nez "Bukovar".\n\nDatabaze polozek menu:\n' + menuStr + '\n\nRozpoznej z obrazku objednane polozky a roztrid je do tri skupin:\n1. "polozky" — jista shoda s menu\n2. "nejiste" — existuje v menu ale neni si jist; pridej "original" (text z obrazku)\n3. "nerozpoznano" — nelze priradit\n\nOdpovez POUZE jako JSON (bez markdown backticks):\n{"polozky": [{"menu_nazev": "...", "pocet": 1, "cena_kus": 49, "kategorie": "..."}], "nejiste": [{"original": "...", "menu_nazev": "...", "pocet": 1, "cena_kus": 49, "kategorie": "..."}], "nerozpoznano": ["..."]}' }
           ]
         }]
       })
     });
 
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || resp.statusText);
-    }
-
+    if (!resp.ok) { const err = await resp.json(); throw new Error(err.error?.message || resp.statusText); }
     const data = await resp.json();
     const text = data.content.map(c => c.text || '').join('');
     const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-    renderReceipt(parsed);
+    beep();
+    if (parsed.nejiste && parsed.nejiste.length > 0) { showConfirmCard(parsed); }
+    else { renderReceipt(parsed); }
 
   } catch(e) {
+    if (e.name === 'AbortError') return;
     setStatus('Chyba: ' + e.message);
     document.getElementById('btnAnalyze').disabled = false;
     document.getElementById('btnRetake').disabled = false;
-  }
+  } finally { analyzeController = null; }
+}
+
+// --- Potvrzení nejistých položek ---
+
+function showConfirmCard(data) {
+  pendingData = { polozky: data.polozky || [], nerozpoznano: data.nerozpoznano || [] };
+  uncertainItems = (data.nejiste || []).map(function(item) {
+    return { original: item.original, menu_nazev: item.menu_nazev, pocet: item.pocet || 1, cena_kus: item.cena_kus || 0, rejected: false };
+  });
+  renderConfirmItems();
+  document.getElementById('confirm-card').classList.remove('hidden');
+  document.getElementById('cam-card').classList.add('hidden');
+}
+
+function renderConfirmItems() {
+  var lines = document.getElementById('confirm-lines');
+  lines.innerHTML = '';
+  var active = uncertainItems.filter(function(item) { return !item.rejected; });
+  if (active.length === 0) { finishConfirm(); return; }
+  active.forEach(function(item) {
+    var realIdx = uncertainItems.indexOf(item);
+    var div = document.createElement('div');
+    div.className = 'confirm-item'; div.id = 'ci-' + realIdx;
+    div.innerHTML =
+      '<div class="ci-original">Na lístku: <strong>"' + item.original + '"</strong></div>' +
+      '<div class="ci-fields">' +
+        '<input type="number" class="ci-qty" value="' + item.pocet + '" min="1" style="width:52px;" />' +
+        '<button class="ci-name-btn" onclick="openConfirmItemPicker(' + realIdx + ')">' + item.menu_nazev + '</button>' +
+        '<input type="number" class="ci-price" value="' + item.cena_kus + '" style="width:64px;" placeholder="Kč" />' +
+        '<button class="btn-approve" onclick="approveItem(' + realIdx + ')">✓ Přidat</button>' +
+        '<button class="item-del" onclick="rejectItem(' + realIdx + ')">×</button>' +
+      '</div>';
+    lines.appendChild(div);
+  });
+}
+
+function openConfirmItemPicker(realIdx) {
+  openItemPickerModal(function(item) {
+    uncertainItems[realIdx].menu_nazev = item.n;
+    uncertainItems[realIdx].cena_kus = item.p;
+    renderConfirmItems();
+  });
+}
+
+function approveItem(realIdx) {
+  var el = document.getElementById('ci-' + realIdx);
+  if (!el) return;
+  var qty = parseInt(el.querySelector('.ci-qty').value) || 1;
+  var price = parseInt(el.querySelector('.ci-price').value) || uncertainItems[realIdx].cena_kus;
+  var name = uncertainItems[realIdx].menu_nazev;
+  if (name) pendingData.polozky.push({ menu_nazev: name, pocet: qty, cena_kus: price, kategorie: '' });
+  uncertainItems[realIdx].rejected = true;
+  renderConfirmItems();
+}
+
+function rejectItem(realIdx) { uncertainItems[realIdx].rejected = true; renderConfirmItems(); }
+
+function confirmAll() {
+  uncertainItems.forEach(function(item, idx) {
+    if (item.rejected) return;
+    var el = document.getElementById('ci-' + idx);
+    var qty = el ? parseInt(el.querySelector('.ci-qty').value) || 1 : 1;
+    var price = el ? parseInt(el.querySelector('.ci-price').value) || item.cena_kus : item.cena_kus;
+    if (item.menu_nazev) pendingData.polozky.push({ menu_nazev: item.menu_nazev, pocet: qty, cena_kus: price, kategorie: '' });
+    item.rejected = true;
+  });
+  finishConfirm();
+}
+
+function skipAll() { finishConfirm(); }
+
+function finishConfirm() {
+  document.getElementById('confirm-card').classList.add('hidden');
+  renderReceipt(pendingData);
+}
+
+// --- Účtenka ---
+
+function showReceipt() {
+  document.getElementById('receipt-card').classList.remove('hidden');
+  document.getElementById('cam-card').classList.add('hidden');
 }
 
 function renderReceipt(data) {
-  const lines = document.getElementById('receipt-lines');
-  lines.innerHTML = '';
-  let total = 0;
-
-  (data.polozky || []).forEach(p => {
-    const sub = p.pocet * p.cena_kus;
-    total += sub;
-    const row = document.createElement('div');
-    row.className = 'receipt-item';
-    row.innerHTML = `
-      <div class="item-left">
-        <span class="item-qty">${p.pocet}×</span>
-        <span class="item-name">${p.menu_nazev}<span class="item-cat">${p.kategorie || ''}</span></span>
-      </div>
-      <span class="item-price">${sub} Kč</span>`;
-    lines.appendChild(row);
+  receiptItems = [];
+  (data.polozky || []).forEach(function(p) {
+    receiptItems.push({ nazev: p.menu_nazev, pocet: p.pocet, cena: p.cena_kus, warn: false, stamgast: false });
   });
-
   if (data.nerozpoznano && data.nerozpoznano.length) {
-    data.nerozpoznano.forEach(n => {
-      const row = document.createElement('div');
-      row.className = 'receipt-item warn-row';
-      row.innerHTML = `
-        <div class="item-left">
-          <span class="item-name">${n}<span class="badge-warn">nerozpoznáno</span></span>
-        </div>
-        <span class="item-price">—</span>`;
-      lines.appendChild(row);
+    data.nerozpoznano.forEach(function(n) {
+      receiptItems.push({ nazev: n, pocet: 1, cena: 0, warn: true, stamgast: false });
     });
   }
-
-  const now = new Date();
-  document.getElementById('receipt-time').textContent =
-    now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
-  document.getElementById('total-val').textContent = total + ' Kč';
-  document.getElementById('receipt-card').classList.remove('hidden');
-  document.getElementById('cam-card').classList.add('hidden');
+  showReceipt();
   setStatus('');
+  renderItems();
+  // Zobrazit štamgast dotaz pokud jsou v účtence piva
+  var hasPivo = receiptItems.some(function(item) {
+    var m = MENU.find(function(m) { return m.n === item.nazev; });
+    return m && m.c === 'Piva';
+  });
+  if (hasPivo) showStamgastModal();
+}
+
+function renderItems() {
+  var lines = document.getElementById('receipt-lines');
+  lines.innerHTML = '';
+  receiptItems.forEach(function(item, i) {
+    var sub = item.pocet * item.cena;
+    var row = document.createElement('div');
+    row.className = 'receipt-item' + (item.warn ? ' warn-row' : '');
+    var safeName = item.nazev.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var priceHtml = sub + ' Kč' + (item.stamgast ? ' <span class="stamgast-badge">š</span>' : '');
+    row.innerHTML =
+      '<div class="qty-ctrl">' +
+        '<button class="qty-btn" onclick="changeQty(' + i + ',-1)">−</button>' +
+        '<input class="item-qty-input" type="number" min="1" value="' + item.pocet + '" oninput="updateQty(' + i + ',this.value)" />' +
+        '<button class="qty-btn" onclick="changeQty(' + i + ',1)">+</button>' +
+      '</div>' +
+      '<button class="item-name-btn" onclick="openItemPickerModal(function(m){receiptItems[' + i + '].nazev=m.n;receiptItems[' + i + '].cena=m.p;receiptItems[' + i + '].warn=false;receiptItems[' + i + '].stamgast=false;closeItemPickerModal();renderItems();})" title="Klikněte pro změnu">' + safeName + '</button>' +
+      '<span class="item-price" id="price-' + i + '">' + priceHtml + '</span>' +
+      '<button class="item-del" onclick="deleteItem(' + i + ')">×</button>';
+    lines.appendChild(row);
+  });
+  updateTotal();
+}
+
+function changeQty(i, delta) {
+  var newQty = (receiptItems[i].pocet || 0) + delta;
+  if (newQty < 1) newQty = 1;
+  receiptItems[i].pocet = newQty;
+  renderItems();
+}
+
+function updateQty(i, val) {
+  var v = parseInt(val);
+  if (isNaN(v) || v < 0) v = 0;
+  receiptItems[i].pocet = v;
+  var el = document.getElementById('price-' + i);
+  if (el) el.innerHTML = (receiptItems[i].pocet * receiptItems[i].cena) + ' Kč' +
+    (receiptItems[i].stamgast ? ' <span class="stamgast-badge">š</span>' : '');
+  updateTotal();
+}
+
+function deleteItem(i) { receiptItems.splice(i, 1); renderItems(); }
+
+function updateTotal() {
+  var total = receiptItems.reduce(function(s, it) { return s + (it.pocet * it.cena); }, 0);
+  document.getElementById('total-val').textContent = total + ' Kč';
+  var totalEl = document.querySelector('.receipt-total');
+  if (totalEl) totalEl.style.display = receiptItems.length > 0 ? '' : 'none';
+}
+
+// --- Štamgast ---
+
+function showStamgastModal() {
+  document.getElementById('stamgast-modal').classList.remove('hidden');
+}
+
+function applyStamgast(isStamgast) {
+  document.getElementById('stamgast-modal').classList.add('hidden');
+  setStamgast(isStamgast);
+}
+
+function setStamgast(isStamgast) {
+  ['ano','ne'].forEach(function(o) {
+    document.getElementById('btn-stamgast-' + o).classList.remove('active');
+  });
+  document.getElementById('btn-stamgast-' + (isStamgast ? 'ano' : 'ne')).classList.add('active');
+  if (isStamgast) {
+    receiptItems.forEach(function(item) {
+      var m = MENU.find(function(m) { return m.n === item.nazev; });
+      if (m && (m.n === 'Bukovar' || m.n === 'Radler')) { item.cena = 39; item.stamgast = true; }
+    });
+  } else {
+    receiptItems.forEach(function(item) {
+      if (item.stamgast) {
+        var m = MENU.find(function(m) { return m.n === item.nazev; });
+        if (m) { item.cena = m.p; item.stamgast = false; }
+      }
+    });
+  }
+  renderItems();
+}
+
+// --- Modal výběru položky ---
+
+function openItemPickerModal(callback) {
+  pickerCallback = callback;
+  pickerModalCat = null;
+  var catsEl = document.getElementById('modal-picker-cats');
+  var itemsEl = document.getElementById('modal-picker-items');
+  catsEl.innerHTML = ''; itemsEl.innerHTML = ''; itemsEl.classList.add('hidden');
+  CAT_ORDER.forEach(function(cat) {
+    if (!MENU.some(function(m) { return m.c === cat; })) return;
+    var btn = document.createElement('button');
+    btn.className = 'picker-cat-btn';
+    btn.textContent = cat;
+    btn.onclick = function() { openPickerModalCat(cat, btn); };
+    catsEl.appendChild(btn);
+  });
+  document.getElementById('item-picker-modal').classList.remove('hidden');
+}
+
+function openPickerModalCat(cat, btn) {
+  document.querySelectorAll('#modal-picker-cats .picker-cat-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var itemsEl = document.getElementById('modal-picker-items');
+  itemsEl.innerHTML = '';
+  MENU.filter(function(m) { return m.c === cat; }).forEach(function(item) {
+    var b = document.createElement('button');
+    b.className = 'picker-item-btn';
+    b.innerHTML = item.n + (item.u ? ' <span style="color:var(--muted);font-size:11px">' + item.u + '</span>' : '') +
+      ' — <span style="color:var(--accent)">' + item.p + ' Kč</span>';
+    b.onclick = function() {
+      if (pickerCallback) pickerCallback(item);
+      closeItemPickerModal();
+    };
+    itemsEl.appendChild(b);
+  });
+  itemsEl.classList.remove('hidden');
+}
+
+function closeItemPickerModal() {
+  document.getElementById('item-picker-modal').classList.add('hidden');
+  pickerCallback = null; pickerModalCat = null;
+}
+
+// --- Způsob platby ---
+
+var paymentMethod = '';
+var lastUctenkaNum = null;
+
+function setPayment(method) {
+  paymentMethod = method;
+  ['qr','karta','hotovost'].forEach(function(m) {
+    document.getElementById('btn-' + m).classList.remove('active');
+  });
+  document.getElementById('btn-' + method.toLowerCase()).classList.add('active');
+  var line = document.getElementById('payment-method-line');
+  line.textContent = 'Způsob platby: ' + method;
+  line.classList.remove('hidden');
+}
+
+
+function uzavrit() {
+  if (!paymentMethod) {
+    var el = document.getElementById('wf-platba');
+    el.classList.add('wf-error');
+    setTimeout(function() { el.classList.remove('wf-error'); }, 1500);
+    return;
+  }
+  if (paymentMethod === 'QR') {
+    showQrModal();
+  } else {
+    saveUctenka();
+    printReceiptIframe(buildReceiptHtml());
+    resetApp();
+  }
+}
+
+function finalizeAfterPayment() {
+  closeQrModal();
+  saveUctenka();
+  printReceiptIframe(buildReceiptHtml());
+  resetApp();
+}
+
+
+// --- QR Platba ---
+
+const QR_IBAN = 'CZ2355000000006310215004';
+const QR_MSG = 'Bukobar s.r.o.';
+var qrInstance = null;
+
+function showQrModal() {
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  if (total <= 0) { alert('Účtenka je prázdná.'); return; }
+  qrInstance = null;
+  document.getElementById('qr-container').innerHTML = '';
+  document.getElementById('qr-amount-input').value = total;
+  document.getElementById('qr-modal').classList.remove('hidden');
+  renderQr();
+}
+
+function renderQr() {
+  var total = parseInt(document.getElementById('qr-amount-input').value) || 0;
+  var num = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
+  document.getElementById('qr-num').textContent = 'VS: ' + num;
+  if (total <= 0) { document.getElementById('qr-container').innerHTML = ''; qrInstance = null; return; }
+  var spd = 'SPD*1.0*ACC:' + QR_IBAN + '*AM:' + total.toFixed(2) + '*CC:CZK*MSG:' + QR_MSG + '*X-VS:' + num;
+  var container = document.getElementById('qr-container');
+  if (qrInstance) {
+    qrInstance.clear();
+    qrInstance.makeCode(spd);
+  } else {
+    qrInstance = new QRCode(container, { text: spd, width: 220, height: 220, colorDark: '#1a1610', colorLight: '#ffffff' });
+  }
+}
+
+function closeQrModal() {
+  document.getElementById('qr-modal').classList.add('hidden');
+}
+
+// --- Tisk ---
+
+var RECEIPT_CSS =
+  'body{font-family:"Courier New",monospace;font-size:12px;width:74mm;margin:0;padding:3mm;color:#000;background:#fff;}' +
+  '.rp-center{text-align:center;}' +
+  '.rp-line{border:none;border-top:1px dashed #000;margin:5px 0;}' +
+  '.rp-row{display:flex;justify-content:space-between;padding:1px 0;}' +
+  '.rp-total{display:flex;justify-content:space-between;padding:3px 0;font-weight:700;font-size:14px;border-top:1px solid #000;margin-top:3px;}' +
+  '.rp-footer{text-align:center;margin-top:6px;font-size:11px;}' +
+  '@page{size:80mm auto;margin:3mm;}';
+
+function printReceiptIframe(html) {
+  var iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:none;';
+  document.body.appendChild(iframe);
+  var doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + RECEIPT_CSS + '</style></head><body>' + html + '</body></html>');
+  doc.close();
+  setTimeout(function() {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(function() {
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }, 1000);
+  }, 250);
+}
+
+
+function buildReceiptHtml() {
+  var now = new Date();
+  var d = now.getDate().toString().padStart(2,'0');
+  var mo = (now.getMonth()+1).toString().padStart(2,'0');
+  var y = now.getFullYear();
+  var h = now.getHours().toString().padStart(2,'0');
+  var mi = now.getMinutes().toString().padStart(2,'0');
+  var dateStr = d + '.' + mo + '.' + y;
+  var timeStr = h + ':' + mi;
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  var numStr = lastUctenkaNum ? String(lastUctenkaNum) : String(parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000') + 1);
+
+  var html = '<div class="receipt-print">';
+  // Hlavička
+  html += '<div class="rp-center"><strong>BUKOBAR s.r.o.</strong></div>';
+  html += '<div class="rp-center">nám. Jiráskovo 54</div>';
+  html += '<div class="rp-center">Dolní Bukovsko, 373 65</div>';
+  html += '<div class="rp-center">IČO: 24035491</div>';
+  html += '<hr class="rp-line">';
+  // Číslo a datum
+  html += '<div class="rp-center">Účtenka č. ' + numStr + '</div>';
+  html += '<div class="rp-center">' + dateStr + '&nbsp;&nbsp;' + timeStr + '</div>';
+  html += '<hr class="rp-line">';
+  // Položky
+  receiptItems.forEach(function(item) {
+    var sub = item.pocet * item.cena;
+    var name = item.nazev.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var label = item.pocet > 1 ? item.pocet + '× ' + name : name;
+    html += '<div class="rp-row"><span>' + label + '</span><span>' + sub + ' Kč</span></div>';
+  });
+  // Celkem
+  html += '<div class="rp-total"><span>CELKEM</span><span>' + total + ' Kč</span></div>';
+  // Způsob platby
+  if (paymentMethod) {
+    html += '<div class="rp-row" style="margin-top:4px;"><span>Způsob platby</span><span>' + paymentMethod + '</span></div>';
+  }
+  html += '<hr class="rp-line">';
+  // Patička
+  html += '<div class="rp-footer">Děkujeme za návštěvu!</div>';
+  html += '<div class="rp-footer">Bukobar s.r.o.</div>';
+  // Prázdné řádky pro odtrhnutí
+  html += '<div style="height:32px;"></div>';
+  html += '</div>';
+  return html;
 }
 
 function printReceipt() {
-  window.print();
+  var html = buildReceiptHtml();
+  document.getElementById('print-preview').innerHTML = html;
+  document.getElementById('print-modal').classList.remove('hidden');
 }
 
+function doPrint() {
+  saveUctenka();
+  var receiptHtml = buildReceiptHtml();
+  closePrintModal();
+  printReceiptIframe(receiptHtml);
+  resetApp();
+}
+
+function closePrintModal() { document.getElementById('print-modal').classList.add('hidden'); }
+function closeWithPrint() { printReceipt(); }
+function closeWithoutPrint() { saveUctenka(); resetApp(); }
+
+// --- Účtenky ---
+
+function nextUctenkaNum() {
+  var last = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
+  var next = last + 1;
+  localStorage.setItem('bukovar_uctenka_num', String(next));
+  return next;
+}
+
+function saveUctenka() {
+  if (!receiptItems.length) return;
+  var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
+  lastUctenkaNum = nextUctenkaNum();
+  var record = {
+    id: Date.now(),
+    num: lastUctenkaNum,
+    cas: new Date().toISOString(),
+    polozky: receiptItems.map(function(it) { return { nazev: it.nazev, pocet: it.pocet, cena: it.cena, stamgast: it.stamgast }; }),
+    celkem: total,
+    storno: false
+  };
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  data.unshift(record);
+  localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
+  renderUctenky();
+}
+
+function stornoUctenka(id, e) {
+  e.stopPropagation();
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var rec = data.find(function(r) { return r.id === id; });
+  if (rec) { rec.storno = true; }
+  localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
+  renderUctenky();
+}
+
+function renderUctenky() {
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var list = document.getElementById('uctenky-list');
+  var totalDay = 0;
+  list.innerHTML = '';
+  data.forEach(function(rec) {
+    if (!rec.storno) totalDay += rec.celkem;
+    var dt = new Date(rec.cas);
+    var casStr = dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
+    var pocetStr = rec.polozky.length + ' položk' + (rec.polozky.length === 1 ? 'a' : rec.polozky.length < 5 ? 'y' : 'í');
+    var div = document.createElement('div');
+    div.className = 'uctenka-row' + (rec.storno ? ' storno' : '');
+    div.innerHTML =
+      '<div class="uctenka-row-header">' +
+        '<div>' +
+          '<div><span class="uctenka-num">#' + rec.num + '</span>' + (rec.storno ? '<span class="storno-badge">STORNO</span>' : '') + '</div>' +
+          '<div style="font-weight:500;margin-top:1px">' + casStr + '</div>' +
+          '<div class="uctenka-row-meta">' + pocetStr + '</div>' +
+        '</div>' +
+        '<span class="uctenka-row-total' + (rec.storno ? ' storno' : '') + '">' + rec.celkem + ' Kč</span>' +
+      '</div>' +
+      '<div class="uctenka-detail" id="ud-' + rec.id + '">' +
+        rec.polozky.map(function(p) {
+          return '<div class="uctenka-detail-row"><span>' + p.pocet + '× ' + p.nazev + (p.stamgast ? ' <span style="font-size:10px;color:var(--success-text)">(š)</span>' : '') + '</span><span>' + (p.pocet * p.cena) + ' Kč</span></div>';
+        }).join('') +
+        (!rec.storno ? '<button class="btn-storno" onclick="stornoUctenka(' + rec.id + ',event)">Stornovat účtenku</button>' : '') +
+      '</div>';
+    div.addEventListener('click', function() {
+      document.getElementById('ud-' + rec.id).classList.toggle('open');
+    });
+    list.appendChild(div);
+  });
+  document.getElementById('uctenky-total-day').textContent = totalDay + ' Kč';
+}
+
+
+// --- Reset ---
+
 function resetApp() {
-  document.getElementById('receipt-card').classList.add('hidden');
-  document.getElementById('cam-card').classList.remove('hidden');
-  document.getElementById('snap-canvas').style.display = 'none';
-  document.getElementById('video').style.display = 'block';
-  document.getElementById('btnStart').classList.remove('hidden');
-  document.getElementById('btnSnap').classList.add('hidden');
-  document.getElementById('btnRetake').classList.add('hidden');
-  document.getElementById('btnAnalyze').classList.add('hidden');
-  document.getElementById('btnAnalyze').disabled = false;
-  document.getElementById('btnRetake').disabled = false;
-  snapB64 = null;
+  closePrintModal(); closeItemPickerModal();
+  document.getElementById('stamgast-modal').classList.add('hidden');
+  document.getElementById('confirm-card').classList.add('hidden');
+  document.getElementById('cam-card').classList.add('hidden');
+  document.getElementById('cat-items').classList.add('hidden');
+  document.getElementById('custom-form').classList.add('hidden');
+  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  snapB64 = null; receiptItems = [];
+  openCategory = null; pendingData = null; uncertainItems = [];
+  pickerCallback = null;
+  paymentMethod = '';
+  lastUctenkaNum = null;
+  document.getElementById('payment-method-line').classList.add('hidden');
+  document.getElementById('payment-method-line').textContent = '';
+  ['ano','ne'].forEach(function(o) { document.getElementById('btn-stamgast-' + o).classList.remove('active'); });
+  ['qr','karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
   setStatus('');
+  showReceipt();
+  renderItems();
 }
 </script>
+
+<!-- Oblast pro tisk — skrytá, zobrazí se jen při tisku -->
+<div id="print-area" style="display:none;"></div>
+
 </body>
 </html>
