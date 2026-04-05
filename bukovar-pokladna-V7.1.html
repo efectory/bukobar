@@ -206,10 +206,13 @@
 
   <!-- Účtenka -->
   <div class="card hidden" id="receipt-card">
-    <div class="receipt-actions" style="margin-top:0;margin-bottom:1rem;">
-      <button onclick="printReceipt()">Tisknout</button>
-      <button onclick="showStamgastModal()">Štamgast</button>
+    <div class="receipt-actions" style="margin-top:0;margin-bottom:.5rem;">
       <button onclick="retakeFromReceipt()">Vyfotit</button>
+      <button onclick="showStamgastModal()">Štamgast</button>
+    </div>
+    <div class="receipt-actions" style="margin-top:0;margin-bottom:1rem;">
+      <button class="primary" onclick="closeWithPrint()">Uzavřít + tisk</button>
+      <button onclick="closeWithoutPrint()">Uzavřít bez tisku</button>
       <button onclick="resetApp()">Nová objednávka</button>
     </div>
     <div class="receipt-header">
@@ -836,8 +839,10 @@ function printReceipt() {
   document.getElementById('print-modal').classList.remove('hidden');
 }
 
-function doPrint() { closePrintModal(); window.print(); }
+function doPrint() { closePrintModal(); window.print(); if (document._printAndReset) { document._printAndReset = false; resetApp(); } }
 function closePrintModal() { document.getElementById('print-modal').classList.add('hidden'); }
+function closeWithPrint() { printReceipt(); document._printAndReset = true; }
+function closeWithoutPrint() { resetApp(); }
 
 // --- Reset ---
 
