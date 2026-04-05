@@ -143,13 +143,19 @@
   /* Účtenky */
   .uctenka-row { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: .875rem 1rem; margin-bottom: .5rem; cursor: pointer; transition: border-color .15s; }
   .uctenka-row:hover { border-color: var(--border-strong); }
-  .uctenka-row-header { display: flex; justify-content: space-between; align-items: center; }
+  .uctenka-row.storno { opacity: .55; }
+  .uctenka-row-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .uctenka-row-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .uctenka-row-total { font-weight: 500; font-size: 15px; }
+  .uctenka-row-total { font-weight: 500; font-size: 15px; white-space: nowrap; }
+  .uctenka-row-total.storno { text-decoration: line-through; color: var(--muted); }
+  .storno-badge { font-size: 10px; font-weight: 600; background: #ffeaea; color: var(--accent); border: 1px solid rgba(181,56,26,.25); border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
+  .uctenka-num { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .03em; }
   .uctenka-detail { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); display: none; }
   .uctenka-detail.open { display: block; }
   .uctenka-detail-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--muted); }
   .uctenka-detail-row span:first-child { color: var(--text); }
+  .btn-storno { font-size: 12px; padding: 5px 10px; margin-top: .75rem; color: var(--accent); border-color: rgba(181,56,26,.35); background: #fff8f7; }
+  .btn-storno:hover { background: #ffeaea; border-color: var(--accent); }
 
   @media print {
     header, .tabs, .instructions, #cam-card, #confirm-card, .receipt-actions, .api-notice, .api-ok,
@@ -869,17 +875,35 @@ function closeWithoutPrint() { saveUctenka(); resetApp(); }
 
 // --- Účtenky ---
 
+function nextUctenkaNum() {
+  var last = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
+  var next = last + 1;
+  localStorage.setItem('bukovar_uctenka_num', String(next));
+  return next;
+}
+
 function saveUctenka() {
   if (!receiptItems.length) return;
   var total = receiptItems.reduce(function(s, it) { return s + it.pocet * it.cena; }, 0);
   var record = {
     id: Date.now(),
+    num: nextUctenkaNum(),
     cas: new Date().toISOString(),
     polozky: receiptItems.map(function(it) { return { nazev: it.nazev, pocet: it.pocet, cena: it.cena, stamgast: it.stamgast }; }),
-    celkem: total
+    celkem: total,
+    storno: false
   };
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
   data.unshift(record);
+  localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
+  renderUctenky();
+}
+
+function stornoUctenka(id, e) {
+  e.stopPropagation();
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var rec = data.find(function(r) { return r.id === id; });
+  if (rec) { rec.storno = true; }
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
   renderUctenky();
 }
@@ -890,25 +914,29 @@ function renderUctenky() {
   var totalDay = 0;
   list.innerHTML = '';
   data.forEach(function(rec) {
-    totalDay += rec.celkem;
+    if (!rec.storno) totalDay += rec.celkem;
     var dt = new Date(rec.cas);
     var casStr = dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
+    var pocetStr = rec.polozky.length + ' položk' + (rec.polozky.length === 1 ? 'a' : rec.polozky.length < 5 ? 'y' : 'í');
     var div = document.createElement('div');
-    div.className = 'uctenka-row';
+    div.className = 'uctenka-row' + (rec.storno ? ' storno' : '');
     div.innerHTML =
       '<div class="uctenka-row-header">' +
-        '<div><span style="font-weight:500">' + casStr + '</span>' +
-        '<div class="uctenka-row-meta">' + rec.polozky.length + ' položk' + (rec.polozky.length === 1 ? 'a' : rec.polozky.length < 5 ? 'y' : 'í') + '</div></div>' +
-        '<span class="uctenka-row-total">' + rec.celkem + ' Kč</span>' +
+        '<div>' +
+          '<div><span class="uctenka-num">#' + rec.num + '</span>' + (rec.storno ? '<span class="storno-badge">STORNO</span>' : '') + '</div>' +
+          '<div style="font-weight:500;margin-top:1px">' + casStr + '</div>' +
+          '<div class="uctenka-row-meta">' + pocetStr + '</div>' +
+        '</div>' +
+        '<span class="uctenka-row-total' + (rec.storno ? ' storno' : '') + '">' + rec.celkem + ' Kč</span>' +
       '</div>' +
       '<div class="uctenka-detail" id="ud-' + rec.id + '">' +
         rec.polozky.map(function(p) {
           return '<div class="uctenka-detail-row"><span>' + p.pocet + '× ' + p.nazev + (p.stamgast ? ' <span style="font-size:10px;color:var(--success-text)">(š)</span>' : '') + '</span><span>' + (p.pocet * p.cena) + ' Kč</span></div>';
         }).join('') +
+        (!rec.storno ? '<button class="btn-storno" onclick="stornoUctenka(' + rec.id + ',event)">Stornovat účtenku</button>' : '') +
       '</div>';
     div.addEventListener('click', function() {
-      var detail = document.getElementById('ud-' + rec.id);
-      detail.classList.toggle('open');
+      document.getElementById('ud-' + rec.id).classList.toggle('open');
     });
     list.appendChild(div);
   });
