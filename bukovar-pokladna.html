@@ -189,6 +189,59 @@
   .rp-total { display: flex; justify-content: space-between; padding: 4px 0; font-weight: 700; font-size: 15px; border-top: 1px solid #000; margin-top: 4px; }
   .rp-footer { text-align: center; margin-top: 8px; font-size: 12px; color: #555; }
 
+  /* Checklist */
+  .cl-section { margin-bottom: 1.5rem; }
+  .cl-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .cl-item { display: flex; align-items: flex-start; gap: 12px; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+  .cl-item:last-child { border-bottom: none; }
+  .cl-checkbox { width: 24px; height: 24px; border: 2px solid var(--border-strong); border-radius: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; margin-top: 1px; }
+  .cl-checkbox.checked { background: var(--success-text); border-color: var(--success-text); }
+  .cl-checkbox.checked::after { content: '✓'; color: #fff; font-size: 14px; font-weight: 700; }
+  .cl-label { font-size: 15px; line-height: 1.45; cursor: pointer; flex: 1; }
+  .cl-label.checked { color: var(--muted); text-decoration: line-through; }
+  .cl-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .cl-progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .cl-progress-fill { height: 100%; background: var(--success-text); border-radius: 3px; transition: width .3s; }
+  .cl-progress-text { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .cl-name-row { display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .cl-name-row label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .cl-name-row input { font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; flex: 1; min-width: 160px; }
+  .cl-name-row input:focus { border-color: var(--accent); }
+  .cl-text-input { font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; width: 100%; margin-top: 6px; }
+  .cl-text-input:focus { border-color: var(--accent); }
+  .cl-amount-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .cl-amount-row input { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 500; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; width: 140px; text-align: right; }
+  .cl-amount-row input:focus { border-color: var(--accent); }
+  .cl-amount-row span { font-size: 15px; color: var(--muted); }
+  .cl-submit-row { margin-top: 2rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .cl-done-banner { background: var(--success-bg); border: 1px solid rgba(26,107,58,.2); border-radius: var(--radius); padding: 1rem 1.25rem; font-size: 14px; color: var(--success-text); display: flex; align-items: center; gap: 10px; }
+  .cl-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .cl-tab-btn { padding: 8px 18px; font-size: 14px; border-radius: 20px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; transition: background .1s; }
+  .cl-tab-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+  .cl-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .cl-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .cl-grid-3 .cl-section, .cl-grid-2 .cl-section { background: var(--bg); border-radius: var(--radius); padding: 1rem; margin-bottom: 0; }
+  @media (max-width: 900px) { .cl-grid-3 { grid-template-columns: 1fr; } .cl-grid-2 { grid-template-columns: 1fr; } }
+  .cl-history-row { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: .875rem 1rem; margin-bottom: .5rem; cursor: pointer; transition: border-color .15s; }
+  .cl-history-row:hover { border-color: var(--border-strong); }
+  .cl-history-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .cl-history-name { font-weight: 500; font-size: 15px; }
+  .cl-history-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cl-history-score { font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .cl-history-score.full { color: var(--success-text); }
+  .cl-history-score.partial { color: var(--warn-text); }
+  .cl-history-detail { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); display: none; }
+  .cl-history-detail.open { display: block; }
+  .cl-history-detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: .75rem; }
+  .cl-history-detail-section { font-size: 13px; }
+  .cl-history-detail-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: .4rem; }
+  .cl-history-detail-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+  .cl-history-check { font-size: 13px; }
+  .cl-history-check.ok { color: var(--success-text); }
+  .cl-history-check.no { color: var(--accent); }
+  .cl-history-note { font-size: 13px; color: var(--muted); margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--border); }
+  @media (max-width: 900px) { .cl-history-detail-grid { grid-template-columns: 1fr; } }
+
   @media print {
     @page { size: 80mm auto; margin: 3mm; }
     body { visibility: hidden; }
@@ -212,7 +265,9 @@
 <div class="tabs" style="justify-content:space-between;">
   <div style="display:flex;">
     <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
+    <button class="tab-btn" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
     <button class="tab-btn" onclick="switchTab('uctenky',this)">Historie účtenek</button>
+    <button class="tab-btn" onclick="switchTab('administrace',this)">Administrace</button>
     <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
   </div>
   <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
@@ -315,6 +370,153 @@
     <div id="uctenky-list"></div>
   </main>
 </div><!-- /tab-uctenky -->
+
+<div class="tab-content" id="tab-uzavirka">
+<main>
+  <div id="cl-history-wrap"></div>
+
+  <div class="card">
+    <div class="cl-name-row">
+      <label>Jméno obsluhy:</label>
+      <input type="text" id="cl-obsluha" placeholder="Kdo zavírá..." />
+    </div>
+    <div class="cl-progress">
+      <div class="cl-progress-bar"><div class="cl-progress-fill" id="cl-progress-fill" style="width:0%"></div></div>
+      <div class="cl-progress-text" id="cl-progress-text">0 / 21</div>
+    </div>
+
+    <div class="cl-grid-3">
+      <div class="cl-section">
+        <div class="cl-section-title">Kuchyň</div>
+        <div class="cl-item" onclick="toggleCheck('cl13')">
+          <div class="cl-checkbox" id="cl13-box"></div>
+          <div class="cl-label" id="cl13-lbl">Pracovní plochy jsou uklizené a otřené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl14')">
+          <div class="cl-checkbox" id="cl14-box"></div>
+          <div class="cl-label" id="cl14-lbl">Nádobí je umyté / v myčce / uklizené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl15')">
+          <div class="cl-checkbox" id="cl15-box"></div>
+          <div class="cl-label" id="cl15-lbl">Spotřebiče jsou vypnuté (pizza pec..)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl16')">
+          <div class="cl-checkbox" id="cl16-box"></div>
+          <div class="cl-label" id="cl16-lbl">Odpad je vynesený (nebo připravený dle domluvy)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl17')">
+          <div class="cl-checkbox" id="cl17-box"></div>
+          <div class="cl-label" id="cl17-lbl">Kuchyň je zhasnutá a zavřená?</div>
+        </div>
+      </div>
+
+      <div class="cl-section">
+        <div class="cl-section-title">Toalety</div>
+        <div class="cl-item" onclick="toggleCheck('cl18')">
+          <div class="cl-checkbox" id="cl18-box"></div>
+          <div class="cl-label" id="cl18-lbl">Toalety zkontrolované a uklizené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl19')">
+          <div class="cl-checkbox" id="cl19-box"></div>
+          <div class="cl-label" id="cl19-lbl">Doplněný toaletní papír / mýdlo?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl20')">
+          <div class="cl-checkbox" id="cl20-box"></div>
+          <div class="cl-label" id="cl20-lbl">Světla na toaletách zhasnutá?</div>
+        </div>
+      </div>
+
+      <div class="cl-section">
+        <div class="cl-section-title">Bar</div>
+        <div class="cl-item" onclick="toggleCheck('cl6')">
+          <div class="cl-checkbox" id="cl6-box"></div>
+          <div class="cl-label" id="cl6-lbl">Bar je uklizený a otřený?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl7')">
+          <div class="cl-checkbox" id="cl7-box"></div>
+          <div class="cl-label" id="cl7-lbl">Pípy jsou vysanitované?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl8')">
+          <div class="cl-checkbox" id="cl8-box"></div>
+          <div class="cl-label" id="cl8-lbl">Jsou zavřeny oba kohouty s vodou (sanitace, oplach skleniček)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl9')">
+          <div class="cl-checkbox" id="cl9-box"></div>
+          <div class="cl-label" id="cl9-lbl">Kávovar je vypnutý a uvedený do pořádku?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl10')">
+          <div class="cl-checkbox" id="cl10-box"></div>
+          <div class="cl-label" id="cl10-lbl">Lednice jsou zavřené a zkontrolované. Prošlé a staré věci jsou vyhozené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl11')">
+          <div class="cl-checkbox" id="cl11-box"></div>
+          <div class="cl-label" id="cl11-lbl">Jsou odneseny odpadky?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl12')">
+          <div class="cl-checkbox" id="cl12-box"></div>
+          <div class="cl-label" id="cl12-lbl">Je doplněna lednice na baru?</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-grid-2">
+      <div class="cl-section">
+        <div class="cl-section-title">Sál</div>
+        <div class="cl-item" onclick="toggleCheck('cl1')">
+          <div class="cl-checkbox" id="cl1-box"></div>
+          <div class="cl-label" id="cl1-lbl">Stoly jsou setřené, na každém stole jsou podtácky a menu?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl2')">
+          <div class="cl-checkbox" id="cl2-box"></div>
+          <div class="cl-label" id="cl2-lbl">Židle jsou zvednuté, barové židle jsou zvednuté? Na každém stole je 5 židlí?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl3')">
+          <div class="cl-checkbox" id="cl3-box"></div>
+          <div class="cl-label" id="cl3-lbl">Barovky jsou na baru, ostatní barovky jsou u okna?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl4')">
+          <div class="cl-checkbox" id="cl4-box"></div>
+          <div class="cl-label" id="cl4-lbl">Podlaha je uklizená (zameteno / vytřeno dle potřeby)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl5')">
+          <div class="cl-checkbox" id="cl5-box"></div>
+          <div class="cl-label" id="cl5-lbl">Nealko, víno, prosecco, petky, paštiky, hermelíny, utopenci v lednici u vstupu jsou doplněny do plna?</div>
+        </div>
+      </div>
+
+      <div class="cl-section">
+        <div class="cl-section-title">Administrace</div>
+        <div class="cl-item" style="flex-direction:column;align-items:flex-start;gap:4px;cursor:default;">
+          <div class="cl-label" style="cursor:default;">Tržby v hotovosti</div>
+          <div class="cl-amount-row">
+            <input type="number" id="adm-trzby" placeholder="0" min="0" />
+            <span>Kč</span>
+          </div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl21')">
+          <div class="cl-checkbox" id="cl21-box"></div>
+          <div class="cl-label" id="cl21-lbl">Všechny lístky jsou přepsány do pokladny?</div>
+        </div>
+        <div class="cl-item" style="flex-direction:column;align-items:flex-start;gap:4px;cursor:default;">
+          <div class="cl-label" style="cursor:default;">Poznámky k předání směny</div>
+          <textarea id="adm-poznamky" class="cl-text-input" rows="4" placeholder="Pokud je něco k předání, napište zde..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-submit-row">
+      <button class="primary" onclick="uzavritSmenU()">Uzavřít směnu</button>
+    </div>
+    <div id="cl-done-msg" class="cl-done-banner hidden" style="margin-top:1rem;">
+      ✓ Směna uzavřena — <span id="cl-done-detail"></span>
+    </div>
+  </div>
+</main>
+</div><!-- /tab-uzavirka -->
+
+<div class="tab-content" id="tab-administrace">
+  <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
+</div><!-- /tab-administrace -->
 
 <div class="tab-content" id="tab-ostatni">
   <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
@@ -458,6 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
   buildCategoryBtns();
   startManual();
   renderUctenky();
+  renderClHistory();
 });
 
 function initApiKey() {
@@ -1020,12 +1223,12 @@ function closeQrModal() {
 // --- Tisk ---
 
 var RECEIPT_CSS =
-  'body{font-family:"Courier New",monospace;font-size:12px;width:74mm;margin:0;padding:3mm;color:#000;background:#fff;}' +
+  'body{font-family:"Courier New",monospace;font-size:16px;font-weight:600;width:74mm;margin:0;padding:3mm;color:#000;background:#fff;}' +
   '.rp-center{text-align:center;}' +
   '.rp-line{border:none;border-top:1px dashed #000;margin:5px 0;}' +
-  '.rp-row{display:flex;justify-content:space-between;padding:1px 0;}' +
-  '.rp-total{display:flex;justify-content:space-between;padding:3px 0;font-weight:700;font-size:14px;border-top:1px solid #000;margin-top:3px;}' +
-  '.rp-footer{text-align:center;margin-top:6px;font-size:11px;}' +
+  '.rp-row{display:flex;justify-content:space-between;padding:1px 0;font-size:16px;}' +
+  '.rp-total{display:flex;justify-content:space-between;padding:3px 0;font-weight:700;font-size:19px;border-top:1px solid #000;margin-top:3px;}' +
+  '.rp-footer{text-align:center;margin-top:6px;font-size:13px;}' +
   '@page{size:80mm auto;margin:3mm;}';
 
 function printReceiptIframe(html) {
@@ -1206,6 +1409,133 @@ function resetApp() {
   showReceipt();
   renderItems();
 }
+
+// --- Checklist ---
+
+const CL_TOTAL = 21;
+
+var clState = {};
+var admState = {};
+
+function toggleCheck(id) {
+  clState[id] = !clState[id];
+  renderChecklist();
+}
+
+function renderChecklist() {
+  var done = 0;
+  for (var i = 1; i <= CL_TOTAL; i++) {
+    var key = 'cl' + i;
+    var box = document.getElementById(key + '-box');
+    var lbl = document.getElementById(key + '-lbl');
+    if (!box) continue;
+    if (clState[key]) {
+      box.classList.add('checked');
+      lbl.classList.add('checked');
+      done++;
+    } else {
+      box.classList.remove('checked');
+      lbl.classList.remove('checked');
+    }
+  }
+  var pct = Math.round(done / CL_TOTAL * 100);
+  document.getElementById('cl-progress-fill').style.width = pct + '%';
+  document.getElementById('cl-progress-text').textContent = done + ' / ' + CL_TOTAL;
+}
+
+const CL_ITEMS = [
+  {key:'cl13', sec:'Kuchyň',  lbl:'Pracovní plochy jsou uklizené a otřené?'},
+  {key:'cl14', sec:'Kuchyň',  lbl:'Nádobí je umyté / v myčce / uklizené?'},
+  {key:'cl15', sec:'Kuchyň',  lbl:'Spotřebiče jsou vypnuté (pizza pec..)?'},
+  {key:'cl16', sec:'Kuchyň',  lbl:'Odpad je vynesený (nebo připravený dle domluvy)?'},
+  {key:'cl17', sec:'Kuchyň',  lbl:'Kuchyň je zhasnutá a zavřená?'},
+  {key:'cl18', sec:'Toalety', lbl:'Toalety zkontrolované a uklizené?'},
+  {key:'cl19', sec:'Toalety', lbl:'Doplněný toaletní papír / mýdlo?'},
+  {key:'cl20', sec:'Toalety', lbl:'Světla na toaletách zhasnutá?'},
+  {key:'cl6',  sec:'Bar',     lbl:'Bar je uklizený a otřený?'},
+  {key:'cl7',  sec:'Bar',     lbl:'Pípy jsou vysanitované?'},
+  {key:'cl8',  sec:'Bar',     lbl:'Jsou zavřeny oba kohouty s vodou?'},
+  {key:'cl9',  sec:'Bar',     lbl:'Kávovar je vypnutý a uvedený do pořádku?'},
+  {key:'cl10', sec:'Bar',     lbl:'Lednice jsou zavřené a zkontrolované?'},
+  {key:'cl11', sec:'Bar',     lbl:'Jsou odneseny odpadky?'},
+  {key:'cl12', sec:'Bar',     lbl:'Je doplněna lednice na baru?'},
+  {key:'cl1',  sec:'Sál',     lbl:'Stoly jsou setřené, podtácky a menu?'},
+  {key:'cl2',  sec:'Sál',     lbl:'Židle jsou zvednuté? Na každém stole je 5 židlí?'},
+  {key:'cl3',  sec:'Sál',     lbl:'Barovky jsou na baru, ostatní barovky jsou u okna?'},
+  {key:'cl4',  sec:'Sál',     lbl:'Podlaha je uklizená?'},
+  {key:'cl5',  sec:'Sál',     lbl:'Lednice u vstupu je doplněna do plna?'},
+  {key:'cl21', sec:'Adm.',    lbl:'Všechny lístky jsou přepsány do pokladny?'}
+];
+
+function uzavritSmenU() {
+  var obsluha = document.getElementById('cl-obsluha').value.trim() || 'neznámá obsluha';
+  var trzby = document.getElementById('adm-trzby').value || '0';
+  var poznamky = document.getElementById('adm-poznamky').value.trim();
+  var done = 0;
+  for (var i = 1; i <= CL_TOTAL; i++) { if (clState['cl' + i]) done++; }
+  var now = new Date();
+  var cas = now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'});
+  var entry = {obsluha: obsluha, cas: cas, trzby: trzby, poznamky: poznamky, done: done, state: JSON.parse(JSON.stringify(clState))};
+  var history = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
+  history.unshift(entry);
+  if (history.length > 10) history = history.slice(0, 10);
+  localStorage.setItem('bukovar_checklist_history', JSON.stringify(history));
+  var detail = obsluha + ', ' + cas + ', tržby: ' + trzby + ' Kč (' + done + '/' + CL_TOTAL + ' hotovo)' + (poznamky ? ' — ' + poznamky.substring(0, 40) + (poznamky.length > 40 ? '…' : '') : '');
+  document.getElementById('cl-done-detail').textContent = detail;
+  document.getElementById('cl-done-msg').classList.remove('hidden');
+  renderClHistory();
+}
+
+function resetChecklist() {
+  clState = {};
+  document.getElementById('cl-obsluha').value = '';
+  document.getElementById('adm-trzby').value = '';
+  document.getElementById('adm-poznamky').value = '';
+  document.getElementById('cl-done-msg').classList.add('hidden');
+  renderChecklist();
+}
+
+function renderClHistory() {
+  var wrap = document.getElementById('cl-history-wrap');
+  if (!wrap) return;
+  var history = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
+  if (!history.length) { wrap.innerHTML = ''; return; }
+  var secs = ['Kuchyň','Toalety','Bar','Sál','Adm.'];
+  var html = '<div class="card" style="margin-bottom:1.2rem;"><div class="section-label">Historie uzavírek</div>';
+  history.forEach(function(entry, idx) {
+    var scoreClass = entry.done === CL_TOTAL ? 'full' : 'partial';
+    html += '<div class="cl-history-row" onclick="toggleClHistory(' + idx + ')">';
+    html += '<div class="cl-history-header">';
+    html += '<div><div class="cl-history-name">' + entry.cas + ' — ' + entry.obsluha + '</div>';
+    html += '<div class="cl-history-meta">Tržby: ' + entry.trzby + ' Kč</div></div>';
+    html += '<div class="cl-history-score ' + scoreClass + '">' + entry.done + ' / ' + CL_TOTAL + '</div>';
+    html += '</div>';
+    html += '<div class="cl-history-detail" id="cl-hist-detail-' + idx + '">';
+    html += '<div class="cl-history-detail-grid">';
+    secs.forEach(function(sec) {
+      var items = CL_ITEMS.filter(function(it) { return it.sec === sec; });
+      html += '<div class="cl-history-detail-section"><div class="cl-history-detail-title">' + sec + '</div>';
+      items.forEach(function(it) {
+        var ok = entry.state && entry.state[it.key];
+        html += '<div class="cl-history-detail-item"><span class="cl-history-check ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✓' : '✗') + '</span><span style="font-size:12px;color:' + (ok ? 'var(--text)' : 'var(--accent)') + '">' + it.lbl + '</span></div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    if (entry.poznamky) html += '<div class="cl-history-note"><strong>Poznámka:</strong> ' + entry.poznamky + '</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function toggleClHistory(idx) {
+  var detail = document.getElementById('cl-hist-detail-' + idx);
+  if (!detail) return;
+  detail.classList.toggle('open');
+}
+
+
 </script>
 
 <!-- Oblast pro tisk — skrytá, zobrazí se jen při tisku -->
