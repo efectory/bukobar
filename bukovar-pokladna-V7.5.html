@@ -162,30 +162,18 @@
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
   /* Sklad */
-  .sklad-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px; }
-  .sklad-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .sklad-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  .sklad-table th { text-align: left; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 10px 8px; border-bottom: 2px solid var(--border-strong); }
-  .sklad-table th.right { text-align: right; }
-  .sklad-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .sklad-table tr:last-child td { border-bottom: none; }
-  .sklad-table tr:hover td { background: var(--bg); }
-  .sklad-qty { font-weight: 500; font-size: 15px; }
-  .sklad-unit { font-size: 12px; color: var(--muted); margin-left: 3px; }
-  .sklad-edit-row td { background: var(--accent-light) !important; }
-  .sklad-edit-input { width: 90px; padding: 5px 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
-  .sklad-edit-input:focus { border-color: var(--accent); }
-  .sklad-save-btn { padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; background: var(--accent); color: #fff; border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; }
-  .sklad-cancel-btn { padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: transparent; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; }
-  .sklad-row-edit-btn { padding: 4px 10px; font-size: 12px; font-family: 'DM Sans', sans-serif; background: transparent; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--muted); transition: border-color .1s, color .1s; }
-  .sklad-row-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .prijem-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 10px; align-items: center; margin-bottom: 1rem; max-height: 55vh; overflow-y: auto; }
-  .prijem-grid-header { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid var(--border-strong); }
-  .prijem-name { font-size: 13px; padding: 4px 0; }
-  .prijem-cur { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap; }
-  .prijem-input { width: 80px; padding: 5px 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
-  .prijem-input:focus { border-color: var(--accent); }
-  .prijem-cat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); grid-column: 1 / -1; padding-top: 10px; padding-bottom: 2px; border-bottom: 1px solid var(--border); margin-top: 4px; }
+  .sklad-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .sklad-group { margin-bottom: 1.1rem; }
+  .sklad-group-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 5px; border-bottom: 1px solid var(--border-strong); margin-bottom: 4px; }
+  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 2px; border-bottom: 1px solid var(--border); gap: 8px; }
+  .sklad-item:last-child { border-bottom: none; }
+  .sklad-item-name { font-size: 13px; }
+  .sklad-qty-wrap { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .sklad-qty { font-weight: 500; font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background .1s; }
+  .sklad-qty:hover { background: var(--accent-light); }
+  .sklad-qty.negative { color: var(--accent); }
+  .sklad-unit { font-size: 11px; color: var(--muted); }
+  .sklad-inline-input { width: 70px; padding: 2px 6px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
 
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -596,21 +584,8 @@
 <div class="tab-content" id="tab-sklad">
   <main>
     <div class="card">
-      <div class="sklad-header">
-        <div style="font-family:'DM Serif Display',serif;font-size:20px;">Stav skladu</div>
-        <button class="primary" onclick="openPrijemHeslo()">+ Příjem zboží</button>
-      </div>
-      <div class="sklad-cats" id="sklad-cats"></div>
-      <table class="sklad-table">
-        <thead>
-          <tr>
-            <th>Název</th>
-            <th class="right">Stav</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="sklad-tbody"></tbody>
-      </table>
+      <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1rem;">Stav skladu</div>
+      <div class="sklad-cols" id="sklad-cols"></div>
     </div>
   </main>
 </div><!-- /tab-sklad -->
@@ -622,35 +597,6 @@
 <div class="tab-content" id="tab-ostatni">
   <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
 </div><!-- /tab-ostatni -->
-
-<!-- Příjem zboží — heslo -->
-<div class="modal-overlay hidden" id="prijem-heslo-modal">
-  <div class="modal" style="max-width:320px;">
-    <h3>Příjem zboží</h3>
-    <p>Zadejte heslo pro přístup</p>
-    <input type="password" id="prijem-heslo-input" placeholder="Heslo..."
-      style="width:100%;padding:10px 12px;font-size:16px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-strong);border-radius:var(--radius);outline:none;margin-bottom:.5rem;"
-      onkeydown="if(event.key==='Enter')potvrdPrijemHeslo()" />
-    <div id="prijem-heslo-err" style="font-size:12px;color:var(--accent);min-height:18px;margin-bottom:.5rem;"></div>
-    <div class="modal-actions">
-      <button onclick="closePrijemHeslo()">Zrušit</button>
-      <button class="primary" onclick="potvrdPrijemHeslo()">Vstoupit</button>
-    </div>
-  </div>
-</div>
-
-<!-- Příjem zboží — formulář -->
-<div class="modal-overlay hidden" id="prijem-modal">
-  <div class="modal" style="max-width:520px;">
-    <h3>Příjem zboží</h3>
-    <p style="margin-bottom:1rem;">Zadejte přijatá množství (přičtou se k aktuálnímu stavu)</p>
-    <div class="prijem-grid" id="prijem-grid"></div>
-    <div class="modal-actions">
-      <button onclick="closePrijem()">Zrušit</button>
-      <button class="primary" onclick="ulozitPrijem()">Uložit příjem</button>
-    </div>
-  </div>
-</div>
 
 <!-- Štamgast modal -->
 <div class="modal-overlay hidden" id="stamgast-modal">
@@ -1473,7 +1419,10 @@ function stornoUctenka(id, e) {
   e.stopPropagation();
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
   var rec = data.find(function(r) { return r.id === id; });
-  if (rec) { rec.storno = true; }
+  if (rec) {
+    rec.storno = true;
+    skladRestoreFromReceipt(rec.polozky);
+  }
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
   renderUctenky();
 }
@@ -1666,8 +1615,82 @@ function toggleClHistory(idx) {
 
 // --- Sklad ---
 
-var SKLAD_HESLO = '1241';
-var skladActiveCat = 'vše';
+const SKLAD_GROUPS = [
+  { col: 0, label: 'Nealkoholické', items: [
+    { n: 'Kofola', unit: 'ks' }, { n: 'Frizzante', unit: 'ks' },
+    { n: 'Royal Crown Cola', unit: 'ks' }, { n: 'ChitoTonic', unit: 'ks' },
+    { n: 'Džus pomeranč', unit: 'ks' }, { n: 'Džus jablko', unit: 'ks' },
+    { n: 'Perlivá voda', unit: 'ks' }, { n: 'Bukovská voda', unit: 'ks' },
+  ]},
+  { col: 0, label: 'Víno', items: [
+    { n: 'Rozlévané víno', unit: 'l' }, { n: 'Lahvové víno', unit: 'ks' },
+    { n: 'Prosecco Mionetto', unit: 'ks' }, { n: 'Prosecco Treviso', unit: 'ks' },
+    { n: 'Prosecco rozlévané', unit: 'l' },
+  ]},
+  { col: 0, label: 'Alkohol', items: [
+    { n: 'Beefeater Gin', unit: 'l' }, { n: 'Bacardi', unit: 'l' }, { n: 'Aperol', unit: 'l' },
+  ]},
+  { col: 0, label: 'Občerstvení', items: [
+    { n: 'Utopenec', unit: 'ks' }, { n: 'Pizza Della Casa', unit: 'ks' },
+    { n: 'Nakládaný hermelín', unit: 'ks' }, { n: 'Chipsy', unit: 'ks' },
+    { n: 'Slané tyčinky', unit: 'ks' }, { n: 'Arašídy', unit: 'ks' },
+    { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
+    { n: 'Škvarky v sádle Čongrády', unit: 'ks' },
+  ]},
+  { col: 1, label: 'Lahvová piva', items: [
+    { n: 'Radler', unit: 'ks' }, { n: 'Birel neochucený', unit: 'ks' },
+    { n: 'Birel ochucený', unit: 'ks' }, { n: "Maisel's Weisse", unit: 'ks' },
+  ]},
+  { col: 1, label: 'Čepovaná piva', items: [
+    { n: 'Hraďák 10°', unit: 'l' }, { n: 'Štamgast 11°', unit: 'l' },
+    { n: 'Šedá vlčice 11°', unit: 'l' }, { n: 'Kohoutí 12°', unit: 'l' },
+    { n: 'Zlatka 11°', unit: 'l' }, { n: 'Mezulánka 11°', unit: 'l' },
+    { n: 'Nelson 12°', unit: 'l' }, { n: 'Dublin 13°', unit: 'l' },
+  ]},
+];
+
+const SKLAD_MAP = {
+  'Kofola 0,3l': { key: 'Kofola', inc: 1 }, 'Kofola 0,5l': { key: 'Kofola', inc: 1 },
+  'Frizzante 0,3l': { key: 'Frizzante', inc: 1 }, 'Frizzante 0,5l': { key: 'Frizzante', inc: 1 },
+  'Royal crown cola': { key: 'Royal Crown Cola', inc: 1 },
+  'ChitoTonic': { key: 'ChitoTonic', inc: 1 },
+  'Džus pomeranč': { key: 'Džus pomeranč', inc: 1 }, 'Džus jablko': { key: 'Džus jablko', inc: 1 },
+  'Perlivá voda': { key: 'Perlivá voda', inc: 1 }, 'Bukovská voda': { key: 'Bukovská voda', inc: 1 },
+  'Rozlévané víno': { key: 'Rozlévané víno', inc: 0.2 },
+  'Lahvové víno': { key: 'Lahvové víno', inc: 1 },
+  'Prosecco Mionetto': { key: 'Prosecco Mionetto', inc: 1 },
+  'Prosecco Treviso': { key: 'Prosecco Treviso', inc: 1 },
+  'Prosecco rozlévané': { key: 'Prosecco rozlévané', inc: 0.15 },
+  'Gin s tonikem': { key: 'Beefeater Gin', inc: 0.04 },
+  'Cuba libre': { key: 'Bacardi', inc: 0.04 },
+  'Aperol Spritz': { key: 'Aperol', inc: 0.06 },
+  'Radler': { key: 'Radler', inc: 1 },
+  'Birel nealko neochucený': { key: 'Birel neochucený', inc: 1 },
+  'Birel nealko ochucený': { key: 'Birel ochucený', inc: 1 },
+  "Maisel's Weisse Alkoholfrei": { key: "Maisel's Weisse", inc: 1 },
+  'Hraďák 10°': { key: 'Hraďák 10°', inc: 0.4 }, 'Hraďák 10° v PET': { key: 'Hraďák 10°', inc: 1.0 },
+  'Štamgast 11°': { key: 'Štamgast 11°', inc: 0.4 }, 'Štamgast 11° v PET': { key: 'Štamgast 11°', inc: 1.0 },
+  'Šedá vlčice 11°': { key: 'Šedá vlčice 11°', inc: 0.4 }, 'Šedá vlčice 11° v PET': { key: 'Šedá vlčice 11°', inc: 1.0 },
+  'Kohoutí 12°': { key: 'Kohoutí 12°', inc: 0.4 }, 'Kohoutí 12° v PET': { key: 'Kohoutí 12°', inc: 1.0 },
+  'Zlatka 11°': { key: 'Zlatka 11°', inc: 0.4 }, 'Zlatka 11° v PET': { key: 'Zlatka 11°', inc: 1.0 },
+  'Mezulánka 11°': { key: 'Mezulánka 11°', inc: 0.4 }, 'Mezulánka 11° v PET': { key: 'Mezulánka 11°', inc: 1.0 },
+  'Nelson 12°': { key: 'Nelson 12°', inc: 0.4 }, 'Nelson 12° v PET': { key: 'Nelson 12°', inc: 1.0 },
+  'Dublin 13°': { key: 'Dublin 13°', inc: 0.4 }, 'Dublin 13° v PET': { key: 'Dublin 13°', inc: 1.0 },
+  'Utopenec': { key: 'Utopenec', inc: 1 }, 'Pizza Della Casa': { key: 'Pizza Della Casa', inc: 1 },
+  'Nakládaný hermelín': { key: 'Nakládaný hermelín', inc: 1 }, 'Chipsy': { key: 'Chipsy', inc: 1 },
+  'Slané tyčinky': { key: 'Slané tyčinky', inc: 1 }, 'Arašídy': { key: 'Arašídy', inc: 1 },
+  'Paštiky Čongrády': { key: 'Paštiky Čongrády', inc: 1 },
+  'Paštika ve skle Čongrády': { key: 'Paštika ve skle Čongrády', inc: 1 },
+  'Škvarky v sádle Čongrády': { key: 'Škvarky v sádle Čongrády', inc: 1 },
+};
+
+function skladGetUnit(key) {
+  for (var g = 0; g < SKLAD_GROUPS.length; g++) {
+    var found = SKLAD_GROUPS[g].items.find(function(i) { return i.n === key; });
+    if (found) return found.unit;
+  }
+  return 'ks';
+}
 
 function skladUnitInfo(item) {
   if (!item.u) return { unit: 'ks', inc: 1 };
@@ -1688,145 +1711,104 @@ function saveSklad(data) {
 function skladDecrementFromReceipt(items) {
   var sklad = getSklad();
   items.forEach(function(it) {
-    var menuItem = MENU.find(function(m) { return m.n === it.nazev; });
-    var info = menuItem ? skladUnitInfo(menuItem) : { unit: 'ks', inc: 1 };
-    var key = it.nazev;
-    if (!sklad[key]) sklad[key] = { qty: 0, unit: info.unit };
-    sklad[key].qty = Math.round((sklad[key].qty - info.inc * it.pocet) * 1000) / 1000;
+    var map = SKLAD_MAP[it.nazev];
+    if (!map) return;
+    if (!sklad[map.key]) sklad[map.key] = { qty: 0, unit: skladGetUnit(map.key) };
+    sklad[map.key].qty = Math.round((sklad[map.key].qty - map.inc * it.pocet) * 1000) / 1000;
+  });
+  saveSklad(sklad);
+}
+
+function skladRestoreFromReceipt(items) {
+  var sklad = getSklad();
+  items.forEach(function(it) {
+    var map = SKLAD_MAP[it.nazev];
+    if (!map) return;
+    if (!sklad[map.key]) sklad[map.key] = { qty: 0, unit: skladGetUnit(map.key) };
+    sklad[map.key].qty = Math.round((sklad[map.key].qty + map.inc * it.pocet) * 1000) / 1000;
   });
   saveSklad(sklad);
 }
 
 function renderSklad() {
   var sklad = getSklad();
-  var cats = ['vše'].concat(
-    MENU.reduce(function(acc, m) {
-      if (acc.indexOf(m.c) === -1) acc.push(m.c);
-      return acc;
-    }, [])
-  );
-
-  var catsEl = document.getElementById('sklad-cats');
-  catsEl.innerHTML = cats.map(function(c) {
-    return '<button class="cat-btn' + (c === skladActiveCat ? ' active' : '') + '" onclick="skladSetCat(\'' + c + '\')">' + c + '</button>';
-  }).join('');
-
-  var tbody = document.getElementById('sklad-tbody');
-  var items = MENU.filter(function(m) {
-    return skladActiveCat === 'vše' || m.c === skladActiveCat;
-  });
-
-  tbody.innerHTML = items.map(function(m) {
-    var info = skladUnitInfo(m);
-    var entry = sklad[m.n] || { qty: 0, unit: info.unit };
-    var qty = Math.round(entry.qty * 1000) / 1000;
-    return '<tr id="sklad-row-' + encodeURIComponent(m.n) + '">' +
-      '<td>' + m.n + '</td>' +
-      '<td style="text-align:right"><span class="sklad-qty">' + qty + '</span><span class="sklad-unit">' + info.unit + '</span></td>' +
-      '<td style="text-align:right"><button class="sklad-row-edit-btn" onclick="skladEditRow(\'' + m.n.replace(/'/g, "\\'") + '\')">Upravit</button></td>' +
-      '</tr>';
-  }).join('');
-}
-
-function skladSetCat(cat) {
-  skladActiveCat = cat;
-  renderSklad();
-}
-
-function skladEditRow(name) {
-  var sklad = getSklad();
-  var menuItem = MENU.find(function(m) { return m.n === name; });
-  var info = menuItem ? skladUnitInfo(menuItem) : { unit: 'ks', inc: 1 };
-  var entry = sklad[name] || { qty: 0, unit: info.unit };
-  var rowId = 'sklad-row-' + encodeURIComponent(name);
-  var row = document.getElementById(rowId);
-  if (!row) return;
-  row.classList.add('sklad-edit-row');
-  row.innerHTML =
-    '<td>' + name + '</td>' +
-    '<td style="text-align:right"><input class="sklad-edit-input" id="sklad-edit-val" type="number" step="0.1" value="' + entry.qty + '" /> <span class="sklad-unit">' + info.unit + '</span></td>' +
-    '<td style="text-align:right;white-space:nowrap">' +
-      '<button class="sklad-save-btn" onclick="skladSaveRow(\'' + name.replace(/'/g, "\\'") + '\')">Uložit</button> ' +
-      '<button class="sklad-cancel-btn" onclick="renderSklad()">Zrušit</button>' +
-    '</td>';
-  document.getElementById('sklad-edit-val').focus();
-}
-
-function skladSaveRow(name) {
-  var val = parseFloat(document.getElementById('sklad-edit-val').value);
-  if (isNaN(val)) { renderSklad(); return; }
-  var sklad = getSklad();
-  var menuItem = MENU.find(function(m) { return m.n === name; });
-  var info = menuItem ? skladUnitInfo(menuItem) : { unit: 'ks', inc: 1 };
-  sklad[name] = { qty: Math.round(val * 1000) / 1000, unit: info.unit };
-  saveSklad(sklad);
-  renderSklad();
-}
-
-// --- Příjem zboží ---
-
-function openPrijemHeslo() {
-  document.getElementById('prijem-heslo-input').value = '';
-  document.getElementById('prijem-heslo-err').textContent = '';
-  document.getElementById('prijem-heslo-modal').classList.remove('hidden');
-  setTimeout(function() { document.getElementById('prijem-heslo-input').focus(); }, 50);
-}
-
-function closePrijemHeslo() {
-  document.getElementById('prijem-heslo-modal').classList.add('hidden');
-}
-
-function potvrdPrijemHeslo() {
-  var val = document.getElementById('prijem-heslo-input').value;
-  if (val !== SKLAD_HESLO) {
-    document.getElementById('prijem-heslo-err').textContent = 'Nesprávné heslo.';
-    return;
-  }
-  closePrijemHeslo();
-  openPrijem();
-}
-
-function openPrijem() {
-  var sklad = getSklad();
-  var cats = MENU.reduce(function(acc, m) {
-    if (acc.indexOf(m.c) === -1) acc.push(m.c);
-    return acc;
-  }, []);
-
-  var html = '<div class="prijem-grid-header">Položka</div><div class="prijem-grid-header" style="text-align:right">Stav</div><div class="prijem-grid-header" style="text-align:right">Přijmout</div>';
-  cats.forEach(function(cat) {
-    var items = MENU.filter(function(m) { return m.c === cat; });
-    html += '<div class="prijem-cat-label">' + cat + '</div>';
-    items.forEach(function(m) {
-      var info = skladUnitInfo(m);
-      var entry = sklad[m.n] || { qty: 0, unit: info.unit };
-      html += '<div class="prijem-name">' + m.n + '</div>' +
-        '<div class="prijem-cur">' + (Math.round(entry.qty * 1000) / 1000) + ' ' + info.unit + '</div>' +
-        '<input class="prijem-input" type="number" step="0.1" min="0" placeholder="0" data-name="' + m.n.replace(/"/g, '&quot;') + '" data-unit="' + info.unit + '" />';
+  var cols = [[], []];
+  SKLAD_GROUPS.forEach(function(g) {
+    var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
+    g.items.forEach(function(item, idx) {
+      var entry = sklad[item.n] || { qty: 0, unit: item.unit };
+      var qty = Math.round(entry.qty * 1000) / 1000;
+      var neg = qty < 0 ? ' negative' : '';
+      var id = 'sq-' + encodeURIComponent(item.n);
+      html += '<div class="sklad-item">' +
+        '<span class="sklad-item-name">' + item.n + '</span>' +
+        '<span class="sklad-qty-wrap">' +
+          '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + item.n.replace(/'/g, "\\'") + '\',this)">' + qty + '</span>' +
+          '<span class="sklad-unit">' + item.unit + '</span>' +
+        '</span>' +
+        '</div>';
     });
+    html += '</div>';
+    cols[g.col].push(html);
   });
 
-  document.getElementById('prijem-grid').innerHTML = html;
-  document.getElementById('prijem-modal').classList.remove('hidden');
+  var el = document.getElementById('sklad-cols');
+  el.innerHTML = '<div>' + cols[0].join('') + '</div><div>' + cols[1].join('') + '</div>';
 }
 
-function closePrijem() {
-  document.getElementById('prijem-modal').classList.add('hidden');
-}
-
-function ulozitPrijem() {
+function skladQtyClick(name, spanEl) {
   var sklad = getSklad();
-  document.querySelectorAll('#prijem-grid input[data-name]').forEach(function(inp) {
-    var val = parseFloat(inp.value);
-    if (!val || val <= 0) return;
-    var name = inp.getAttribute('data-name');
-    var unit = inp.getAttribute('data-unit');
-    if (!sklad[name]) sklad[name] = { qty: 0, unit: unit };
-    sklad[name].qty = Math.round((sklad[name].qty + val) * 1000) / 1000;
+  var unit = skladGetUnit(name);
+  var entry = sklad[name] || { qty: 0, unit: unit };
+  var wrap = spanEl.parentElement;
+  var allQtySpans = document.querySelectorAll('.sklad-qty');
+
+  // Uložit ostatní otevřené inputy
+  allQtySpans.forEach(function(s) {
+    if (s !== spanEl && s.tagName !== 'SPAN') return;
   });
-  saveSklad(sklad);
-  closePrijem();
-  renderSklad();
+  document.querySelectorAll('.sklad-inline-input').forEach(function(inp) {
+    inp.blur();
+  });
+
+  var input = document.createElement('input');
+  input.className = 'sklad-inline-input';
+  input.type = 'number';
+  input.step = '0.1';
+  input.value = entry.qty;
+  wrap.replaceChild(input, spanEl);
+  input.select();
+
+  function save() {
+    var val = parseFloat(input.value);
+    if (!isNaN(val)) {
+      sklad[name] = { qty: Math.round(val * 1000) / 1000, unit: unit };
+      saveSklad(sklad);
+    }
+    renderSklad();
+  }
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); save(); }
+    if (e.key === 'Escape') { renderSklad(); }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      save();
+      // Fokus na další qty span
+      var spans = Array.from(document.querySelectorAll('.sklad-qty'));
+      var idx = spans.findIndex(function(s) { return s.id === 'sq-' + encodeURIComponent(name); });
+      setTimeout(function() {
+        var next = document.querySelectorAll('.sklad-qty')[idx + (e.shiftKey ? -1 : 1)];
+        if (next) next.click();
+      }, 10);
+    }
+  });
+  input.addEventListener('blur', function() {
+    setTimeout(function() {
+      if (document.activeElement && document.activeElement.classList.contains('sklad-inline-input')) return;
+      save();
+    }, 150);
+  });
 }
 
 
