@@ -323,6 +323,12 @@
   .pet-input-row .btn-ok { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; min-height: unset; }
   .pet-input-row .btn-zr { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; min-height: unset; }
   .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
+  .admin-pet-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .admin-pet-table th { text-align: left; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 6px 10px; border-bottom: 2px solid var(--border-strong); }
+  .admin-pet-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .admin-pet-name { font-weight: 500; }
+  .admin-pet-input { font-family: 'DM Sans',sans-serif; font-size: 15px; font-weight: 500; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); width: 90px; text-align: center; outline: none; transition: border-color .15s; }
+  .admin-pet-input:focus { border-color: var(--accent); }
   .pet-hist-row:last-child { border-bottom: none; }
   .pet-hist-row strong { color: var(--text); }
   /* Historie — edit/delete tlačítka */
@@ -366,7 +372,7 @@
     <button class="tab-btn" id="tab-btn-uzavirka" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
     <button class="tab-btn" onclick="switchTab('uctenky',this)">Historie účtenek</button>
     <button class="tab-btn" onclick="switchTab('sklad',this);renderSklad()">Sklad</button>
-    <button class="tab-btn" onclick="switchTab('administrace',this)">Administrace</button>
+    <button class="tab-btn" onclick="switchTab('administrace',this);renderAdminPetConfig()">Administrace</button>
     <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
   </div>
   <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
@@ -696,7 +702,13 @@
 </div><!-- /tab-sklad -->
 
 <div class="tab-content" id="tab-administrace">
-  <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
+  <main>
+    <div class="card">
+      <div class="section-label">Konfigurace petkovacího plánu</div>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:1.2rem;">Prah = při kolika kusech se zobrazí výzva k petkování. Kapacita = kolik kusů se má mít naskladněno.</p>
+      <div id="admin-pet-config"></div>
+    </div>
+  </main>
 </div><!-- /tab-administrace -->
 
 <div class="tab-content" id="tab-ostatni">
@@ -2163,11 +2175,62 @@ function saveOtevreniEdit(idx) {
 
 var UKOLY_PET_BEERS = ['Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°','Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'];
 
-var PET_THRESHOLD = {
-  'Hraďák 10°': 4, 'Štamgast 11°': 2, 'Šedá vlčice 11°': 4,
-  'Kohoutí 12°': 6, 'Zlatka 11°': 2, 'Mezulánka 11°': 3,
-  'Nelson 12°': 3, 'Dublin 13°': 2,
+var PET_CONFIG_DEFAULTS = {
+  'Hraďák 10°':     { threshold: 4, capacity: 10 },
+  'Štamgast 11°':   { threshold: 2, capacity: 8  },
+  'Šedá vlčice 11°':{ threshold: 4, capacity: 12 },
+  'Kohoutí 12°':    { threshold: 6, capacity: 16 },
+  'Zlatka 11°':     { threshold: 2, capacity: 4  },
+  'Mezulánka 11°':  { threshold: 3, capacity: 8  },
+  'Nelson 12°':     { threshold: 3, capacity: 8  },
+  'Dublin 13°':     { threshold: 2, capacity: 6  },
 };
+
+function getPetConfig() {
+  var saved = JSON.parse(localStorage.getItem('bukovar_pet_config') || '{}');
+  var cfg = {};
+  UKOLY_PET_BEERS.forEach(function(beer) {
+    cfg[beer] = {
+      threshold: (saved[beer] && saved[beer].threshold != null) ? Number(saved[beer].threshold) : PET_CONFIG_DEFAULTS[beer].threshold,
+      capacity:  (saved[beer] && saved[beer].capacity  != null) ? Number(saved[beer].capacity)  : PET_CONFIG_DEFAULTS[beer].capacity,
+    };
+  });
+  return cfg;
+}
+
+function savePetConfig(cfg) {
+  localStorage.setItem('bukovar_pet_config', JSON.stringify(cfg));
+}
+
+function petConfigSaveField(beer, field, val) {
+  var cfg = getPetConfig();
+  cfg[beer][field] = Number(val) || 0;
+  savePetConfig(cfg);
+  renderPetPlan();
+}
+
+function renderAdminPetConfig() {
+  var el = document.getElementById('admin-pet-config');
+  if (!el) return;
+  var cfg = getPetConfig();
+  var html = '<table class="admin-pet-table"><thead><tr><th>Pivo</th><th>Prah (ks)</th><th>Kapacita (ks)</th></tr></thead><tbody>';
+  UKOLY_PET_BEERS.forEach(function(beer) {
+    var t = cfg[beer].threshold;
+    var c = cfg[beer].capacity;
+    html += '<tr>'
+      + '<td class="admin-pet-name">' + beer + '</td>'
+      + '<td><input type="number" class="admin-pet-input" value="' + t + '" min="0" step="1"'
+      + ' onblur="petConfigSaveField(\'' + beer.replace(/'/g,"\\'") + '\',\'threshold\',this.value)"'
+      + ' onkeydown="if(event.key===\'Enter\')this.blur()" /></td>'
+      + '<td><input type="number" class="admin-pet-input" value="' + c + '" min="0" step="1"'
+      + ' onblur="petConfigSaveField(\'' + beer.replace(/'/g,"\\'") + '\',\'capacity\',this.value)"'
+      + ' onkeydown="if(event.key===\'Enter\')this.blur()" /></td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  html += '<div style="margin-top:.7rem;font-size:13px;color:var(--muted);">Změny se uloží automaticky po opuštění pole (nebo Enter).</div>';
+  el.innerHTML = html;
+}
 
 var PET_COLORS = ['zelena','hneda','seda','zlata','zluta','oranzova','modra','tmave-zelena'];
 
@@ -2180,11 +2243,12 @@ function renderPetPlan() {
 
   // Řádek 1+2+3: karty piv
   var html = '<div class="pet-cards-row">';
+  var petCfg = getPetConfig();
   UKOLY_PET_BEERS.forEach(function(beer, i) {
     var key = beer + ' v PET';
     var current = (sklad[key] || {}).qty || 0;
-    var threshold = PET_THRESHOLD[beer] || 0;
-    var ideal = SKLAD_MIN[key] || 0;
+    var threshold = petCfg[beer].threshold;
+    var ideal = petCfg[beer].capacity;
     var needs = current <= threshold;
     var toBottle = 0;
     if (needs) {
