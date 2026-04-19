@@ -165,15 +165,19 @@
   .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: start; }
   .sklad-group { margin-bottom: 1.1rem; }
   .sklad-group-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 5px; border-bottom: 1px solid var(--border-strong); margin-bottom: 4px; }
-  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 2px; border-bottom: 1px solid var(--border); gap: 8px; }
+  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 2px; border-bottom: 1px solid var(--border); gap: 6px; }
   .sklad-item:last-child { border-bottom: none; }
-  .sklad-item-name { font-size: 13px; }
+  .sklad-item.warn { background: #fff7ed; border-radius: 4px; }
+  .sklad-item-name { font-size: 13px; flex: 1; min-width: 0; }
+  .sklad-min { font-size: 11px; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 4px; white-space: nowrap; transition: background .1s; }
+  .sklad-min:hover { background: #f1f5f9; }
   .sklad-qty-wrap { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
   .sklad-qty { font-weight: 500; font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background .1s; }
   .sklad-qty:hover { background: var(--accent-light); }
   .sklad-qty.negative { color: var(--accent); }
   .sklad-unit { font-size: 11px; color: var(--muted); }
-  .sklad-inline-input { width: 70px; padding: 2px 6px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .sklad-inline-input { width: 60px; padding: 2px 5px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .sklad-inline-input.min-input { border-color: #94a3b8; width: 45px; font-weight: 400; }
 
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -1735,15 +1739,20 @@ function renderSklad() {
   var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
     var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
-    g.items.forEach(function(item, idx) {
-      var entry = sklad[item.n] || { qty: 0, unit: item.unit };
+    g.items.forEach(function(item) {
+      var entry = sklad[item.n] || { qty: 0, unit: item.unit, min: 0 };
       var qty = Math.round(entry.qty * 1000) / 1000;
+      var min = entry.min || 0;
       var neg = qty < 0 ? ' negative' : '';
+      var warn = (min > 0 && qty < min) ? ' warn' : '';
+      var safeName = item.n.replace(/'/g, "\\'");
       var id = 'sq-' + encodeURIComponent(item.n);
-      html += '<div class="sklad-item">' +
+      var idMin = 'sm-' + encodeURIComponent(item.n);
+      html += '<div class="sklad-item' + warn + '">' +
         '<span class="sklad-item-name">' + item.n + '</span>' +
+        '<span class="sklad-min" id="' + idMin + '" onclick="skladMinClick(\'' + safeName + '\',this)">▼' + min + '</span>' +
         '<span class="sklad-qty-wrap">' +
-          '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + item.n.replace(/'/g, "\\'") + '\',this)">' + qty + '</span>' +
+          '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
           '<span class="sklad-unit">' + item.unit + '</span>' +
         '</span>' +
         '</div>';
@@ -1799,6 +1808,49 @@ function skladQtyClick(name, spanEl) {
       var idx = spans.findIndex(function(s) { return s.id === 'sq-' + encodeURIComponent(name); });
       setTimeout(function() {
         var next = document.querySelectorAll('.sklad-qty')[idx + (e.shiftKey ? -1 : 1)];
+        if (next) next.click();
+      }, 10);
+    }
+  });
+  input.addEventListener('blur', function() {
+    setTimeout(function() {
+      if (document.activeElement && document.activeElement.classList.contains('sklad-inline-input')) return;
+      save();
+    }, 150);
+  });
+}
+
+function skladMinClick(name, spanEl) {
+  var sklad = getSklad();
+  var unit = skladGetUnit(name);
+  var entry = sklad[name] || { qty: 0, unit: unit, min: 0 };
+  var input = document.createElement('input');
+  input.className = 'sklad-inline-input min-input';
+  input.type = 'number';
+  input.step = '0.1';
+  input.min = '0';
+  input.value = entry.min || 0;
+  spanEl.replaceWith(input);
+  input.select();
+
+  function save() {
+    var val = parseFloat(input.value);
+    sklad[name] = sklad[name] || { qty: 0, unit: unit };
+    sklad[name].min = isNaN(val) || val < 0 ? 0 : Math.round(val * 1000) / 1000;
+    saveSklad(sklad);
+    renderSklad();
+  }
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); save(); }
+    if (e.key === 'Escape') { renderSklad(); }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      save();
+      var spans = Array.from(document.querySelectorAll('.sklad-min'));
+      var idx = spans.findIndex(function(s) { return s.id === 'sm-' + encodeURIComponent(name); });
+      setTimeout(function() {
+        var next = document.querySelectorAll('.sklad-min')[idx + (e.shiftKey ? -1 : 1)];
         if (next) next.click();
       }, 10);
     }
