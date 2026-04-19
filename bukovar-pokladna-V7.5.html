@@ -315,8 +315,9 @@
   .pet-plan-total { font-size: 14px; font-weight: 500; margin-top: 14px; padding: 10px 14px; border-radius: 6px; background: var(--warn-bg); color: var(--warn-text); }
   .pet-plan-total.ok { background: var(--success-bg); color: var(--success-text); }
   .pet-plan-legend { font-size: 13px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5; }
-  .pet-cards-row { display: flex; gap: 5px; flex-wrap: nowrap; margin-bottom: 1.2rem; }
-  .pet-card { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+  .pet-plan-grid { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1.2rem; }
+  .pet-plan-row { display: grid; grid-template-columns: 130px repeat(8, 1fr); gap: 4px; align-items: center; }
+  .pet-plan-row-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: right; padding-right: 6px; }
   .pet-card-stock { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 3px; font-size: 12px; font-family: 'DM Sans',sans-serif; font-weight: 500; border-radius: var(--radius); border: 1px solid; line-height: 1.3; text-align: center; }
   .pet-card-stock-qty { font-size: 10px; font-weight: 400; opacity: .9; display: block; margin-top: 2px; }
   .pet-card-stock-meta { font-size: 9px; font-weight: 400; opacity: .7; display: block; margin-top: 1px; }
@@ -2349,43 +2350,51 @@ function renderPetPlan() {
   var total = 0;
   var druhy = 0;
 
-  // Řádek 1+2+3: karty piv
-  var html = '<div class="pet-cards-row">';
   var petCfg = getPetConfig();
-  UKOLY_PET_BEERS.forEach(function(beer, i) {
+  var beersData = UKOLY_PET_BEERS.map(function(beer, i) {
     var key = beer + ' v PET';
     var current = (sklad[key] || {}).qty || 0;
     var threshold = getPetThresholdToday(petCfg, beer);
     var ideal = petCfg[beer].capacity;
     var needs = current <= threshold;
-    var toBottle = 0;
-    if (needs) {
-      toBottle = Math.max(ideal - current, 0);
-      total += toBottle;
-      druhy++;
-    }
-    var col = PET_COLORS[i];
-    html += '<div class="pet-card">';
-    // Řádek 1 — barevná karta se stavem
-    html += '<div class="pet-card-stock vip-btn ' + col + '">'
-      + beer
-      + '<span class="pet-card-stock-qty">zbývá: ' + current + ' ks</span>'
-      + '</div>';
-    // Řádek 2 — co napetkovat
-    if (needs) {
-      html += '<div class="pet-card-plan needs">→ ' + toBottle + ' ks</div>';
+    var toBottle = needs ? Math.max(ideal - current, 0) : 0;
+    if (needs) { total += toBottle; druhy++; }
+    return { beer: beer, current: current, needs: needs, toBottle: toBottle, col: PET_COLORS[i] };
+  });
+
+  var html = '<div class="pet-plan-grid">';
+
+  // Řádek 0 — hlavičky piv
+  html += '<div class="pet-plan-row"><div class="pet-plan-row-label"></div>';
+  beersData.forEach(function(d) {
+    html += '<div class="pet-card-stock vip-btn ' + d.col + '">' + d.beer + '</div>';
+  });
+  html += '</div>';
+
+  // Řádek 1 — potřeba napetkovat
+  html += '<div class="pet-plan-row"><div class="pet-plan-row-label">Potřeba napetkovat</div>';
+  beersData.forEach(function(d) {
+    if (d.needs) {
+      html += '<div class="pet-card-plan needs">→ ' + d.toBottle + ' ks</div>';
     } else {
       html += '<div class="pet-card-plan ok">✓ OK</div>';
     }
-    // Řádek 3 — tlačítko doplnit + inline input
-    html += '<button class="pet-doplnit-btn" onclick="showPetInput(' + i + ')">+ Doplnit</button>';
-    html += '<div class="pet-input-row hidden" id="pet-input-' + i + '">'
+  });
+  html += '</div>';
+
+  // Řádek 2 — doplnit tlačítka
+  html += '<div class="pet-plan-row"><div class="pet-plan-row-label"></div>';
+  beersData.forEach(function(d, i) {
+    html += '<div>'
+      + '<button class="pet-doplnit-btn" onclick="showPetInput(' + i + ')">+ Doplnit</button>'
+      + '<div class="pet-input-row hidden" id="pet-input-' + i + '">'
       + '<input type="number" id="pet-qty-' + i + '" min="1" step="1" placeholder="ks" onkeydown="if(event.key===\'Enter\')savePetDoplneni(' + i + ')" />'
       + '<button class="btn-ok" onclick="savePetDoplneni(' + i + ')">OK</button>'
       + '<button class="btn-zr" onclick="hidePetInput(' + i + ')">✕</button>'
-      + '</div>';
-    html += '</div>';
+      + '</div></div>';
   });
+  html += '</div>';
+
   html += '</div>';
 
   // Celkový plán
