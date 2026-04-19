@@ -1659,10 +1659,10 @@ const SKLAD_GROUPS = [
     { n: 'Birel ochucený', unit: 'ks' }, { n: "Maisel's Weisse", unit: 'ks' },
   ]},
   { col: 2, label: 'Piva v PET', items: [
-    { n: 'Hraďák 10° v PET', unit: 'ks' }, { n: 'Štamgast 11° v PET', unit: 'ks' },
-    { n: 'Šedá vlčice 11° v PET', unit: 'ks' }, { n: 'Kohoutí 12° v PET', unit: 'ks' },
-    { n: 'Zlatka 11° v PET', unit: 'ks' }, { n: 'Mezulánka 11° v PET', unit: 'ks' },
-    { n: 'Nelson 12° v PET', unit: 'ks' }, { n: 'Dublin 13° v PET', unit: 'ks' },
+    { n: 'Hraďák 10° v PET', d: 'Hraďák 10°', unit: 'ks' }, { n: 'Štamgast 11° v PET', d: 'Štamgast 11°', unit: 'ks' },
+    { n: 'Šedá vlčice 11° v PET', d: 'Šedá vlčice 11°', unit: 'ks' }, { n: 'Kohoutí 12° v PET', d: 'Kohoutí 12°', unit: 'ks' },
+    { n: 'Zlatka 11° v PET', d: 'Zlatka 11°', unit: 'ks' }, { n: 'Mezulánka 11° v PET', d: 'Mezulánka 11°', unit: 'ks' },
+    { n: 'Nelson 12° v PET', d: 'Nelson 12°', unit: 'ks' }, { n: 'Dublin 13° v PET', d: 'Dublin 13°', unit: 'ks' },
   ]},
   { col: 2, label: 'Bar & provoz', bool: true, items: [
     { n: 'Šenkýřka', unit: 'l' }, { n: 'Čisticí tablety na kávovar', unit: 'ks' },
@@ -1787,7 +1787,7 @@ function renderSklad() {
         var yes = !!entry.qty;
         var stateClass = yes ? ' ok' : ' warn';
         html += '<div class="sklad-item' + stateClass + '">' +
-          '<span class="sklad-item-name">' + item.n + '</span>' +
+          '<span class="sklad-item-name">' + (item.d || item.n) + '</span>' +
           '<span class="sklad-bool-btn' + (yes ? ' yes' : ' no') + '" onclick="skladBoolToggle(\'' + safeName + '\')">' + (yes ? '✓ Ano' : '✗ Ne') + '</span>' +
           '</div>';
       } else {
@@ -1797,7 +1797,7 @@ function renderSklad() {
         var stateClass = min > 0 ? (qty < min ? ' warn' : ' ok') : '';
         var id = 'sq-' + encodeURIComponent(item.n);
         html += '<div class="sklad-item' + stateClass + '">' +
-          '<span class="sklad-item-name">' + item.n + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
+          '<span class="sklad-item-name">' + (item.d || item.n) + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
           '<span class="sklad-qty-wrap">' +
             '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
             '<span class="sklad-unit">' + item.unit + '</span>' +
