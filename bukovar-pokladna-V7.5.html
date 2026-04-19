@@ -165,12 +165,12 @@
   .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: start; }
   .sklad-group { margin-bottom: 1.1rem; }
   .sklad-group-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 5px; border-bottom: 1px solid var(--border-strong); margin-bottom: 4px; }
-  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 2px; border-bottom: 1px solid var(--border); gap: 6px; }
+  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 5px; border-bottom: 1px solid var(--border); gap: 6px; border-radius: 4px; }
   .sklad-item:last-child { border-bottom: none; }
-  .sklad-item.warn { background: #fff7ed; border-radius: 4px; }
+  .sklad-item.ok  { background: var(--success-bg); border-color: rgba(26,107,58,.15); }
+  .sklad-item.warn { background: var(--accent-light); border-color: rgba(181,56,26,.15); }
   .sklad-item-name { font-size: 13px; flex: 1; min-width: 0; }
-  .sklad-min { font-size: 11px; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 4px; white-space: nowrap; transition: background .1s; }
-  .sklad-min:hover { background: #f1f5f9; }
+  .sklad-min { font-size: 10px; color: var(--muted); white-space: nowrap; }
   .sklad-qty-wrap { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
   .sklad-qty { font-weight: 500; font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background .1s; }
   .sklad-qty:hover { background: var(--accent-light); }
@@ -1758,12 +1758,11 @@ function renderSklad() {
       var qty = Math.round(entry.qty * 1000) / 1000;
       var min = SKLAD_MIN[item.n] || 0;
       var neg = qty < 0 ? ' negative' : '';
-      var warn = (min > 0 && qty < min) ? ' warn' : '';
+      var stateClass = min > 0 ? (qty < min ? ' warn' : ' ok') : '';
       var safeName = item.n.replace(/'/g, "\\'");
       var id = 'sq-' + encodeURIComponent(item.n);
-      html += '<div class="sklad-item' + warn + '">' +
-        '<span class="sklad-item-name">' + item.n + '</span>' +
-        (min > 0 ? '<span class="sklad-min">▼' + min + '</span>' : '') +
+      html += '<div class="sklad-item' + stateClass + '">' +
+        '<span class="sklad-item-name">' + item.n + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
         '<span class="sklad-qty-wrap">' +
           '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
           '<span class="sklad-unit">' + item.unit + '</span>' +
