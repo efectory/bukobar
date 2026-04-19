@@ -2248,7 +2248,7 @@ function petConfigStartEdit(beerIdx, field, prefill) {
   if (!cell || cell.querySelector('input')) return;
   var cur = (prefill != null) ? prefill : cell.dataset.val;
   cell.innerHTML = '<input type="number" class="admin-pet-input editing" id="admin-inp-' + beerIdx + '-' + field + '"'
-    + ' value="' + cur + '" min="1" step="1" />';
+    + ' value="' + cur + '" min="0" step="1" />';
   var inp = cell.querySelector('input');
   inp.focus();
   if (prefill != null) { inp.value = prefill; } else { inp.select(); }
@@ -2269,8 +2269,8 @@ function petConfigCommit(key) {
   var raw = inp.value.trim();
   var num = parseInt(raw, 10);
   var cell = document.getElementById('admin-cell-' + beerIdx + '-' + field);
-  if (!raw || isNaN(num) || num < 1 || String(num) !== raw) {
-    cell.innerHTML = '<span style="color:var(--accent);font-size:13px;">Zadej celé číslo ≥ 1</span>';
+  if (raw === '' || isNaN(num) || num < 0 || String(num) !== raw) {
+    cell.innerHTML = '<span style="color:var(--accent);font-size:13px;">Zadej celé číslo ≥ 0</span>';
     setTimeout(function() { _petEditActive = null; renderAdminPetConfig(); }, 1400);
     return;
   }
