@@ -177,7 +177,6 @@
   .sklad-qty.negative { color: var(--accent); }
   .sklad-unit { font-size: 11px; color: var(--muted); }
   .sklad-inline-input { width: 60px; padding: 2px 5px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
-  .sklad-inline-input.min-input { border-color: #94a3b8; width: 45px; font-weight: 400; }
 
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -1688,6 +1687,21 @@ const SKLAD_MAP = {
   'Škvarky v sádle Čongrády': { key: 'Škvarky v sádle Čongrády', inc: 1 },
 };
 
+const SKLAD_MIN = {
+  'Kofola': 100, 'Frizzante': 40,
+  'Royal Crown Cola': 20, 'ChitoTonic': 20, 'Džus pomeranč': 20,
+  'Džus jablko': 20, 'Perlivá voda': 20,
+  'Rozlévané víno': 0, 'Lahvové víno': 20,
+  'Prosecco Mionetto': 20, 'Prosecco Treviso': 20, 'Prosecco rozlévané': 0,
+  'Beefeater Gin': 3, 'Bacardi': 3, 'Aperol': 3,
+  'Utopenec': 10, 'Pizza Della Casa': 50, 'Nakládaný hermelín': 10,
+  'Chipsy': 10, 'Slané tyčinky': 10, 'Arašídy': 10,
+  'Paštiky Čongrády': 10, 'Paštika ve skle Čongrády': 10, 'Škvarky v sádle Čongrády': 10,
+  'Radler': 20, 'Birel neochucený': 20, 'Birel ochucený': 20, "Maisel's Weisse": 20,
+  'Hraďák 10°': 300, 'Štamgast 11°': 300, 'Šedá vlčice 11°': 300, 'Kohoutí 12°': 300,
+  'Zlatka 11°': 300, 'Mezulánka 11°': 300, 'Nelson 12°': 300, 'Dublin 13°': 300,
+};
+
 function skladGetUnit(key) {
   for (var g = 0; g < SKLAD_GROUPS.length; g++) {
     var found = SKLAD_GROUPS[g].items.find(function(i) { return i.n === key; });
@@ -1740,17 +1754,16 @@ function renderSklad() {
   SKLAD_GROUPS.forEach(function(g) {
     var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
     g.items.forEach(function(item) {
-      var entry = sklad[item.n] || { qty: 0, unit: item.unit, min: 0 };
+      var entry = sklad[item.n] || { qty: 0, unit: item.unit };
       var qty = Math.round(entry.qty * 1000) / 1000;
-      var min = entry.min || 0;
+      var min = SKLAD_MIN[item.n] || 0;
       var neg = qty < 0 ? ' negative' : '';
       var warn = (min > 0 && qty < min) ? ' warn' : '';
       var safeName = item.n.replace(/'/g, "\\'");
       var id = 'sq-' + encodeURIComponent(item.n);
-      var idMin = 'sm-' + encodeURIComponent(item.n);
       html += '<div class="sklad-item' + warn + '">' +
         '<span class="sklad-item-name">' + item.n + '</span>' +
-        '<span class="sklad-min" id="' + idMin + '" onclick="skladMinClick(\'' + safeName + '\',this)">▼' + min + '</span>' +
+        (min > 0 ? '<span class="sklad-min">▼' + min + '</span>' : '') +
         '<span class="sklad-qty-wrap">' +
           '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
           '<span class="sklad-unit">' + item.unit + '</span>' +
@@ -1808,49 +1821,6 @@ function skladQtyClick(name, spanEl) {
       var idx = spans.findIndex(function(s) { return s.id === 'sq-' + encodeURIComponent(name); });
       setTimeout(function() {
         var next = document.querySelectorAll('.sklad-qty')[idx + (e.shiftKey ? -1 : 1)];
-        if (next) next.click();
-      }, 10);
-    }
-  });
-  input.addEventListener('blur', function() {
-    setTimeout(function() {
-      if (document.activeElement && document.activeElement.classList.contains('sklad-inline-input')) return;
-      save();
-    }, 150);
-  });
-}
-
-function skladMinClick(name, spanEl) {
-  var sklad = getSklad();
-  var unit = skladGetUnit(name);
-  var entry = sklad[name] || { qty: 0, unit: unit, min: 0 };
-  var input = document.createElement('input');
-  input.className = 'sklad-inline-input min-input';
-  input.type = 'number';
-  input.step = '0.1';
-  input.min = '0';
-  input.value = entry.min || 0;
-  spanEl.replaceWith(input);
-  input.select();
-
-  function save() {
-    var val = parseFloat(input.value);
-    sklad[name] = sklad[name] || { qty: 0, unit: unit };
-    sklad[name].min = isNaN(val) || val < 0 ? 0 : Math.round(val * 1000) / 1000;
-    saveSklad(sklad);
-    renderSklad();
-  }
-
-  input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); save(); }
-    if (e.key === 'Escape') { renderSklad(); }
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      save();
-      var spans = Array.from(document.querySelectorAll('.sklad-min'));
-      var idx = spans.findIndex(function(s) { return s.id === 'sm-' + encodeURIComponent(name); });
-      setTimeout(function() {
-        var next = document.querySelectorAll('.sklad-min')[idx + (e.shiftKey ? -1 : 1)];
         if (next) next.click();
       }, 10);
     }
