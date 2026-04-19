@@ -1897,13 +1897,14 @@ function skladQtyClick(name, spanEl) {
     renderSklad();
   }
 
+  var cancelled = false;
+
   input.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') { e.preventDefault(); save(); }
-    if (e.key === 'Escape') { renderSklad(); }
+    if (e.key === 'Escape') { cancelled = true; renderSklad(); }
     if (e.key === 'Tab') {
       e.preventDefault();
       save();
-      // Fokus na další qty span
       var spans = Array.from(document.querySelectorAll('.sklad-qty'));
       var idx = spans.findIndex(function(s) { return s.id === 'sq-' + encodeURIComponent(name); });
       setTimeout(function() {
@@ -1913,10 +1914,7 @@ function skladQtyClick(name, spanEl) {
     }
   });
   input.addEventListener('blur', function() {
-    setTimeout(function() {
-      if (document.activeElement && document.activeElement.classList.contains('sklad-inline-input')) return;
-      save();
-    }, 150);
+    if (!cancelled) save();
   });
 }
 
