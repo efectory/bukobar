@@ -2360,7 +2360,7 @@ function renderPetPlan() {
     var needs = current <= threshold;
     var toBottle = 0;
     if (needs) {
-      toBottle = Math.ceil(Math.max(ideal - current, 1) / 10) * 10;
+      toBottle = Math.max(ideal - current, 0);
       total += toBottle;
       druhy++;
     }
