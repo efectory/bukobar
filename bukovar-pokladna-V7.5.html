@@ -307,6 +307,18 @@
   .pet-plan-total { font-size: 14px; font-weight: 500; margin-top: 14px; padding: 10px 14px; border-radius: 6px; background: var(--warn-bg); color: var(--warn-text); }
   .pet-plan-total.ok { background: var(--success-bg); color: var(--success-text); }
   .pet-plan-legend { font-size: 13px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5; }
+  /* Historie — edit/delete tlačítka */
+  .hist-edit-btn { font-size: 12px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; min-height: unset; white-space: nowrap; }
+  .hist-edit-btn:hover { background: var(--bg); color: var(--text); }
+  .hist-del-btn { font-size: 12px; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(181,56,26,.25); background: transparent; color: var(--accent); cursor: pointer; min-height: unset; white-space: nowrap; }
+  .hist-del-btn:hover { background: #ffeaea; }
+  .hist-edit-form { padding: .75rem 1rem; border-top: 1px solid var(--border); background: var(--bg); }
+  .hist-edit-row { display: flex; align-items: center; gap: 8px; margin-bottom: .5rem; }
+  .hist-edit-row label { font-size: 13px; color: var(--muted); white-space: nowrap; min-width: 70px; }
+  .hist-edit-row input, .hist-edit-row textarea { font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; flex: 1; }
+  .hist-edit-row input:focus, .hist-edit-row textarea:focus { border-color: var(--accent); }
+  .hist-edit-actions { display: flex; gap: 6px; }
+  .hist-edit-actions button { font-size: 13px; padding: 6px 14px; }
 
   @media print {
     @page { size: 80mm auto; margin: 3mm; }
@@ -1657,11 +1669,20 @@ function renderClHistory() {
   var html = '<div class="card" style="margin-bottom:1.2rem;"><div class="section-label">Historie uzavírek</div>';
   history.forEach(function(entry, idx) {
     var scoreClass = entry.done === CL_TOTAL ? 'full' : 'partial';
-    html += '<div class="cl-history-row" onclick="toggleClHistory(' + idx + ')">';
-    html += '<div class="cl-history-header">';
+    html += '<div class="cl-history-row">';
+    html += '<div class="cl-history-header" onclick="toggleClHistory(' + idx + ')" style="cursor:pointer;">';
     html += '<div><div class="cl-history-name">' + entry.cas + ' — ' + entry.obsluha + '</div>';
     html += '<div class="cl-history-meta">Tržby: ' + entry.trzby + ' Kč</div></div>';
+    html += '<div style="display:flex;align-items:center;gap:6px;">';
     html += '<div class="cl-history-score ' + scoreClass + '">' + entry.done + ' / ' + CL_TOTAL + '</div>';
+    html += '<button class="hist-edit-btn" onclick="event.stopPropagation();toggleClEdit(' + idx + ')">Upravit</button>';
+    html += '<button class="hist-del-btn" onclick="event.stopPropagation();deleteClHistory(' + idx + ')">Smazat</button>';
+    html += '</div></div>';
+    html += '<div class="hist-edit-form hidden" id="cl-edit-' + idx + '">';
+    html += '<div class="hist-edit-row"><label>Obsluha:</label><input type="text" id="cl-edit-obsluha-' + idx + '" value="' + entry.obsluha.replace(/"/g,'&quot;') + '" /></div>';
+    html += '<div class="hist-edit-row"><label>Tržby:</label><input type="number" id="cl-edit-trzby-' + idx + '" value="' + entry.trzby + '" /></div>';
+    html += '<div class="hist-edit-row" style="align-items:flex-start;"><label style="margin-top:7px;">Poznámky:</label><textarea id="cl-edit-poznamky-' + idx + '" rows="2">' + (entry.poznamky || '') + '</textarea></div>';
+    html += '<div class="hist-edit-actions"><button class="primary" onclick="saveClEdit(' + idx + ')">Uložit</button><button onclick="toggleClEdit(' + idx + ')">Zrušit</button></div>';
     html += '</div>';
     html += '<div class="cl-history-detail" id="cl-hist-detail-' + idx + '">';
     html += '<div class="cl-history-detail-grid">';
@@ -1686,6 +1707,29 @@ function toggleClHistory(idx) {
   var detail = document.getElementById('cl-hist-detail-' + idx);
   if (!detail) return;
   detail.classList.toggle('open');
+}
+
+function toggleClEdit(idx) {
+  var el = document.getElementById('cl-edit-' + idx);
+  if (el) el.classList.toggle('hidden');
+}
+
+function deleteClHistory(idx) {
+  if (!confirm('Smazat tuto uzavírku?')) return;
+  var history = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
+  history.splice(idx, 1);
+  localStorage.setItem('bukovar_checklist_history', JSON.stringify(history));
+  renderClHistory();
+  updateTabBadges();
+}
+
+function saveClEdit(idx) {
+  var history = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
+  history[idx].obsluha = document.getElementById('cl-edit-obsluha-' + idx).value.trim() || history[idx].obsluha;
+  history[idx].trzby = document.getElementById('cl-edit-trzby-' + idx).value || '0';
+  history[idx].poznamky = document.getElementById('cl-edit-poznamky-' + idx).value.trim();
+  localStorage.setItem('bukovar_checklist_history', JSON.stringify(history));
+  renderClHistory();
 }
 
 // --- Sklad ---
@@ -2048,10 +2092,18 @@ function renderOtevreniHistory() {
   var html = '<div class="card" style="margin-bottom:1.2rem;"><div class="section-label">Historie otevření</div>';
   history.forEach(function(entry, idx) {
     var scoreClass = entry.done === OT_TOTAL ? 'full' : 'partial';
-    html += '<div class="cl-history-row" onclick="toggleOtevreniHistory(' + idx + ')">';
-    html += '<div class="cl-history-header"><div>';
-    html += '<div class="cl-history-name">' + entry.cas + ' — ' + entry.obsluha + '</div></div>';
-    html += '<div class="cl-history-score ' + scoreClass + '">' + entry.done + ' / ' + OT_TOTAL + '</div></div>';
+    html += '<div class="cl-history-row">';
+    html += '<div class="cl-history-header" onclick="toggleOtevreniHistory(' + idx + ')" style="cursor:pointer;">';
+    html += '<div><div class="cl-history-name">' + entry.cas + ' — ' + entry.obsluha + '</div></div>';
+    html += '<div style="display:flex;align-items:center;gap:6px;">';
+    html += '<div class="cl-history-score ' + scoreClass + '">' + entry.done + ' / ' + OT_TOTAL + '</div>';
+    html += '<button class="hist-edit-btn" onclick="event.stopPropagation();toggleOtevreniEdit(' + idx + ')">Upravit</button>';
+    html += '<button class="hist-del-btn" onclick="event.stopPropagation();deleteOtevreniHistory(' + idx + ')">Smazat</button>';
+    html += '</div></div>';
+    html += '<div class="hist-edit-form hidden" id="ot-edit-' + idx + '">';
+    html += '<div class="hist-edit-row"><label>Obsluha:</label><input type="text" id="ot-edit-obsluha-' + idx + '" value="' + entry.obsluha.replace(/"/g,'&quot;') + '" /></div>';
+    html += '<div class="hist-edit-actions"><button class="primary" onclick="saveOtevreniEdit(' + idx + ')">Uložit</button><button onclick="toggleOtevreniEdit(' + idx + ')">Zrušit</button></div>';
+    html += '</div>';
     html += '<div class="cl-history-detail" id="ot-hist-detail-' + idx + '"><div class="cl-history-detail-section">';
     OT_ITEMS.forEach(function(item) {
       var ok = entry.state && entry.state[item.key];
@@ -2066,6 +2118,27 @@ function renderOtevreniHistory() {
 function toggleOtevreniHistory(idx) {
   var el = document.getElementById('ot-hist-detail-' + idx);
   if (el) el.classList.toggle('open');
+}
+
+function toggleOtevreniEdit(idx) {
+  var el = document.getElementById('ot-edit-' + idx);
+  if (el) el.classList.toggle('hidden');
+}
+
+function deleteOtevreniHistory(idx) {
+  if (!confirm('Smazat toto otevření?')) return;
+  var history = JSON.parse(localStorage.getItem('bukovar_otevreni_history') || '[]');
+  history.splice(idx, 1);
+  localStorage.setItem('bukovar_otevreni_history', JSON.stringify(history));
+  renderOtevreniHistory();
+  updateTabBadges();
+}
+
+function saveOtevreniEdit(idx) {
+  var history = JSON.parse(localStorage.getItem('bukovar_otevreni_history') || '[]');
+  history[idx].obsluha = document.getElementById('ot-edit-obsluha-' + idx).value.trim() || history[idx].obsluha;
+  localStorage.setItem('bukovar_otevreni_history', JSON.stringify(history));
+  renderOtevreniHistory();
 }
 
 // ——— PETKOVACÍ PLÁN ———
