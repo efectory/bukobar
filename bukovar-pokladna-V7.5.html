@@ -134,7 +134,7 @@
 
   /* Tabs */
   .tabs { background: var(--text); display: flex; padding: 0 2rem; }
-  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; padding: 17px 28px; border: none; border-bottom: 2px solid transparent; background: transparent; color: rgba(245,241,234,0.55); cursor: pointer; transition: color .15s, border-color .15s; min-height: unset; }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; padding: 12px 28px; border: none; border-bottom: 2px solid transparent; background: transparent; color: rgba(245,241,234,0.55); cursor: pointer; transition: color .15s, border-color .15s; min-height: unset; display: flex; flex-direction: column; align-items: center; }
   .tab-btn:hover { color: #f5f1ea; background: transparent; }
   .tab-btn.active { color: #f5f1ea; border-bottom-color: var(--accent); }
   .tab-content { display: none; }
@@ -293,8 +293,8 @@
   @media (max-width: 900px) { .cl-history-detail-grid { grid-template-columns: 1fr; } }
 
   /* Záložky — badge hotovo dnes */
-  .tab-done-badge { display: inline-block; background: var(--success-text); color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 1px 5px; margin-left: 5px; vertical-align: middle; line-height: 15px; pointer-events: none; }
-  .tab-warn-badge { display: inline-block; background: #ea580c; color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 1px 6px; margin-left: 5px; vertical-align: middle; line-height: 15px; pointer-events: none; animation: pulse-warn 2s ease-in-out infinite; }
+  .tab-done-badge { display: block; background: var(--success-text); color: #fff; font-size: 12px; font-weight: 700; border-radius: 4px; padding: 2px 8px; margin: 4px auto 0; pointer-events: none; text-align: center; }
+  .tab-warn-badge { display: block; background: #ea580c; color: #fff; font-size: 12px; font-weight: 700; border-radius: 4px; padding: 2px 8px; margin: 4px auto 0; pointer-events: none; text-align: center; animation: pulse-warn 2s ease-in-out infinite; }
   @keyframes pulse-warn { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
   /* Petkovací plán */
   .pet-plan-list { display: flex; flex-direction: column; gap: 2px; }
