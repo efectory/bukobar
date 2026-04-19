@@ -365,18 +365,22 @@
       <!-- Levý sloupec: workflow -->
       <div class="kasa-left">
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Sleva štamgasta</div></div>
+          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Zadej položky</div></div>
+          <button onclick="retakeFromReceipt()">📷 Načti účtenku</button>
+        </div>
+        <div class="wf-col">
+          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Sleva štamgasta</div></div>
           <button id="btn-stamgast-ano" class="payment-btn" onclick="setStamgast(true)">Ano</button>
           <button id="btn-stamgast-ne" class="payment-btn" onclick="setStamgast(false)">Ne</button>
         </div>
         <div class="wf-col" id="wf-platba">
-          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Způsob platby</div></div>
+          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Způsob platby</div></div>
           <button id="btn-qr" class="payment-btn" onclick="setPayment('QR')">QR Platba</button>
           <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
           <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
         </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Uzavřít</div></div>
+          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavřít</div></div>
           <button class="primary" onclick="uzavrit()">Uzavřít</button>
         </div>
       </div>
@@ -385,6 +389,7 @@
       <div class="kasa-right card">
         <!-- VIP piva — rychlé markování -->
         <div class="vip-piva">
+          <div class="vip-piva-label">Čepovaná piva</div>
           <div class="vip-row" style="flex-wrap:nowrap;">
             <button class="vip-btn zelena"       onclick="quickAdd({n:'Hraďák 10°',c:'Piva',p:49,u:'0,4l'})">Hraďák<span class="vip-btn-deg">10°</span></button>
             <button class="vip-btn hneda"        onclick="quickAdd({n:'Štamgast 11°',c:'Piva',p:49,u:'0,4l'})">Štamgast<span class="vip-btn-deg">11°</span></button>
@@ -394,21 +399,22 @@
             <button class="vip-btn oranzova"     onclick="quickAdd({n:'Mezulánka 11°',c:'Piva',p:49,u:'0,4l'})">Mezulánka<span class="vip-btn-deg">11°</span></button>
             <button class="vip-btn modra"        onclick="quickAdd({n:'Nelson 12°',c:'Piva',p:49,u:'0,4l'})">Nelson<span class="vip-btn-deg">12°</span></button>
             <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13°',c:'Piva',p:49,u:'0,4l'})">Dublin<span class="vip-btn-deg">13°</span></button>
-            <div class="vip-separator"></div>
-            <button class="vip-btn zelena pet"       onclick="quickAdd({n:'Hraďák 10° v PET',c:'Piva',p:105,u:'1,0l'})">Hraďák<span class="vip-btn-deg">10° PET</span></button>
-            <button class="vip-btn hneda pet"        onclick="quickAdd({n:'Štamgast 11° v PET',c:'Piva',p:105,u:'1,0l'})">Štamgast<span class="vip-btn-deg">11° PET</span></button>
-            <button class="vip-btn seda pet"         onclick="quickAdd({n:'Šedá vlčice 11° v PET',c:'Piva',p:105,u:'1,0l'})">Šedá vlčice<span class="vip-btn-deg">11° PET</span></button>
-            <button class="vip-btn zlata pet"        onclick="quickAdd({n:'Kohoutí 12° v PET',c:'Piva',p:105,u:'1,0l'})">Kohoutí<span class="vip-btn-deg">12° PET</span></button>
-            <button class="vip-btn zluta pet"        onclick="quickAdd({n:'Zlatka 11° v PET',c:'Piva',p:105,u:'1,0l'})">Zlatka<span class="vip-btn-deg">11° PET</span></button>
-            <button class="vip-btn oranzova pet"     onclick="quickAdd({n:'Mezulánka 11° v PET',c:'Piva',p:105,u:'1,0l'})">Mezulánka<span class="vip-btn-deg">11° PET</span></button>
-            <button class="vip-btn modra pet"        onclick="quickAdd({n:'Nelson 12° v PET',c:'Piva',p:105,u:'1,0l'})">Nelson<span class="vip-btn-deg">12° PET</span></button>
-            <button class="vip-btn tmave-zelena pet" onclick="quickAdd({n:'Dublin 13° v PET',c:'Piva',p:105,u:'1,0l'})">Dublin<span class="vip-btn-deg">13° PET</span></button>
+          </div>
+          <div class="vip-piva-label">Pivo v PET</div>
+          <div class="vip-row" style="flex-wrap:nowrap;">
+            <button class="vip-btn zelena"       onclick="quickAdd({n:'Hraďák 10° v PET',c:'Piva',p:105,u:'1,0l'})">Hraďák<span class="vip-btn-deg">10°</span></button>
+            <button class="vip-btn hneda"        onclick="quickAdd({n:'Štamgast 11° v PET',c:'Piva',p:105,u:'1,0l'})">Štamgast<span class="vip-btn-deg">11°</span></button>
+            <button class="vip-btn seda"         onclick="quickAdd({n:'Šedá vlčice 11° v PET',c:'Piva',p:105,u:'1,0l'})">Šedá vlčice<span class="vip-btn-deg">11°</span></button>
+            <button class="vip-btn zlata"        onclick="quickAdd({n:'Kohoutí 12° v PET',c:'Piva',p:105,u:'1,0l'})">Kohoutí<span class="vip-btn-deg">12°</span></button>
+            <button class="vip-btn zluta"        onclick="quickAdd({n:'Zlatka 11° v PET',c:'Piva',p:105,u:'1,0l'})">Zlatka<span class="vip-btn-deg">11°</span></button>
+            <button class="vip-btn oranzova"     onclick="quickAdd({n:'Mezulánka 11° v PET',c:'Piva',p:105,u:'1,0l'})">Mezulánka<span class="vip-btn-deg">11°</span></button>
+            <button class="vip-btn modra"        onclick="quickAdd({n:'Nelson 12° v PET',c:'Piva',p:105,u:'1,0l'})">Nelson<span class="vip-btn-deg">12°</span></button>
+            <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13° v PET',c:'Piva',p:105,u:'1,0l'})">Dublin<span class="vip-btn-deg">13°</span></button>
           </div>
         </div>
 
         <!-- Nahoře: přidat položku (fixní výška) -->
         <div class="quick-add">
-          <div class="quick-add-label">Přidat položku</div>
           <div class="cat-btns" id="cat-btns"></div>
           <div class="cat-items hidden" id="cat-items"></div>
           <div class="custom-form hidden" id="custom-form">
@@ -807,11 +813,6 @@ function buildCategoryBtns() {
   custom.textContent = '+ Vlastní';
   custom.onclick = toggleCustomForm;
   wrap.appendChild(custom);
-  var scan = document.createElement('button');
-  scan.className = 'cat-btn';
-  scan.textContent = '📷 Načti účtenku';
-  scan.onclick = retakeFromReceipt;
-  wrap.appendChild(scan);
 }
 
 function toggleCategory(cat, btn) {
