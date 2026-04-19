@@ -162,7 +162,7 @@
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
   /* Sklad */
-  .sklad-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+  .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: start; }
   .sklad-group { margin-bottom: 1.1rem; }
   .sklad-group-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 5px; border-bottom: 1px solid var(--border-strong); margin-bottom: 4px; }
   .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 2px; border-bottom: 1px solid var(--border); gap: 8px; }
@@ -1620,28 +1620,28 @@ const SKLAD_GROUPS = [
     { n: 'Kofola', unit: 'ks' }, { n: 'Frizzante', unit: 'ks' },
     { n: 'Royal Crown Cola', unit: 'ks' }, { n: 'ChitoTonic', unit: 'ks' },
     { n: 'Džus pomeranč', unit: 'ks' }, { n: 'Džus jablko', unit: 'ks' },
-    { n: 'Perlivá voda', unit: 'ks' }, { n: 'Bukovská voda', unit: 'ks' },
+    { n: 'Perlivá voda', unit: 'ks' },
   ]},
   { col: 0, label: 'Víno', items: [
     { n: 'Rozlévané víno', unit: 'l' }, { n: 'Lahvové víno', unit: 'ks' },
     { n: 'Prosecco Mionetto', unit: 'ks' }, { n: 'Prosecco Treviso', unit: 'ks' },
     { n: 'Prosecco rozlévané', unit: 'l' },
   ]},
-  { col: 0, label: 'Alkohol', items: [
+  { col: 1, label: 'Alkohol', items: [
     { n: 'Beefeater Gin', unit: 'l' }, { n: 'Bacardi', unit: 'l' }, { n: 'Aperol', unit: 'l' },
   ]},
-  { col: 0, label: 'Občerstvení', items: [
+  { col: 1, label: 'Občerstvení', items: [
     { n: 'Utopenec', unit: 'ks' }, { n: 'Pizza Della Casa', unit: 'ks' },
     { n: 'Nakládaný hermelín', unit: 'ks' }, { n: 'Chipsy', unit: 'ks' },
     { n: 'Slané tyčinky', unit: 'ks' }, { n: 'Arašídy', unit: 'ks' },
     { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
     { n: 'Škvarky v sádle Čongrády', unit: 'ks' },
   ]},
-  { col: 1, label: 'Lahvová piva', items: [
+  { col: 2, label: 'Lahvová piva', items: [
     { n: 'Radler', unit: 'ks' }, { n: 'Birel neochucený', unit: 'ks' },
     { n: 'Birel ochucený', unit: 'ks' }, { n: "Maisel's Weisse", unit: 'ks' },
   ]},
-  { col: 1, label: 'Čepovaná piva', items: [
+  { col: 2, label: 'Čepovaná piva', items: [
     { n: 'Hraďák 10°', unit: 'l' }, { n: 'Štamgast 11°', unit: 'l' },
     { n: 'Šedá vlčice 11°', unit: 'l' }, { n: 'Kohoutí 12°', unit: 'l' },
     { n: 'Zlatka 11°', unit: 'l' }, { n: 'Mezulánka 11°', unit: 'l' },
@@ -1732,7 +1732,7 @@ function skladRestoreFromReceipt(items) {
 
 function renderSklad() {
   var sklad = getSklad();
-  var cols = [[], []];
+  var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
     var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
     g.items.forEach(function(item, idx) {
@@ -1753,7 +1753,7 @@ function renderSklad() {
   });
 
   var el = document.getElementById('sklad-cols');
-  el.innerHTML = '<div>' + cols[0].join('') + '</div><div>' + cols[1].join('') + '</div>';
+  el.innerHTML = '<div>' + cols[0].join('') + '</div><div>' + cols[1].join('') + '</div><div>' + cols[2].join('') + '</div>';
 }
 
 function skladQtyClick(name, spanEl) {
