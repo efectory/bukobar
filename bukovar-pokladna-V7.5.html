@@ -2317,7 +2317,27 @@ function renderAdminPetConfig() {
   });
 
   html += '</div>';
+  html += '<div style="margin-top:1rem;">'
+    + '<button onclick="adminPetExport()" style="font-size:13px;padding:8px 16px;min-height:unset;">Zobrazit aktuální hodnoty pro vývojáře</button>'
+    + '<div id="admin-pet-export" class="hidden" style="margin-top:.8rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;">'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:.5rem;">Přepošli tento text vývojáři — zapíše ho jako výchozí hodnoty do kódu:</div>'
+    + '<textarea id="admin-pet-export-txt" readonly style="width:100%;font-family:monospace;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:.5rem;background:var(--surface);resize:vertical;" rows="10"></textarea>'
+    + '</div></div>';
   el.innerHTML = html;
+}
+
+function adminPetExport() {
+  var cfg = getPetConfig();
+  var lines = UKOLY_PET_BEERS.map(function(beer) {
+    var c = cfg[beer];
+    return "  '" + beer + "': { th_stred: " + c.th_stred + ', th_ctvrtek: ' + c.th_ctvrtek + ', th_patek: ' + c.th_patek + ', th_sobota: ' + c.th_sobota + ', capacity: ' + c.capacity + ' },';
+  });
+  var txt = 'var PET_CONFIG_DEFAULTS = {\n' + lines.join('\n') + '\n};';
+  var box = document.getElementById('admin-pet-export');
+  var ta = document.getElementById('admin-pet-export-txt');
+  box.classList.remove('hidden');
+  ta.value = txt;
+  ta.select();
 }
 
 var PET_COLORS = ['zelena','hneda','seda','zlata','zluta','oranzova','modra','tmave-zelena'];
