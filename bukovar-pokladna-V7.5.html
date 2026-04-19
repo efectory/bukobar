@@ -2192,15 +2192,20 @@ function renderPetPlan() {
 // ——— BADGE NA ZÁLOŽKÁCH ———
 
 function updateTabBadges() {
-  var today = new Date().toLocaleDateString('cs-CZ');
+  var now = new Date();
+  var today = now.toLocaleDateString('cs-CZ');
+  // Uzavírka: směna trvá do 5:00 následujícího rána → před 5h ráno jde o předchozí den
+  var uzDay = new Date(now);
+  if (uzDay.getHours() < 5) uzDay.setDate(uzDay.getDate() - 1);
+  var uzToday = uzDay.toLocaleDateString('cs-CZ');
   var ohist = JSON.parse(localStorage.getItem('bukovar_otevreni_history') || '[]');
   var uhist = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
   var otevrenoToday = ohist.length > 0 && ohist[0].cas.startsWith(today);
-  var uzavreno = uhist.length > 0 && uhist[0].cas.startsWith(today);
+  var uzavreno = uhist.length > 0 && uhist[0].cas.startsWith(uzToday);
   var otBtn = document.getElementById('tab-btn-otevreni');
   var uzBtn = document.getElementById('tab-btn-uzavirka');
   if (otBtn) otBtn.innerHTML = 'Otevření hospody' + (otevrenoToday ? ' <span class="tab-done-badge">✓</span>' : ' <span class="tab-warn-badge">Otevřít!</span>');
-  if (uzBtn) uzBtn.innerHTML = 'Uzavírka hospody' + (uzavreno ? ' <span class="tab-done-badge">✓</span>' : '');
+  if (uzBtn) uzBtn.innerHTML = 'Uzavírka hospody' + (uzavreno ? ' <span class="tab-done-badge">✓</span>' : ' <span class="tab-warn-badge">Uzavřít!</span>');
 }
 
 </script>
