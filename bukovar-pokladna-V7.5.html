@@ -309,6 +309,22 @@
   .pet-plan-total { font-size: 14px; font-weight: 500; margin-top: 14px; padding: 10px 14px; border-radius: 6px; background: var(--warn-bg); color: var(--warn-text); }
   .pet-plan-total.ok { background: var(--success-bg); color: var(--success-text); }
   .pet-plan-legend { font-size: 13px; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.5; }
+  .pet-cards-row { display: flex; gap: 5px; flex-wrap: nowrap; margin-bottom: 1.2rem; }
+  .pet-card { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+  .pet-card-stock { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 3px; font-size: 12px; font-family: 'DM Sans',sans-serif; font-weight: 500; border-radius: var(--radius); border: 1px solid; line-height: 1.3; text-align: center; }
+  .pet-card-stock-qty { font-size: 10px; font-weight: 400; opacity: .9; display: block; margin-top: 2px; }
+  .pet-card-plan { font-size: 11px; text-align: center; padding: 3px 4px; border-radius: 4px; line-height: 1.3; }
+  .pet-card-plan.needs { background: var(--warn-bg); color: var(--warn-text); }
+  .pet-card-plan.ok { background: var(--success-bg); color: var(--success-text); }
+  .pet-doplnit-btn { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 5px 4px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; width: 100%; text-align: center; transition: background .1s; min-height: unset; }
+  .pet-doplnit-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .pet-input-row { display: flex; gap: 3px; align-items: center; }
+  .pet-input-row input { flex: 1; min-width: 0; padding: 4px 5px; font-size: 13px; font-family: 'DM Sans',sans-serif; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: center; }
+  .pet-input-row .btn-ok { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; min-height: unset; }
+  .pet-input-row .btn-zr { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; min-height: unset; }
+  .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
+  .pet-hist-row:last-child { border-bottom: none; }
+  .pet-hist-row strong { color: var(--text); }
   /* Historie — edit/delete tlačítka */
   .hist-edit-btn { font-size: 12px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; min-height: unset; white-space: nowrap; }
   .hist-edit-btn:hover { background: var(--bg); color: var(--text); }
@@ -2153,14 +2169,18 @@ var PET_THRESHOLD = {
   'Nelson 12°': 3, 'Dublin 13°': 2,
 };
 
+var PET_COLORS = ['zelena','hneda','seda','zlata','zluta','oranzova','modra','tmave-zelena'];
+
 function renderPetPlan() {
   var el = document.getElementById('pet-plan-content');
   if (!el) return;
   var sklad = getSklad();
   var total = 0;
   var druhy = 0;
-  var html = '<div class="pet-plan-list">';
-  UKOLY_PET_BEERS.forEach(function(beer) {
+
+  // Řádek 1+2+3: karty piv
+  var html = '<div class="pet-cards-row">';
+  UKOLY_PET_BEERS.forEach(function(beer, i) {
     var key = beer + ' v PET';
     var current = (sklad[key] || {}).qty || 0;
     var threshold = PET_THRESHOLD[beer] || 0;
@@ -2168,25 +2188,90 @@ function renderPetPlan() {
     var needs = current <= threshold;
     var toBottle = 0;
     if (needs) {
-      var deficit = Math.max(0, ideal - current);
-      toBottle = Math.ceil(Math.max(deficit, 1) / 10) * 10;
+      toBottle = Math.ceil(Math.max(ideal - current, 1) / 10) * 10;
       total += toBottle;
       druhy++;
     }
-    html += '<div class="pet-plan-row' + (needs ? ' needs' : '') + '">'
-      + '<span class="pet-plan-name">' + beer + '</span>'
-      + '<span class="pet-plan-sklad">' + current + ' ks</span>'
-      + '<span class="pet-plan-status">' + (needs ? '→ <strong>' + toBottle + ' ks</strong>' : '✓ OK') + '</span>'
+    var col = PET_COLORS[i];
+    html += '<div class="pet-card">';
+    // Řádek 1 — barevná karta se stavem
+    html += '<div class="pet-card-stock vip-btn ' + col + '">'
+      + beer
+      + '<span class="pet-card-stock-qty">zbývá: ' + current + ' ks</span>'
       + '</div>';
+    // Řádek 2 — co napetkovat
+    if (needs) {
+      html += '<div class="pet-card-plan needs">→ ' + toBottle + ' ks</div>';
+    } else {
+      html += '<div class="pet-card-plan ok">✓ OK</div>';
+    }
+    // Řádek 3 — tlačítko doplnit + inline input
+    html += '<button class="pet-doplnit-btn" onclick="showPetInput(' + i + ')">+ Doplnit</button>';
+    html += '<div class="pet-input-row hidden" id="pet-input-' + i + '">'
+      + '<input type="number" id="pet-qty-' + i + '" min="1" step="1" placeholder="ks" onkeydown="if(event.key===\'Enter\')savePetDoplneni(' + i + ')" />'
+      + '<button class="btn-ok" onclick="savePetDoplneni(' + i + ')">OK</button>'
+      + '<button class="btn-zr" onclick="hidePetInput(' + i + ')">✕</button>'
+      + '</div>';
+    html += '</div>';
   });
   html += '</div>';
-  var d = druhy;
+
+  // Celkový plán
   if (total > 0) {
-    html += '<div class="pet-plan-total">Dnes napetkovat: <strong>' + total + ' ks</strong> celkem (' + d + ' ' + (d === 1 ? 'druh' : d < 5 ? 'druhy' : 'druhů') + ')</div>';
+    var d = druhy;
+    html += '<div class="pet-plan-total" style="margin-bottom:1.2rem;">Dnes napetkovat celkem: <strong>' + total + ' ks</strong> (' + d + ' ' + (d === 1 ? 'druh' : d < 5 ? 'druhy' : 'druhů') + ')</div>';
   } else {
-    html += '<div class="pet-plan-total ok">✓ Všechna piva nad minimem — petkování není potřeba</div>';
+    html += '<div class="pet-plan-total ok" style="margin-bottom:1.2rem;">✓ Všechna piva nad minimem</div>';
   }
+
+  // Historie doplnění
+  var history = JSON.parse(localStorage.getItem('bukovar_pet_history') || '[]');
+  if (history.length) {
+    html += '<div class="section-label" style="margin-bottom:.6rem;">Historie doplnění</div><div>';
+    history.slice(0, 20).forEach(function(e) {
+      html += '<div class="pet-hist-row"><span>' + e.cas + ' — <strong>' + e.beer + '</strong></span><span>+' + e.qty + ' ks</span></div>';
+    });
+    html += '</div>';
+  }
+
   el.innerHTML = html;
+}
+
+function showPetInput(idx) {
+  UKOLY_PET_BEERS.forEach(function(_, i) {
+    var el = document.getElementById('pet-input-' + i);
+    if (el) el.classList.add('hidden');
+  });
+  var el = document.getElementById('pet-input-' + idx);
+  if (el) {
+    el.classList.remove('hidden');
+    var inp = document.getElementById('pet-qty-' + idx);
+    if (inp) { inp.value = ''; inp.focus(); }
+  }
+}
+
+function hidePetInput(idx) {
+  var el = document.getElementById('pet-input-' + idx);
+  if (el) el.classList.add('hidden');
+}
+
+function savePetDoplneni(idx) {
+  var inp = document.getElementById('pet-qty-' + idx);
+  var qty = parseInt(inp ? inp.value : 0);
+  if (!qty || qty <= 0) return;
+  var beer = UKOLY_PET_BEERS[idx];
+  var key = beer + ' v PET';
+  var sklad = getSklad();
+  if (!sklad[key]) sklad[key] = { qty: 0 };
+  sklad[key].qty = (sklad[key].qty || 0) + qty;
+  saveSklad(sklad);
+  var now = new Date();
+  var cas = now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'});
+  var history = JSON.parse(localStorage.getItem('bukovar_pet_history') || '[]');
+  history.unshift({ cas: cas, beer: beer, qty: qty });
+  if (history.length > 50) history = history.slice(0, 50);
+  localStorage.setItem('bukovar_pet_history', JSON.stringify(history));
+  renderPetPlan();
 }
 
 // ——— BADGE NA ZÁLOŽKÁCH ———
