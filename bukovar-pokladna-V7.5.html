@@ -334,7 +334,7 @@
   .admin-pet-card { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; min-width: 0; }
   .admin-pet-card-header { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 3px; font-size: 12px; font-weight: 500; border-radius: var(--radius); border: 1px solid; line-height: 1.3; text-align: center; width: 100%; }
   .admin-pet-field { width: 100%; }
-  .admin-pet-field-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: center; margin-bottom: 2px; }
+  .admin-pet-field-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: left; margin-bottom: 2px; }
   .admin-pet-cell { font-size: 13px; font-weight: 600; text-align: center; padding: 5px 4px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); cursor: pointer; transition: background .1s, border-color .1s; width: 100%; }
   .admin-pet-cell:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
   .admin-pet-input { font-family: 'DM Sans',sans-serif; font-size: 13px; font-weight: 600; padding: 5px 4px; border: 2px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--text); width: 100%; text-align: center; outline: none; box-shadow: 0 0 0 3px rgba(181,56,26,.12); }
@@ -2197,26 +2197,40 @@ function saveOtevreniEdit(idx) {
 var UKOLY_PET_BEERS = ['Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°','Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'];
 
 var PET_CONFIG_DEFAULTS = {
-  'Hraďák 10°':     { threshold: 4, capacity: 10 },
-  'Štamgast 11°':   { threshold: 2, capacity: 8  },
-  'Šedá vlčice 11°':{ threshold: 4, capacity: 12 },
-  'Kohoutí 12°':    { threshold: 6, capacity: 16 },
-  'Zlatka 11°':     { threshold: 2, capacity: 4  },
-  'Mezulánka 11°':  { threshold: 3, capacity: 8  },
-  'Nelson 12°':     { threshold: 3, capacity: 8  },
-  'Dublin 13°':     { threshold: 2, capacity: 6  },
+  'Hraďák 10°':     { th_stred: 4, th_ctvrtek: 4, th_patek: 4, th_sobota: 4, capacity: 10 },
+  'Štamgast 11°':   { th_stred: 2, th_ctvrtek: 2, th_patek: 2, th_sobota: 2, capacity: 8  },
+  'Šedá vlčice 11°':{ th_stred: 4, th_ctvrtek: 4, th_patek: 4, th_sobota: 4, capacity: 12 },
+  'Kohoutí 12°':    { th_stred: 6, th_ctvrtek: 6, th_patek: 6, th_sobota: 6, capacity: 16 },
+  'Zlatka 11°':     { th_stred: 2, th_ctvrtek: 2, th_patek: 2, th_sobota: 2, capacity: 4  },
+  'Mezulánka 11°':  { th_stred: 3, th_ctvrtek: 3, th_patek: 3, th_sobota: 3, capacity: 8  },
+  'Nelson 12°':     { th_stred: 3, th_ctvrtek: 3, th_patek: 3, th_sobota: 3, capacity: 8  },
+  'Dublin 13°':     { th_stred: 2, th_ctvrtek: 2, th_patek: 2, th_sobota: 2, capacity: 6  },
 };
+
+var PET_TH_DAYS = ['th_stred','th_ctvrtek','th_patek','th_sobota'];
+var PET_TH_LABELS = ['Středa','Čtvrtek','Pátek','Sobota'];
 
 function getPetConfig() {
   var saved = JSON.parse(localStorage.getItem('bukovar_pet_config') || '{}');
   var cfg = {};
   UKOLY_PET_BEERS.forEach(function(beer) {
-    cfg[beer] = {
-      threshold: (saved[beer] && saved[beer].threshold != null) ? Number(saved[beer].threshold) : PET_CONFIG_DEFAULTS[beer].threshold,
-      capacity:  (saved[beer] && saved[beer].capacity  != null) ? Number(saved[beer].capacity)  : PET_CONFIG_DEFAULTS[beer].capacity,
-    };
+    var s = saved[beer] || {};
+    var def = PET_CONFIG_DEFAULTS[beer];
+    // migrate old single threshold → copy to all days
+    var oldTh = (s.threshold != null) ? Number(s.threshold) : null;
+    cfg[beer] = { capacity: s.capacity != null ? Number(s.capacity) : def.capacity };
+    PET_TH_DAYS.forEach(function(dk) {
+      cfg[beer][dk] = s[dk] != null ? Number(s[dk]) : (oldTh !== null ? oldTh : def[dk]);
+    });
   });
   return cfg;
+}
+
+function getPetThresholdToday(cfg, beer) {
+  var day = new Date().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+  var dk = day === 3 ? 'th_stred' : day === 4 ? 'th_ctvrtek' : day === 5 ? 'th_patek' : day === 6 ? 'th_sobota' : null;
+  if (dk) return cfg[beer][dk];
+  return Math.min(cfg[beer].th_stred, cfg[beer].th_ctvrtek, cfg[beer].th_patek, cfg[beer].th_sobota);
 }
 
 function savePetConfig(cfg) {
@@ -2274,20 +2288,22 @@ function renderAdminPetConfig() {
   var cfg = getPetConfig();
   var html = '<div class="admin-pet-cards">';
   UKOLY_PET_BEERS.forEach(function(beer, i) {
-    var t = cfg[beer].threshold;
     var c = cfg[beer].capacity;
     var col = PET_COLORS[i];
     html += '<div class="admin-pet-card">'
       + '<div class="admin-pet-card-header vip-btn ' + col + '">' + beer + '</div>'
       + '<div class="admin-pet-field">'
-      +   '<div class="admin-pet-field-label">Práh</div>'
-      +   '<div id="admin-cell-' + i + '-threshold" class="admin-pet-cell" data-val="' + t + '" onclick="petConfigStartEdit(' + i + ',\'threshold\')">' + t + '</div>'
-      + '</div>'
-      + '<div class="admin-pet-field">'
       +   '<div class="admin-pet-field-label">Kapacita</div>'
       +   '<div id="admin-cell-' + i + '-capacity" class="admin-pet-cell" data-val="' + c + '" onclick="petConfigStartEdit(' + i + ',\'capacity\')">' + c + '</div>'
-      + '</div>'
       + '</div>';
+    PET_TH_DAYS.forEach(function(dk, di) {
+      var v = cfg[beer][dk];
+      html += '<div class="admin-pet-field">'
+        +   '<div class="admin-pet-field-label">Práh ' + PET_TH_LABELS[di] + '</div>'
+        +   '<div id="admin-cell-' + i + '-' + dk + '" class="admin-pet-cell" data-val="' + v + '" onclick="petConfigStartEdit(' + i + ',\'' + dk + '\')">' + v + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
   });
   html += '</div>';
   el.innerHTML = html;
@@ -2308,7 +2324,7 @@ function renderPetPlan() {
   UKOLY_PET_BEERS.forEach(function(beer, i) {
     var key = beer + ' v PET';
     var current = (sklad[key] || {}).qty || 0;
-    var threshold = petCfg[beer].threshold;
+    var threshold = getPetThresholdToday(petCfg, beer);
     var ideal = petCfg[beer].capacity;
     var needs = current <= threshold;
     var toBottle = 0;
@@ -2323,7 +2339,7 @@ function renderPetPlan() {
     html += '<div class="pet-card-stock vip-btn ' + col + '">'
       + beer
       + '<span class="pet-card-stock-qty">zbývá: ' + current + ' ks</span>'
-      + '<span class="pet-card-stock-meta">práh: ' + threshold + ' | kapacita: ' + ideal + '</span>'
+      + '<span class="pet-card-stock-meta">práh dnes: ' + threshold + ' | kapacita: ' + ideal + '</span>'
       + '</div>';
     // Řádek 2 — co napetkovat
     if (needs) {
