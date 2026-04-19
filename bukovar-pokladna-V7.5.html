@@ -541,10 +541,7 @@
 <div class="tab-content" id="tab-pet">
 <main>
   <div class="card">
-    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:.25rem;">Petkovací plán</div>
-    <p class="pet-plan-legend">Automaticky ze stavu skladu. Pivo pod prahem (barevně) → napetkovat, zaokrouhleno nahoru na 10 ks.</p>
     <div id="pet-plan-content"></div>
-    <button onclick="renderPetPlan()" style="margin-top:14px;font-size:13px;padding:8px 18px;">↻ Aktualizovat ze skladu</button>
   </div>
 </main>
 </div><!-- /tab-pet -->
@@ -2400,9 +2397,6 @@ function renderPetPlan() {
   // Celkový plán
   if (total > 0) {
     var d = druhy;
-    html += '<div class="pet-plan-total" style="margin-bottom:1.2rem;">Dnes napetkovat celkem: <strong>' + total + ' ks</strong> (' + d + ' ' + (d === 1 ? 'druh' : d < 5 ? 'druhy' : 'druhů') + ')</div>';
-  } else {
-    html += '<div class="pet-plan-total ok" style="margin-bottom:1.2rem;">✓ Všechna piva nad minimem</div>';
   }
 
   // Historie doplnění
