@@ -330,11 +330,10 @@
   .pet-input-row .btn-ok { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; min-height: unset; }
   .pet-input-row .btn-zr { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; min-height: unset; }
   .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
-  .admin-pet-cards { display: flex; gap: 5px; flex-wrap: nowrap; }
-  .admin-pet-card { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; min-width: 0; }
+  .admin-pet-grid { display: flex; flex-direction: column; gap: 4px; }
+  .admin-pet-row { display: grid; grid-template-columns: 110px repeat(8, 1fr); gap: 4px; align-items: center; }
+  .admin-pet-row-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: right; padding-right: 6px; }
   .admin-pet-card-header { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 3px; font-size: 12px; font-weight: 500; border-radius: var(--radius); border: 1px solid; line-height: 1.3; text-align: center; width: 100%; }
-  .admin-pet-field { width: 100%; }
-  .admin-pet-field-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); text-align: left; margin-bottom: 2px; }
   .admin-pet-cell { font-size: 13px; font-weight: 600; text-align: center; padding: 5px 4px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); cursor: pointer; transition: background .1s, border-color .1s; width: 100%; }
   .admin-pet-cell:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
   .admin-pet-input { font-family: 'DM Sans',sans-serif; font-size: 13px; font-weight: 600; padding: 5px 4px; border: 2px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--text); width: 100%; text-align: center; outline: none; box-shadow: 0 0 0 3px rgba(181,56,26,.12); }
@@ -2286,25 +2285,33 @@ function renderAdminPetConfig() {
   var el = document.getElementById('admin-pet-config');
   if (!el) return;
   var cfg = getPetConfig();
-  var html = '<div class="admin-pet-cards">';
+  var html = '<div class="admin-pet-grid">';
+
+  // Řádek 0 — hlavičky piv
+  html += '<div class="admin-pet-row"><div class="admin-pet-row-label"></div>';
   UKOLY_PET_BEERS.forEach(function(beer, i) {
-    var c = cfg[beer].capacity;
-    var col = PET_COLORS[i];
-    html += '<div class="admin-pet-card">'
-      + '<div class="admin-pet-card-header vip-btn ' + col + '">' + beer + '</div>'
-      + '<div class="admin-pet-field">'
-      +   '<div class="admin-pet-field-label">Kapacita</div>'
-      +   '<div id="admin-cell-' + i + '-capacity" class="admin-pet-cell" data-val="' + c + '" onclick="petConfigStartEdit(' + i + ',\'capacity\')">' + c + '</div>'
-      + '</div>';
-    PET_TH_DAYS.forEach(function(dk, di) {
+    html += '<div class="admin-pet-card-header vip-btn ' + PET_COLORS[i] + '">' + beer + '</div>';
+  });
+  html += '</div>';
+
+  // Řádek Kapacita
+  html += '<div class="admin-pet-row"><div class="admin-pet-row-label">Kapacita</div>';
+  UKOLY_PET_BEERS.forEach(function(beer, i) {
+    var v = cfg[beer].capacity;
+    html += '<div id="admin-cell-' + i + '-capacity" class="admin-pet-cell" data-val="' + v + '" onclick="petConfigStartEdit(' + i + ',\'capacity\')">' + v + '</div>';
+  });
+  html += '</div>';
+
+  // Řádky Práh po dnech
+  PET_TH_DAYS.forEach(function(dk, di) {
+    html += '<div class="admin-pet-row"><div class="admin-pet-row-label">Práh ' + PET_TH_LABELS[di] + '</div>';
+    UKOLY_PET_BEERS.forEach(function(beer, i) {
       var v = cfg[beer][dk];
-      html += '<div class="admin-pet-field">'
-        +   '<div class="admin-pet-field-label">Práh ' + PET_TH_LABELS[di] + '</div>'
-        +   '<div id="admin-cell-' + i + '-' + dk + '" class="admin-pet-cell" data-val="' + v + '" onclick="petConfigStartEdit(' + i + ',\'' + dk + '\')">' + v + '</div>'
-        + '</div>';
+      html += '<div id="admin-cell-' + i + '-' + dk + '" class="admin-pet-cell" data-val="' + v + '" onclick="petConfigStartEdit(' + i + ',\'' + dk + '\')">' + v + '</div>';
     });
     html += '</div>';
   });
+
   html += '</div>';
   el.innerHTML = html;
 }
