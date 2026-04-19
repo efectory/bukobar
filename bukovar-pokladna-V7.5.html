@@ -177,6 +177,9 @@
   .sklad-qty.negative { color: var(--accent); }
   .sklad-unit { font-size: 10px; color: var(--muted); }
   .sklad-inline-input { width: 55px; padding: 1px 4px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 3px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .sklad-bool-btn { font-size: 11px; font-family: 'DM Sans', sans-serif; font-weight: 500; padding: 1px 7px; border-radius: 3px; cursor: pointer; border: 1px solid; white-space: nowrap; }
+  .sklad-bool-btn.yes { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
+  .sklad-bool-btn.no  { background: var(--accent-light); color: var(--accent); border-color: rgba(181,56,26,.3); }
 
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -1640,12 +1643,12 @@ const SKLAD_GROUPS = [
     { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
     { n: 'Škvarky v sádle Čongrády', unit: 'ks' },
   ]},
-  { col: 0, label: 'Potraviny & ingredience', items: [
+  { col: 0, label: 'Potraviny & ingredience', bool: true, items: [
     { n: 'Cukr', unit: 'kg' }, { n: 'Mléko', unit: 'l' }, { n: 'Sůl', unit: 'kg' },
     { n: 'Olej', unit: 'l' }, { n: 'Sirup bezový', unit: 'l' }, { n: 'Citron', unit: 'ks' },
     { n: 'Máta', unit: 'svazek' }, { n: 'Hořčice', unit: 'ks' }, { n: 'Kečup', unit: 'ks' },
   ]},
-  { col: 1, label: 'Hygiena', items: [
+  { col: 1, label: 'Hygiena', bool: true, items: [
     { n: 'Houbičky', unit: 'ks' }, { n: 'Jar', unit: 'ks' },
     { n: 'Toaletní papír', unit: 'ks' }, { n: 'Papírové utěrky', unit: 'bal' },
     { n: 'Ubrousky', unit: 'bal' }, { n: 'Mýdlo na ruce', unit: 'ks' },
@@ -1661,7 +1664,7 @@ const SKLAD_GROUPS = [
     { n: 'Zlatka 11°', unit: 'l' }, { n: 'Mezulánka 11°', unit: 'l' },
     { n: 'Nelson 12°', unit: 'l' }, { n: 'Dublin 13°', unit: 'l' },
   ]},
-  { col: 2, label: 'Bar & provoz', items: [
+  { col: 2, label: 'Bar & provoz', bool: true, items: [
     { n: 'Šenkýřka', unit: 'l' }, { n: 'Čisticí tablety na kávovar', unit: 'ks' },
     { n: 'Sklenice', unit: 'ks' }, { n: 'Brčka', unit: 'ks' }, { n: 'Párátka', unit: 'ks' },
     { n: 'Zápalky', unit: 'ks' }, { n: 'Podtácky', unit: 'ks' },
@@ -1779,19 +1782,28 @@ function renderSklad() {
     var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
     g.items.forEach(function(item) {
       var entry = sklad[item.n] || { qty: 0, unit: item.unit };
-      var qty = Math.round(entry.qty * 1000) / 1000;
-      var min = SKLAD_MIN[item.n] || 0;
-      var neg = qty < 0 ? ' negative' : '';
-      var stateClass = min > 0 ? (qty < min ? ' warn' : ' ok') : '';
       var safeName = item.n.replace(/'/g, "\\'");
-      var id = 'sq-' + encodeURIComponent(item.n);
-      html += '<div class="sklad-item' + stateClass + '">' +
-        '<span class="sklad-item-name">' + item.n + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
-        '<span class="sklad-qty-wrap">' +
-          '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
-          '<span class="sklad-unit">' + item.unit + '</span>' +
-        '</span>' +
-        '</div>';
+      if (g.bool) {
+        var yes = !!entry.qty;
+        var stateClass = yes ? ' ok' : ' warn';
+        html += '<div class="sklad-item' + stateClass + '">' +
+          '<span class="sklad-item-name">' + item.n + '</span>' +
+          '<button class="sklad-bool-btn' + (yes ? ' yes' : ' no') + '" onclick="skladBoolToggle(\'' + safeName + '\')">' + (yes ? '✓ Ano' : '✗ Ne') + '</button>' +
+          '</div>';
+      } else {
+        var qty = Math.round(entry.qty * 1000) / 1000;
+        var min = SKLAD_MIN[item.n] || 0;
+        var neg = qty < 0 ? ' negative' : '';
+        var stateClass = min > 0 ? (qty < min ? ' warn' : ' ok') : '';
+        var id = 'sq-' + encodeURIComponent(item.n);
+        html += '<div class="sklad-item' + stateClass + '">' +
+          '<span class="sklad-item-name">' + item.n + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
+          '<span class="sklad-qty-wrap">' +
+            '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
+            '<span class="sklad-unit">' + item.unit + '</span>' +
+          '</span>' +
+          '</div>';
+      }
     });
     html += '</div>';
     cols[g.col].push(html);
@@ -1799,6 +1811,14 @@ function renderSklad() {
 
   var el = document.getElementById('sklad-cols');
   el.innerHTML = '<div>' + cols[0].join('') + '</div><div>' + cols[1].join('') + '</div><div>' + cols[2].join('') + '</div>';
+}
+
+function skladBoolToggle(name) {
+  var sklad = getSklad();
+  var entry = sklad[name] || { qty: 0, unit: 'bool' };
+  sklad[name] = { qty: entry.qty ? 0 : 1, unit: 'bool' };
+  saveSklad(sklad);
+  renderSklad();
 }
 
 function skladQtyClick(name, spanEl) {
