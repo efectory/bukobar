@@ -1872,7 +1872,7 @@ function skladQtyClick(name, spanEl) {
   var input = document.createElement('input');
   input.className = 'sklad-inline-input';
   input.type = 'number';
-  input.step = '0.1';
+  input.step = unit === 'ks' ? '1' : '0.1';
   input.value = entry.qty;
   wrap.replaceChild(input, spanEl);
   input.select();
