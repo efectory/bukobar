@@ -162,21 +162,21 @@
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
   /* Sklad */
-  .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: start; }
-  .sklad-group { margin-bottom: 1.1rem; }
-  .sklad-group-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 5px; border-bottom: 1px solid var(--border-strong); margin-bottom: 4px; }
-  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 5px; border-bottom: 1px solid var(--border); gap: 6px; border-radius: 4px; }
+  .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; align-items: start; }
+  .sklad-group { margin-bottom: .75rem; }
+  .sklad-group-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 3px; border-bottom: 1px solid var(--border-strong); margin-bottom: 2px; }
+  .sklad-item { display: flex; justify-content: space-between; align-items: center; padding: 1px 4px; border-bottom: 1px solid var(--border); gap: 4px; border-radius: 3px; }
   .sklad-item:last-child { border-bottom: none; }
   .sklad-item.ok  { background: var(--success-bg); border-color: rgba(26,107,58,.15); }
   .sklad-item.warn { background: var(--accent-light); border-color: rgba(181,56,26,.15); }
-  .sklad-item-name { font-size: 13px; flex: 1; min-width: 0; }
+  .sklad-item-name { font-size: 12px; flex: 1; min-width: 0; line-height: 1.6; }
   .sklad-min { font-size: 10px; color: var(--muted); white-space: nowrap; }
-  .sklad-qty-wrap { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-  .sklad-qty { font-weight: 500; font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background .1s; }
+  .sklad-qty-wrap { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+  .sklad-qty { font-weight: 500; font-size: 12px; cursor: pointer; padding: 1px 5px; border-radius: 3px; transition: background .1s; }
   .sklad-qty:hover { background: var(--accent-light); }
   .sklad-qty.negative { color: var(--accent); }
-  .sklad-unit { font-size: 11px; color: var(--muted); }
-  .sklad-inline-input { width: 60px; padding: 2px 5px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .sklad-unit { font-size: 10px; color: var(--muted); }
+  .sklad-inline-input { width: 55px; padding: 1px 4px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 3px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
 
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -1640,6 +1640,17 @@ const SKLAD_GROUPS = [
     { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
     { n: 'Škvarky v sádle Čongrády', unit: 'ks' },
   ]},
+  { col: 0, label: 'Potraviny & ingredience', items: [
+    { n: 'Cukr', unit: 'kg' }, { n: 'Mléko', unit: 'l' }, { n: 'Sůl', unit: 'kg' },
+    { n: 'Olej', unit: 'l' }, { n: 'Sirup bezový', unit: 'l' }, { n: 'Citron', unit: 'ks' },
+    { n: 'Máta', unit: 'svazek' }, { n: 'Hořčice', unit: 'ks' }, { n: 'Kečup', unit: 'ks' },
+  ]},
+  { col: 1, label: 'Hygiena', items: [
+    { n: 'Houbičky', unit: 'ks' }, { n: 'Jar', unit: 'ks' },
+    { n: 'Toaletní papír', unit: 'ks' }, { n: 'Papírové utěrky', unit: 'bal' },
+    { n: 'Ubrousky', unit: 'bal' }, { n: 'Mýdlo na ruce', unit: 'ks' },
+    { n: 'Sáčky na odpadky', unit: 'bal' },
+  ]},
   { col: 2, label: 'Lahvová piva', items: [
     { n: 'Radler', unit: 'ks' }, { n: 'Birel neochucený', unit: 'ks' },
     { n: 'Birel ochucený', unit: 'ks' }, { n: "Maisel's Weisse", unit: 'ks' },
@@ -1649,6 +1660,12 @@ const SKLAD_GROUPS = [
     { n: 'Šedá vlčice 11°', unit: 'l' }, { n: 'Kohoutí 12°', unit: 'l' },
     { n: 'Zlatka 11°', unit: 'l' }, { n: 'Mezulánka 11°', unit: 'l' },
     { n: 'Nelson 12°', unit: 'l' }, { n: 'Dublin 13°', unit: 'l' },
+  ]},
+  { col: 2, label: 'Bar & provoz', items: [
+    { n: 'Šenkýřka', unit: 'l' }, { n: 'Čisticí tablety na kávovar', unit: 'ks' },
+    { n: 'Sklenice', unit: 'ks' }, { n: 'Brčka', unit: 'ks' }, { n: 'Párátka', unit: 'ks' },
+    { n: 'Zápalky', unit: 'ks' }, { n: 'Podtácky', unit: 'ks' },
+    { n: 'Pokladní páska', unit: 'ks' }, { n: 'Propisky', unit: 'ks' },
   ]},
 ];
 
@@ -1700,6 +1717,13 @@ const SKLAD_MIN = {
   'Radler': 20, 'Birel neochucený': 20, 'Birel ochucený': 20, "Maisel's Weisse": 20,
   'Hraďák 10°': 300, 'Štamgast 11°': 300, 'Šedá vlčice 11°': 300, 'Kohoutí 12°': 300,
   'Zlatka 11°': 300, 'Mezulánka 11°': 300, 'Nelson 12°': 300, 'Dublin 13°': 300,
+  'Cukr': 2, 'Mléko': 5, 'Sůl': 2, 'Olej': 2, 'Sirup bezový': 2,
+  'Citron': 10, 'Máta': 3, 'Hořčice': 5, 'Kečup': 5,
+  'Houbičky': 5, 'Jar': 2, 'Toaletní papír': 20, 'Papírové utěrky': 5,
+  'Ubrousky': 10, 'Mýdlo na ruce': 3, 'Sáčky na odpadky': 5,
+  'Šenkýřka': 2, 'Čisticí tablety na kávovar': 10, 'Sklenice': 50,
+  'Brčka': 50, 'Párátka': 100, 'Zápalky': 10, 'Podtácky': 100,
+  'Pokladní páska': 5, 'Propisky': 5,
 };
 
 function skladGetUnit(key) {
