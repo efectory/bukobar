@@ -319,6 +319,7 @@
   .pet-card { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
   .pet-card-stock { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 3px; font-size: 12px; font-family: 'DM Sans',sans-serif; font-weight: 500; border-radius: var(--radius); border: 1px solid; line-height: 1.3; text-align: center; }
   .pet-card-stock-qty { font-size: 10px; font-weight: 400; opacity: .9; display: block; margin-top: 2px; }
+  .pet-card-stock-meta { font-size: 9px; font-weight: 400; opacity: .7; display: block; margin-top: 1px; }
   .pet-card-plan { font-size: 11px; text-align: center; padding: 3px 4px; border-radius: 4px; line-height: 1.3; }
   .pet-card-plan.needs { background: var(--warn-bg); color: var(--warn-text); }
   .pet-card-plan.ok { background: var(--success-bg); color: var(--success-text); }
@@ -2315,6 +2316,7 @@ function renderPetPlan() {
     html += '<div class="pet-card-stock vip-btn ' + col + '">'
       + beer
       + '<span class="pet-card-stock-qty">zbývá: ' + current + ' ks</span>'
+      + '<span class="pet-card-stock-meta">práh: ' + threshold + ' | kapacita: ' + ideal + '</span>'
       + '</div>';
     // Řádek 2 — co napetkovat
     if (needs) {
