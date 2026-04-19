@@ -161,11 +161,63 @@
   .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
+  /* Sklad */
+  .sklad-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px; }
+  .sklad-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .sklad-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .sklad-table th { text-align: left; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 10px 8px; border-bottom: 2px solid var(--border-strong); }
+  .sklad-table th.right { text-align: right; }
+  .sklad-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .sklad-table tr:last-child td { border-bottom: none; }
+  .sklad-table tr:hover td { background: var(--bg); }
+  .sklad-qty { font-weight: 500; font-size: 15px; }
+  .sklad-unit { font-size: 12px; color: var(--muted); margin-left: 3px; }
+  .sklad-edit-row td { background: var(--accent-light) !important; }
+  .sklad-edit-input { width: 90px; padding: 5px 8px; font-size: 14px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--accent); border-radius: 6px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .sklad-edit-input:focus { border-color: var(--accent); }
+  .sklad-save-btn { padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; background: var(--accent); color: #fff; border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; }
+  .sklad-cancel-btn { padding: 5px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: transparent; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; }
+  .sklad-row-edit-btn { padding: 4px 10px; font-size: 12px; font-family: 'DM Sans', sans-serif; background: transparent; border: 1px solid var(--border-strong); border-radius: 6px; cursor: pointer; color: var(--muted); transition: border-color .1s, color .1s; }
+  .sklad-row-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .prijem-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 10px; align-items: center; margin-bottom: 1rem; max-height: 55vh; overflow-y: auto; }
+  .prijem-grid-header { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid var(--border-strong); }
+  .prijem-name { font-size: 13px; padding: 4px 0; }
+  .prijem-cur { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap; }
+  .prijem-input { width: 80px; padding: 5px 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .prijem-input:focus { border-color: var(--accent); }
+  .prijem-cat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); grid-column: 1 / -1; padding-top: 10px; padding-bottom: 2px; border-bottom: 1px solid var(--border); margin-top: 4px; }
+
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
   .kasa-left { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: .75rem; }
   .kasa-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .quick-add { height: 160px; overflow: hidden; flex-shrink: 0; }
+
+  /* VIP piva — rychlé markování */
+  .vip-piva { border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0; }
+  .vip-piva-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 5px; }
+  .vip-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .vip-row + .vip-piva-label { margin-top: 8px; }
+  .vip-btn { display: flex; flex-direction: column; align-items: center; padding: 6px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; border-radius: var(--radius); border: 1px solid rgba(181,56,26,.3); background: var(--accent-light); color: var(--accent); cursor: pointer; white-space: nowrap; transition: background .1s, color .1s, border-color .1s; line-height: 1.3; min-height: unset; }
+  .vip-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .vip-btn:active { opacity: .75; }
+  .vip-btn-price { font-size: 11px; font-weight: 400; opacity: .8; }
+  .vip-btn.zelena   { background:#dcfce7; border-color:#16a34a; color:#15803d; }
+  .vip-btn.zelena:hover { background:#16a34a; color:#fff; border-color:#16a34a; }
+  .vip-btn.hneda    { background:#f5e6d3; border-color:#92400e; color:#78350f; }
+  .vip-btn.hneda:hover  { background:#92400e; color:#fff; border-color:#92400e; }
+  .vip-btn.seda     { background:#f1f5f9; border-color:#64748b; color:#334155; }
+  .vip-btn.seda:hover   { background:#64748b; color:#fff; border-color:#64748b; }
+  .vip-btn.zlata    { background:#fef9c3; border-color:#b45309; color:#92400e; }
+  .vip-btn.zlata:hover  { background:#d97706; color:#fff; border-color:#d97706; }
+  .vip-btn.zluta    { background:#fefce8; border-color:#ca8a04; color:#713f12; }
+  .vip-btn.zluta:hover  { background:#eab308; color:#fff; border-color:#eab308; }
+  .vip-btn.oranzova { background:#fff7ed; border-color:#ea580c; color:#c2410c; }
+  .vip-btn.oranzova:hover { background:#ea580c; color:#fff; border-color:#ea580c; }
+  .vip-btn.modra    { background:#eff6ff; border-color:#2563eb; color:#1d4ed8; }
+  .vip-btn.modra:hover  { background:#2563eb; color:#fff; border-color:#2563eb; }
+  .vip-btn.tmave-zelena { background:#f0fdf4; border-color:#166534; color:#14532d; }
+  .vip-btn.tmave-zelena:hover { background:#166534; color:#fff; border-color:#166534; }
   .receipt-items-wrap { flex: 1; overflow-y: auto; max-height: 420px; margin-top: .5rem; }
 
   /* Workflow — levý sloupec */
@@ -188,6 +240,59 @@
   .rp-row { display: flex; justify-content: space-between; padding: 2px 0; }
   .rp-total { display: flex; justify-content: space-between; padding: 4px 0; font-weight: 700; font-size: 15px; border-top: 1px solid #000; margin-top: 4px; }
   .rp-footer { text-align: center; margin-top: 8px; font-size: 12px; color: #555; }
+
+  /* Checklist */
+  .cl-section { margin-bottom: 1.5rem; }
+  .cl-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .cl-item { display: flex; align-items: flex-start; gap: 12px; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+  .cl-item:last-child { border-bottom: none; }
+  .cl-checkbox { width: 24px; height: 24px; border: 2px solid var(--border-strong); border-radius: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; margin-top: 1px; }
+  .cl-checkbox.checked { background: var(--success-text); border-color: var(--success-text); }
+  .cl-checkbox.checked::after { content: '✓'; color: #fff; font-size: 14px; font-weight: 700; }
+  .cl-label { font-size: 15px; line-height: 1.45; cursor: pointer; flex: 1; }
+  .cl-label.checked { color: var(--muted); text-decoration: line-through; }
+  .cl-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .cl-progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .cl-progress-fill { height: 100%; background: var(--success-text); border-radius: 3px; transition: width .3s; }
+  .cl-progress-text { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .cl-name-row { display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .cl-name-row label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .cl-name-row input { font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; flex: 1; min-width: 160px; }
+  .cl-name-row input:focus { border-color: var(--accent); }
+  .cl-text-input { font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; width: 100%; margin-top: 6px; }
+  .cl-text-input:focus { border-color: var(--accent); }
+  .cl-amount-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .cl-amount-row input { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 500; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; width: 140px; text-align: right; }
+  .cl-amount-row input:focus { border-color: var(--accent); }
+  .cl-amount-row span { font-size: 15px; color: var(--muted); }
+  .cl-submit-row { margin-top: 2rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .cl-done-banner { background: var(--success-bg); border: 1px solid rgba(26,107,58,.2); border-radius: var(--radius); padding: 1rem 1.25rem; font-size: 14px; color: var(--success-text); display: flex; align-items: center; gap: 10px; }
+  .cl-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .cl-tab-btn { padding: 8px 18px; font-size: 14px; border-radius: 20px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; transition: background .1s; }
+  .cl-tab-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
+  .cl-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .cl-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .cl-grid-3 .cl-section, .cl-grid-2 .cl-section { background: var(--bg); border-radius: var(--radius); padding: 1rem; margin-bottom: 0; }
+  @media (max-width: 900px) { .cl-grid-3 { grid-template-columns: 1fr; } .cl-grid-2 { grid-template-columns: 1fr; } }
+  .cl-history-row { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: .875rem 1rem; margin-bottom: .5rem; cursor: pointer; transition: border-color .15s; }
+  .cl-history-row:hover { border-color: var(--border-strong); }
+  .cl-history-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .cl-history-name { font-weight: 500; font-size: 15px; }
+  .cl-history-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cl-history-score { font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .cl-history-score.full { color: var(--success-text); }
+  .cl-history-score.partial { color: var(--warn-text); }
+  .cl-history-detail { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border); display: none; }
+  .cl-history-detail.open { display: block; }
+  .cl-history-detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: .75rem; }
+  .cl-history-detail-section { font-size: 13px; }
+  .cl-history-detail-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: .4rem; }
+  .cl-history-detail-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+  .cl-history-check { font-size: 13px; }
+  .cl-history-check.ok { color: var(--success-text); }
+  .cl-history-check.no { color: var(--accent); }
+  .cl-history-note { font-size: 13px; color: var(--muted); margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--border); }
+  @media (max-width: 900px) { .cl-history-detail-grid { grid-template-columns: 1fr; } }
 
   @media print {
     @page { size: 80mm auto; margin: 3mm; }
@@ -212,7 +317,10 @@
 <div class="tabs" style="justify-content:space-between;">
   <div style="display:flex;">
     <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
+    <button class="tab-btn" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
     <button class="tab-btn" onclick="switchTab('uctenky',this)">Historie účtenek</button>
+    <button class="tab-btn" onclick="switchTab('sklad',this);renderSklad()">Sklad</button>
+    <button class="tab-btn" onclick="switchTab('administrace',this)">Administrace</button>
     <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
   </div>
   <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
@@ -278,6 +386,32 @@
 
       <!-- Pravý sloupec: účtenka -->
       <div class="kasa-right card">
+        <!-- VIP piva — rychlé markování -->
+        <div class="vip-piva">
+          <div class="vip-piva-label">Čepovaná piva</div>
+          <div class="vip-row">
+            <button class="vip-btn zelena"      onclick="quickAdd({n:'Hraďák 10°',c:'Piva',p:49,u:'0,4l'})">Hraďák 10°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn hneda"       onclick="quickAdd({n:'Štamgast 11°',c:'Piva',p:49,u:'0,4l'})">Štamgast 11°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn seda"        onclick="quickAdd({n:'Šedá vlčice 11°',c:'Piva',p:49,u:'0,4l'})">Šedá vlčice 11°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn zlata"       onclick="quickAdd({n:'Kohoutí 12°',c:'Piva',p:49,u:'0,4l'})">Kohoutí 12°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn zluta"       onclick="quickAdd({n:'Zlatka 11°',c:'Piva',p:49,u:'0,4l'})">Zlatka 11°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn oranzova"    onclick="quickAdd({n:'Mezulánka 11°',c:'Piva',p:49,u:'0,4l'})">Mezulánka 11°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn modra"       onclick="quickAdd({n:'Nelson 12°',c:'Piva',p:49,u:'0,4l'})">Nelson 12°<span class="vip-btn-price">49 Kč</span></button>
+            <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13°',c:'Piva',p:49,u:'0,4l'})">Dublin 13°<span class="vip-btn-price">49 Kč</span></button>
+          </div>
+          <div class="vip-piva-label">Pivo v PET</div>
+          <div class="vip-row">
+            <button class="vip-btn zelena"      onclick="quickAdd({n:'Hraďák 10° v PET',c:'Piva',p:105,u:'1,0l'})">Hraďák 10°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn hneda"       onclick="quickAdd({n:'Štamgast 11° v PET',c:'Piva',p:105,u:'1,0l'})">Štamgast 11°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn seda"        onclick="quickAdd({n:'Šedá vlčice 11° v PET',c:'Piva',p:105,u:'1,0l'})">Šedá vlčice 11°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn zlata"       onclick="quickAdd({n:'Kohoutí 12° v PET',c:'Piva',p:105,u:'1,0l'})">Kohoutí 12°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn zluta"       onclick="quickAdd({n:'Zlatka 11° v PET',c:'Piva',p:105,u:'1,0l'})">Zlatka 11°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn oranzova"    onclick="quickAdd({n:'Mezulánka 11° v PET',c:'Piva',p:105,u:'1,0l'})">Mezulánka 11°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn modra"       onclick="quickAdd({n:'Nelson 12° v PET',c:'Piva',p:105,u:'1,0l'})">Nelson 12°<span class="vip-btn-price">105 Kč · 1l</span></button>
+            <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13° v PET',c:'Piva',p:105,u:'1,0l'})">Dublin 13°<span class="vip-btn-price">105 Kč · 1l</span></button>
+          </div>
+        </div>
+
         <!-- Nahoře: přidat položku (fixní výška) -->
         <div class="quick-add">
           <div class="quick-add-label">Přidat položku</div>
@@ -316,9 +450,207 @@
   </main>
 </div><!-- /tab-uctenky -->
 
+<div class="tab-content" id="tab-uzavirka">
+<main>
+  <div id="cl-history-wrap"></div>
+
+  <div class="card">
+    <div class="cl-name-row">
+      <label>Jméno obsluhy:</label>
+      <input type="text" id="cl-obsluha" placeholder="Kdo zavírá..." />
+    </div>
+    <div class="cl-progress">
+      <div class="cl-progress-bar"><div class="cl-progress-fill" id="cl-progress-fill" style="width:0%"></div></div>
+      <div class="cl-progress-text" id="cl-progress-text">0 / 21</div>
+    </div>
+
+    <div class="cl-grid-3">
+      <div class="cl-section">
+        <div class="cl-section-title">Kuchyň</div>
+        <div class="cl-item" onclick="toggleCheck('cl13')">
+          <div class="cl-checkbox" id="cl13-box"></div>
+          <div class="cl-label" id="cl13-lbl">Pracovní plochy jsou uklizené a otřené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl14')">
+          <div class="cl-checkbox" id="cl14-box"></div>
+          <div class="cl-label" id="cl14-lbl">Nádobí je umyté / v myčce / uklizené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl15')">
+          <div class="cl-checkbox" id="cl15-box"></div>
+          <div class="cl-label" id="cl15-lbl">Spotřebiče jsou vypnuté (pizza pec..)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl16')">
+          <div class="cl-checkbox" id="cl16-box"></div>
+          <div class="cl-label" id="cl16-lbl">Odpad je vynesený (nebo připravený dle domluvy)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl17')">
+          <div class="cl-checkbox" id="cl17-box"></div>
+          <div class="cl-label" id="cl17-lbl">Kuchyň je zhasnutá a zavřená?</div>
+        </div>
+      </div>
+
+      <div class="cl-section">
+        <div class="cl-section-title">Toalety</div>
+        <div class="cl-item" onclick="toggleCheck('cl18')">
+          <div class="cl-checkbox" id="cl18-box"></div>
+          <div class="cl-label" id="cl18-lbl">Toalety zkontrolované a uklizené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl19')">
+          <div class="cl-checkbox" id="cl19-box"></div>
+          <div class="cl-label" id="cl19-lbl">Doplněný toaletní papír / mýdlo?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl20')">
+          <div class="cl-checkbox" id="cl20-box"></div>
+          <div class="cl-label" id="cl20-lbl">Světla na toaletách zhasnutá?</div>
+        </div>
+      </div>
+
+      <div class="cl-section">
+        <div class="cl-section-title">Bar</div>
+        <div class="cl-item" onclick="toggleCheck('cl6')">
+          <div class="cl-checkbox" id="cl6-box"></div>
+          <div class="cl-label" id="cl6-lbl">Bar je uklizený a otřený?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl7')">
+          <div class="cl-checkbox" id="cl7-box"></div>
+          <div class="cl-label" id="cl7-lbl">Pípy jsou vysanitované?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl8')">
+          <div class="cl-checkbox" id="cl8-box"></div>
+          <div class="cl-label" id="cl8-lbl">Jsou zavřeny oba kohouty s vodou (sanitace, oplach skleniček)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl9')">
+          <div class="cl-checkbox" id="cl9-box"></div>
+          <div class="cl-label" id="cl9-lbl">Kávovar je vypnutý a uvedený do pořádku?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl10')">
+          <div class="cl-checkbox" id="cl10-box"></div>
+          <div class="cl-label" id="cl10-lbl">Lednice jsou zavřené a zkontrolované. Prošlé a staré věci jsou vyhozené?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl11')">
+          <div class="cl-checkbox" id="cl11-box"></div>
+          <div class="cl-label" id="cl11-lbl">Jsou odneseny odpadky?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl12')">
+          <div class="cl-checkbox" id="cl12-box"></div>
+          <div class="cl-label" id="cl12-lbl">Je doplněna lednice na baru?</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-grid-2">
+      <div class="cl-section">
+        <div class="cl-section-title">Sál</div>
+        <div class="cl-item" onclick="toggleCheck('cl1')">
+          <div class="cl-checkbox" id="cl1-box"></div>
+          <div class="cl-label" id="cl1-lbl">Stoly jsou setřené, na každém stole jsou podtácky a menu?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl2')">
+          <div class="cl-checkbox" id="cl2-box"></div>
+          <div class="cl-label" id="cl2-lbl">Židle jsou zvednuté, barové židle jsou zvednuté? Na každém stole je 5 židlí?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl3')">
+          <div class="cl-checkbox" id="cl3-box"></div>
+          <div class="cl-label" id="cl3-lbl">Barovky jsou na baru, ostatní barovky jsou u okna?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl4')">
+          <div class="cl-checkbox" id="cl4-box"></div>
+          <div class="cl-label" id="cl4-lbl">Podlaha je uklizená (zameteno / vytřeno dle potřeby)?</div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl5')">
+          <div class="cl-checkbox" id="cl5-box"></div>
+          <div class="cl-label" id="cl5-lbl">Nealko, víno, prosecco, petky, paštiky, hermelíny, utopenci v lednici u vstupu jsou doplněny do plna?</div>
+        </div>
+      </div>
+
+      <div class="cl-section">
+        <div class="cl-section-title">Administrace</div>
+        <div class="cl-item" style="flex-direction:column;align-items:flex-start;gap:4px;cursor:default;">
+          <div class="cl-label" style="cursor:default;">Tržby v hotovosti</div>
+          <div class="cl-amount-row">
+            <input type="number" id="adm-trzby" placeholder="0" min="0" />
+            <span>Kč</span>
+          </div>
+        </div>
+        <div class="cl-item" onclick="toggleCheck('cl21')">
+          <div class="cl-checkbox" id="cl21-box"></div>
+          <div class="cl-label" id="cl21-lbl">Všechny lístky jsou přepsány do pokladny?</div>
+        </div>
+        <div class="cl-item" style="flex-direction:column;align-items:flex-start;gap:4px;cursor:default;">
+          <div class="cl-label" style="cursor:default;">Poznámky k předání směny</div>
+          <textarea id="adm-poznamky" class="cl-text-input" rows="4" placeholder="Pokud je něco k předání, napište zde..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="cl-submit-row">
+      <button class="primary" onclick="uzavritSmenU()">Uzavřít směnu</button>
+    </div>
+    <div id="cl-done-msg" class="cl-done-banner hidden" style="margin-top:1rem;">
+      ✓ Směna uzavřena — <span id="cl-done-detail"></span>
+    </div>
+  </div>
+</main>
+</div><!-- /tab-uzavirka -->
+
+<div class="tab-content" id="tab-sklad">
+  <main>
+    <div class="card">
+      <div class="sklad-header">
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;">Stav skladu</div>
+        <button class="primary" onclick="openPrijemHeslo()">+ Příjem zboží</button>
+      </div>
+      <div class="sklad-cats" id="sklad-cats"></div>
+      <table class="sklad-table">
+        <thead>
+          <tr>
+            <th>Název</th>
+            <th class="right">Stav</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="sklad-tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div><!-- /tab-sklad -->
+
+<div class="tab-content" id="tab-administrace">
+  <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
+</div><!-- /tab-administrace -->
+
 <div class="tab-content" id="tab-ostatni">
   <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
 </div><!-- /tab-ostatni -->
+
+<!-- Příjem zboží — heslo -->
+<div class="modal-overlay hidden" id="prijem-heslo-modal">
+  <div class="modal" style="max-width:320px;">
+    <h3>Příjem zboží</h3>
+    <p>Zadejte heslo pro přístup</p>
+    <input type="password" id="prijem-heslo-input" placeholder="Heslo..."
+      style="width:100%;padding:10px 12px;font-size:16px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-strong);border-radius:var(--radius);outline:none;margin-bottom:.5rem;"
+      onkeydown="if(event.key==='Enter')potvrdPrijemHeslo()" />
+    <div id="prijem-heslo-err" style="font-size:12px;color:var(--accent);min-height:18px;margin-bottom:.5rem;"></div>
+    <div class="modal-actions">
+      <button onclick="closePrijemHeslo()">Zrušit</button>
+      <button class="primary" onclick="potvrdPrijemHeslo()">Vstoupit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Příjem zboží — formulář -->
+<div class="modal-overlay hidden" id="prijem-modal">
+  <div class="modal" style="max-width:520px;">
+    <h3>Příjem zboží</h3>
+    <p style="margin-bottom:1rem;">Zadejte přijatá množství (přičtou se k aktuálnímu stavu)</p>
+    <div class="prijem-grid" id="prijem-grid"></div>
+    <div class="modal-actions">
+      <button onclick="closePrijem()">Zrušit</button>
+      <button class="primary" onclick="ulozitPrijem()">Uložit příjem</button>
+    </div>
+  </div>
+</div>
 
 <!-- Štamgast modal -->
 <div class="modal-overlay hidden" id="stamgast-modal">
@@ -381,12 +713,10 @@
 
 <script>
 const MENU = [
-  {n:"Bukovar",c:"Piva",p:49,u:"0,4l"},
   {n:"Radler",c:"Piva",p:49,u:"0,4l"},
   {n:"Birel nealko neochucený",c:"Piva",p:49,u:"0,5l"},
   {n:"Birel nealko ochucený",c:"Piva",p:49,u:"0,5l"},
   {n:"Maisel's Weisse Alkoholfrei",c:"Piva",p:65,u:"0,5l"},
-  {n:"Bukovar v PET",c:"Piva",p:105,u:"1,0l"},
   {n:"Pivo s sebou do džbánku 2l",c:"Piva",p:196,u:"2l"},
   {n:"Pivo s sebou do džbánku 5l",c:"Piva",p:490,u:"5l"},
   {n:"Espresso",c:"Horké nápoje",p:49},
@@ -458,6 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
   buildCategoryBtns();
   startManual();
   renderUctenky();
+  renderClHistory();
 });
 
 function initApiKey() {
@@ -1020,12 +1351,12 @@ function closeQrModal() {
 // --- Tisk ---
 
 var RECEIPT_CSS =
-  'body{font-family:"Courier New",monospace;font-size:12px;width:74mm;margin:0;padding:3mm;color:#000;background:#fff;}' +
+  'body{font-family:"Courier New",monospace;font-size:16px;font-weight:600;width:74mm;margin:0;padding:3mm;color:#000;background:#fff;}' +
   '.rp-center{text-align:center;}' +
   '.rp-line{border:none;border-top:1px dashed #000;margin:5px 0;}' +
-  '.rp-row{display:flex;justify-content:space-between;padding:1px 0;}' +
-  '.rp-total{display:flex;justify-content:space-between;padding:3px 0;font-weight:700;font-size:14px;border-top:1px solid #000;margin-top:3px;}' +
-  '.rp-footer{text-align:center;margin-top:6px;font-size:11px;}' +
+  '.rp-row{display:flex;justify-content:space-between;padding:1px 0;font-size:16px;}' +
+  '.rp-total{display:flex;justify-content:space-between;padding:3px 0;font-weight:700;font-size:19px;border-top:1px solid #000;margin-top:3px;}' +
+  '.rp-footer{text-align:center;margin-top:6px;font-size:13px;}' +
   '@page{size:80mm auto;margin:3mm;}';
 
 function printReceiptIframe(html) {
@@ -1134,6 +1465,7 @@ function saveUctenka() {
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
   data.unshift(record);
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
+  skladDecrementFromReceipt(receiptItems);
   renderUctenky();
 }
 
@@ -1206,6 +1538,298 @@ function resetApp() {
   showReceipt();
   renderItems();
 }
+
+// --- Checklist ---
+
+const CL_TOTAL = 21;
+
+var clState = {};
+var admState = {};
+
+function toggleCheck(id) {
+  clState[id] = !clState[id];
+  renderChecklist();
+}
+
+function renderChecklist() {
+  var done = 0;
+  for (var i = 1; i <= CL_TOTAL; i++) {
+    var key = 'cl' + i;
+    var box = document.getElementById(key + '-box');
+    var lbl = document.getElementById(key + '-lbl');
+    if (!box) continue;
+    if (clState[key]) {
+      box.classList.add('checked');
+      lbl.classList.add('checked');
+      done++;
+    } else {
+      box.classList.remove('checked');
+      lbl.classList.remove('checked');
+    }
+  }
+  var pct = Math.round(done / CL_TOTAL * 100);
+  document.getElementById('cl-progress-fill').style.width = pct + '%';
+  document.getElementById('cl-progress-text').textContent = done + ' / ' + CL_TOTAL;
+}
+
+const CL_ITEMS = [
+  {key:'cl13', sec:'Kuchyň',  lbl:'Pracovní plochy jsou uklizené a otřené?'},
+  {key:'cl14', sec:'Kuchyň',  lbl:'Nádobí je umyté / v myčce / uklizené?'},
+  {key:'cl15', sec:'Kuchyň',  lbl:'Spotřebiče jsou vypnuté (pizza pec..)?'},
+  {key:'cl16', sec:'Kuchyň',  lbl:'Odpad je vynesený (nebo připravený dle domluvy)?'},
+  {key:'cl17', sec:'Kuchyň',  lbl:'Kuchyň je zhasnutá a zavřená?'},
+  {key:'cl18', sec:'Toalety', lbl:'Toalety zkontrolované a uklizené?'},
+  {key:'cl19', sec:'Toalety', lbl:'Doplněný toaletní papír / mýdlo?'},
+  {key:'cl20', sec:'Toalety', lbl:'Světla na toaletách zhasnutá?'},
+  {key:'cl6',  sec:'Bar',     lbl:'Bar je uklizený a otřený?'},
+  {key:'cl7',  sec:'Bar',     lbl:'Pípy jsou vysanitované?'},
+  {key:'cl8',  sec:'Bar',     lbl:'Jsou zavřeny oba kohouty s vodou?'},
+  {key:'cl9',  sec:'Bar',     lbl:'Kávovar je vypnutý a uvedený do pořádku?'},
+  {key:'cl10', sec:'Bar',     lbl:'Lednice jsou zavřené a zkontrolované?'},
+  {key:'cl11', sec:'Bar',     lbl:'Jsou odneseny odpadky?'},
+  {key:'cl12', sec:'Bar',     lbl:'Je doplněna lednice na baru?'},
+  {key:'cl1',  sec:'Sál',     lbl:'Stoly jsou setřené, podtácky a menu?'},
+  {key:'cl2',  sec:'Sál',     lbl:'Židle jsou zvednuté? Na každém stole je 5 židlí?'},
+  {key:'cl3',  sec:'Sál',     lbl:'Barovky jsou na baru, ostatní barovky jsou u okna?'},
+  {key:'cl4',  sec:'Sál',     lbl:'Podlaha je uklizená?'},
+  {key:'cl5',  sec:'Sál',     lbl:'Lednice u vstupu je doplněna do plna?'},
+  {key:'cl21', sec:'Adm.',    lbl:'Všechny lístky jsou přepsány do pokladny?'}
+];
+
+function uzavritSmenU() {
+  var obsluha = document.getElementById('cl-obsluha').value.trim() || 'neznámá obsluha';
+  var trzby = document.getElementById('adm-trzby').value || '0';
+  var poznamky = document.getElementById('adm-poznamky').value.trim();
+  var done = 0;
+  for (var i = 1; i <= CL_TOTAL; i++) { if (clState['cl' + i]) done++; }
+  var now = new Date();
+  var cas = now.toLocaleDateString('cs-CZ') + ' ' + now.toLocaleTimeString('cs-CZ', {hour:'2-digit',minute:'2-digit'});
+  var entry = {obsluha: obsluha, cas: cas, trzby: trzby, poznamky: poznamky, done: done, state: JSON.parse(JSON.stringify(clState))};
+  var history = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
+  history.unshift(entry);
+  if (history.length > 10) history = history.slice(0, 10);
+  localStorage.setItem('bukovar_checklist_history', JSON.stringify(history));
+  var detail = obsluha + ', ' + cas + ', tržby: ' + trzby + ' Kč (' + done + '/' + CL_TOTAL + ' hotovo)' + (poznamky ? ' — ' + poznamky.substring(0, 40) + (poznamky.length > 40 ? '…' : '') : '');
+  document.getElementById('cl-done-detail').textContent = detail;
+  document.getElementById('cl-done-msg').classList.remove('hidden');
+  renderClHistory();
+}
+
+function resetChecklist() {
+  clState = {};
+  document.getElementById('cl-obsluha').value = '';
+  document.getElementById('adm-trzby').value = '';
+  document.getElementById('adm-poznamky').value = '';
+  document.getElementById('cl-done-msg').classList.add('hidden');
+  renderChecklist();
+}
+
+function renderClHistory() {
+  var wrap = document.getElementById('cl-history-wrap');
+  if (!wrap) return;
+  var history = JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]');
+  if (!history.length) { wrap.innerHTML = ''; return; }
+  var secs = ['Kuchyň','Toalety','Bar','Sál','Adm.'];
+  var html = '<div class="card" style="margin-bottom:1.2rem;"><div class="section-label">Historie uzavírek</div>';
+  history.forEach(function(entry, idx) {
+    var scoreClass = entry.done === CL_TOTAL ? 'full' : 'partial';
+    html += '<div class="cl-history-row" onclick="toggleClHistory(' + idx + ')">';
+    html += '<div class="cl-history-header">';
+    html += '<div><div class="cl-history-name">' + entry.cas + ' — ' + entry.obsluha + '</div>';
+    html += '<div class="cl-history-meta">Tržby: ' + entry.trzby + ' Kč</div></div>';
+    html += '<div class="cl-history-score ' + scoreClass + '">' + entry.done + ' / ' + CL_TOTAL + '</div>';
+    html += '</div>';
+    html += '<div class="cl-history-detail" id="cl-hist-detail-' + idx + '">';
+    html += '<div class="cl-history-detail-grid">';
+    secs.forEach(function(sec) {
+      var items = CL_ITEMS.filter(function(it) { return it.sec === sec; });
+      html += '<div class="cl-history-detail-section"><div class="cl-history-detail-title">' + sec + '</div>';
+      items.forEach(function(it) {
+        var ok = entry.state && entry.state[it.key];
+        html += '<div class="cl-history-detail-item"><span class="cl-history-check ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✓' : '✗') + '</span><span style="font-size:12px;color:' + (ok ? 'var(--text)' : 'var(--accent)') + '">' + it.lbl + '</span></div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    if (entry.poznamky) html += '<div class="cl-history-note"><strong>Poznámka:</strong> ' + entry.poznamky + '</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function toggleClHistory(idx) {
+  var detail = document.getElementById('cl-hist-detail-' + idx);
+  if (!detail) return;
+  detail.classList.toggle('open');
+}
+
+// --- Sklad ---
+
+var SKLAD_HESLO = '1241';
+var skladActiveCat = 'vše';
+
+function skladUnitInfo(item) {
+  if (!item.u) return { unit: 'ks', inc: 1 };
+  var raw = item.u.replace(',', '.').toLowerCase();
+  var num = parseFloat(raw);
+  if (!isNaN(num) && raw.indexOf('l') !== -1) return { unit: 'l', inc: num };
+  return { unit: 'ks', inc: 1 };
+}
+
+function getSklad() {
+  return JSON.parse(localStorage.getItem('bukovar_sklad') || '{}');
+}
+
+function saveSklad(data) {
+  localStorage.setItem('bukovar_sklad', JSON.stringify(data));
+}
+
+function skladDecrementFromReceipt(items) {
+  var sklad = getSklad();
+  items.forEach(function(it) {
+    var menuItem = MENU.find(function(m) { return m.n === it.nazev; });
+    var info = menuItem ? skladUnitInfo(menuItem) : { unit: 'ks', inc: 1 };
+    var key = it.nazev;
+    if (!sklad[key]) sklad[key] = { qty: 0, unit: info.unit };
+    sklad[key].qty = Math.round((sklad[key].qty - info.inc * it.pocet) * 1000) / 1000;
+  });
+  saveSklad(sklad);
+}
+
+function renderSklad() {
+  var sklad = getSklad();
+  var cats = ['vše'].concat(
+    MENU.reduce(function(acc, m) {
+      if (acc.indexOf(m.c) === -1) acc.push(m.c);
+      return acc;
+    }, [])
+  );
+
+  var catsEl = document.getElementById('sklad-cats');
+  catsEl.innerHTML = cats.map(function(c) {
+    return '<button class="cat-btn' + (c === skladActiveCat ? ' active' : '') + '" onclick="skladSetCat(\'' + c + '\')">' + c + '</button>';
+  }).join('');
+
+  var tbody = document.getElementById('sklad-tbody');
+  var items = MENU.filter(function(m) {
+    return skladActiveCat === 'vše' || m.c === skladActiveCat;
+  });
+
+  tbody.innerHTML = items.map(function(m) {
+    var info = skladUnitInfo(m);
+    var entry = sklad[m.n] || { qty: 0, unit: info.unit };
+    var qty = Math.round(entry.qty * 1000) / 1000;
+    return '<tr id="sklad-row-' + encodeURIComponent(m.n) + '">' +
+      '<td>' + m.n + '</td>' +
+      '<td style="text-align:right"><span class="sklad-qty">' + qty + '</span><span class="sklad-unit">' + info.unit + '</span></td>' +
+      '<td style="text-align:right"><button class="sklad-row-edit-btn" onclick="skladEditRow(\'' + m.n.replace(/'/g, "\\'") + '\')">Upravit</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function skladSetCat(cat) {
+  skladActiveCat = cat;
+  renderSklad();
+}
+
+function skladEditRow(name) {
+  var sklad = getSklad();
+  var menuItem = MENU.find(function(m) { return m.n === name; });
+  var info = menuItem ? skladUnitInfo(menuItem) : { unit: 'ks', inc: 1 };
+  var entry = sklad[name] || { qty: 0, unit: info.unit };
+  var rowId = 'sklad-row-' + encodeURIComponent(name);
+  var row = document.getElementById(rowId);
+  if (!row) return;
+  row.classList.add('sklad-edit-row');
+  row.innerHTML =
+    '<td>' + name + '</td>' +
+    '<td style="text-align:right"><input class="sklad-edit-input" id="sklad-edit-val" type="number" step="0.1" value="' + entry.qty + '" /> <span class="sklad-unit">' + info.unit + '</span></td>' +
+    '<td style="text-align:right;white-space:nowrap">' +
+      '<button class="sklad-save-btn" onclick="skladSaveRow(\'' + name.replace(/'/g, "\\'") + '\')">Uložit</button> ' +
+      '<button class="sklad-cancel-btn" onclick="renderSklad()">Zrušit</button>' +
+    '</td>';
+  document.getElementById('sklad-edit-val').focus();
+}
+
+function skladSaveRow(name) {
+  var val = parseFloat(document.getElementById('sklad-edit-val').value);
+  if (isNaN(val)) { renderSklad(); return; }
+  var sklad = getSklad();
+  var menuItem = MENU.find(function(m) { return m.n === name; });
+  var info = menuItem ? skladUnitInfo(menuItem) : { unit: 'ks', inc: 1 };
+  sklad[name] = { qty: Math.round(val * 1000) / 1000, unit: info.unit };
+  saveSklad(sklad);
+  renderSklad();
+}
+
+// --- Příjem zboží ---
+
+function openPrijemHeslo() {
+  document.getElementById('prijem-heslo-input').value = '';
+  document.getElementById('prijem-heslo-err').textContent = '';
+  document.getElementById('prijem-heslo-modal').classList.remove('hidden');
+  setTimeout(function() { document.getElementById('prijem-heslo-input').focus(); }, 50);
+}
+
+function closePrijemHeslo() {
+  document.getElementById('prijem-heslo-modal').classList.add('hidden');
+}
+
+function potvrdPrijemHeslo() {
+  var val = document.getElementById('prijem-heslo-input').value;
+  if (val !== SKLAD_HESLO) {
+    document.getElementById('prijem-heslo-err').textContent = 'Nesprávné heslo.';
+    return;
+  }
+  closePrijemHeslo();
+  openPrijem();
+}
+
+function openPrijem() {
+  var sklad = getSklad();
+  var cats = MENU.reduce(function(acc, m) {
+    if (acc.indexOf(m.c) === -1) acc.push(m.c);
+    return acc;
+  }, []);
+
+  var html = '<div class="prijem-grid-header">Položka</div><div class="prijem-grid-header" style="text-align:right">Stav</div><div class="prijem-grid-header" style="text-align:right">Přijmout</div>';
+  cats.forEach(function(cat) {
+    var items = MENU.filter(function(m) { return m.c === cat; });
+    html += '<div class="prijem-cat-label">' + cat + '</div>';
+    items.forEach(function(m) {
+      var info = skladUnitInfo(m);
+      var entry = sklad[m.n] || { qty: 0, unit: info.unit };
+      html += '<div class="prijem-name">' + m.n + '</div>' +
+        '<div class="prijem-cur">' + (Math.round(entry.qty * 1000) / 1000) + ' ' + info.unit + '</div>' +
+        '<input class="prijem-input" type="number" step="0.1" min="0" placeholder="0" data-name="' + m.n.replace(/"/g, '&quot;') + '" data-unit="' + info.unit + '" />';
+    });
+  });
+
+  document.getElementById('prijem-grid').innerHTML = html;
+  document.getElementById('prijem-modal').classList.remove('hidden');
+}
+
+function closePrijem() {
+  document.getElementById('prijem-modal').classList.add('hidden');
+}
+
+function ulozitPrijem() {
+  var sklad = getSklad();
+  document.querySelectorAll('#prijem-grid input[data-name]').forEach(function(inp) {
+    var val = parseFloat(inp.value);
+    if (!val || val <= 0) return;
+    var name = inp.getAttribute('data-name');
+    var unit = inp.getAttribute('data-unit');
+    if (!sklad[name]) sklad[name] = { qty: 0, unit: unit };
+    sklad[name].qty = Math.round((sklad[name].qty + val) * 1000) / 1000;
+  });
+  saveSklad(sklad);
+  closePrijem();
+  renderSklad();
+}
+
+
 </script>
 
 <!-- Oblast pro tisk — skrytá, zobrazí se jen při tisku -->
