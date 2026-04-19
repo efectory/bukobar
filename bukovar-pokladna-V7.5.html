@@ -196,9 +196,22 @@
   .vip-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
   .vip-btn:active { opacity: .75; }
   .vip-btn-deg { font-size: 10px; font-weight: 400; opacity: .8; }
+  .vip-btn-stock { font-size: 10px; font-weight: 600; opacity: .9; }
   .vip-btn.pet { opacity: .75; }
   .vip-btn.pet:hover { opacity: 1; }
   .vip-separator { width: 1px; background: var(--border-strong); align-self: stretch; margin: 0 4px; flex-shrink: 0; }
+  /* Beer status strip */
+  .beer-strip { display: flex; flex-wrap: nowrap; gap: 5px; margin-bottom: 6px; }
+  .beer-chip { display: flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; border: 1px solid; font-size: 11px; font-weight: 500; white-space: nowrap; flex: 1; justify-content: center; }
+  .beer-chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .beer-chip.zelena      { background:#dcfce7; border-color:#16a34a; color:#15803d; } .beer-chip.zelena .beer-chip-dot { background:#16a34a; }
+  .beer-chip.hneda       { background:#f5e6d3; border-color:#92400e; color:#78350f; } .beer-chip.hneda .beer-chip-dot { background:#92400e; }
+  .beer-chip.seda        { background:#f1f5f9; border-color:#64748b; color:#334155; } .beer-chip.seda .beer-chip-dot { background:#64748b; }
+  .beer-chip.zlata       { background:#fef9c3; border-color:#b45309; color:#92400e; } .beer-chip.zlata .beer-chip-dot { background:#d97706; }
+  .beer-chip.zluta       { background:#fefce8; border-color:#ca8a04; color:#713f12; } .beer-chip.zluta .beer-chip-dot { background:#eab308; }
+  .beer-chip.oranzova    { background:#fff7ed; border-color:#ea580c; color:#c2410c; } .beer-chip.oranzova .beer-chip-dot { background:#ea580c; }
+  .beer-chip.modra       { background:#eff6ff; border-color:#2563eb; color:#1d4ed8; } .beer-chip.modra .beer-chip-dot { background:#2563eb; }
+  .beer-chip.tmave-zelena{ background:#f0fdf4; border-color:#166534; color:#14532d; } .beer-chip.tmave-zelena .beer-chip-dot { background:#166534; }
   .vip-btn.zelena   { background:#dcfce7; border-color:#16a34a; color:#15803d; }
   .vip-btn.zelena:hover { background:#16a34a; color:#fff; border-color:#16a34a; }
   .vip-btn.hneda    { background:#f5e6d3; border-color:#92400e; color:#78350f; }
@@ -389,16 +402,28 @@
       <div class="kasa-right card">
         <!-- VIP piva — rychlé markování -->
         <div class="vip-piva">
+          <!-- Varianta A: status strip -->
+          <div class="beer-strip" id="beer-strip">
+            <div class="beer-chip zelena"><span class="beer-chip-dot"></span><span id="bc-0">Hraďák</span></div>
+            <div class="beer-chip hneda"><span class="beer-chip-dot"></span><span id="bc-1">Štamgast</span></div>
+            <div class="beer-chip seda"><span class="beer-chip-dot"></span><span id="bc-2">Šedá vlčice</span></div>
+            <div class="beer-chip zlata"><span class="beer-chip-dot"></span><span id="bc-3">Kohoutí</span></div>
+            <div class="beer-chip zluta"><span class="beer-chip-dot"></span><span id="bc-4">Zlatka</span></div>
+            <div class="beer-chip oranzova"><span class="beer-chip-dot"></span><span id="bc-5">Mezulánka</span></div>
+            <div class="beer-chip modra"><span class="beer-chip-dot"></span><span id="bc-6">Nelson</span></div>
+            <div class="beer-chip tmave-zelena"><span class="beer-chip-dot"></span><span id="bc-7">Dublin</span></div>
+          </div>
           <div class="vip-piva-label">Čepovaná piva</div>
+          <!-- Varianta B: stav v tlačítkách -->
           <div class="vip-row" style="flex-wrap:nowrap;">
-            <button class="vip-btn zelena"       onclick="quickAdd({n:'Hraďák 10°',c:'Piva',p:49,u:'0,4l'})">Hraďák<span class="vip-btn-deg">10°</span></button>
-            <button class="vip-btn hneda"        onclick="quickAdd({n:'Štamgast 11°',c:'Piva',p:49,u:'0,4l'})">Štamgast<span class="vip-btn-deg">11°</span></button>
-            <button class="vip-btn seda"         onclick="quickAdd({n:'Šedá vlčice 11°',c:'Piva',p:49,u:'0,4l'})">Šedá vlčice<span class="vip-btn-deg">11°</span></button>
-            <button class="vip-btn zlata"        onclick="quickAdd({n:'Kohoutí 12°',c:'Piva',p:49,u:'0,4l'})">Kohoutí<span class="vip-btn-deg">12°</span></button>
-            <button class="vip-btn zluta"        onclick="quickAdd({n:'Zlatka 11°',c:'Piva',p:49,u:'0,4l'})">Zlatka<span class="vip-btn-deg">11°</span></button>
-            <button class="vip-btn oranzova"     onclick="quickAdd({n:'Mezulánka 11°',c:'Piva',p:49,u:'0,4l'})">Mezulánka<span class="vip-btn-deg">11°</span></button>
-            <button class="vip-btn modra"        onclick="quickAdd({n:'Nelson 12°',c:'Piva',p:49,u:'0,4l'})">Nelson<span class="vip-btn-deg">12°</span></button>
-            <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13°',c:'Piva',p:49,u:'0,4l'})">Dublin<span class="vip-btn-deg">13°</span></button>
+            <button class="vip-btn zelena"       onclick="quickAdd({n:'Hraďák 10°',c:'Piva',p:49,u:'0,4l'})">Hraďák<span class="vip-btn-deg">10°</span><span class="vip-btn-stock" id="bs-0"></span></button>
+            <button class="vip-btn hneda"        onclick="quickAdd({n:'Štamgast 11°',c:'Piva',p:49,u:'0,4l'})">Štamgast<span class="vip-btn-deg">11°</span><span class="vip-btn-stock" id="bs-1"></span></button>
+            <button class="vip-btn seda"         onclick="quickAdd({n:'Šedá vlčice 11°',c:'Piva',p:49,u:'0,4l'})">Šedá vlčice<span class="vip-btn-deg">11°</span><span class="vip-btn-stock" id="bs-2"></span></button>
+            <button class="vip-btn zlata"        onclick="quickAdd({n:'Kohoutí 12°',c:'Piva',p:49,u:'0,4l'})">Kohoutí<span class="vip-btn-deg">12°</span><span class="vip-btn-stock" id="bs-3"></span></button>
+            <button class="vip-btn zluta"        onclick="quickAdd({n:'Zlatka 11°',c:'Piva',p:49,u:'0,4l'})">Zlatka<span class="vip-btn-deg">11°</span><span class="vip-btn-stock" id="bs-4"></span></button>
+            <button class="vip-btn oranzova"     onclick="quickAdd({n:'Mezulánka 11°',c:'Piva',p:49,u:'0,4l'})">Mezulánka<span class="vip-btn-deg">11°</span><span class="vip-btn-stock" id="bs-5"></span></button>
+            <button class="vip-btn modra"        onclick="quickAdd({n:'Nelson 12°',c:'Piva',p:49,u:'0,4l'})">Nelson<span class="vip-btn-deg">12°</span><span class="vip-btn-stock" id="bs-6"></span></button>
+            <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13°',c:'Piva',p:49,u:'0,4l'})">Dublin<span class="vip-btn-deg">13°</span><span class="vip-btn-stock" id="bs-7"></span></button>
           </div>
           <div class="vip-piva-label">Pivo v PET</div>
           <div class="vip-row" style="flex-wrap:nowrap;">
@@ -747,6 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
   startManual();
   renderUctenky();
   renderClHistory();
+  updateBeerStatus();
 });
 
 function initApiKey() {
@@ -1758,6 +1784,24 @@ function getSklad() {
 
 function saveSklad(data) {
   localStorage.setItem('bukovar_sklad', JSON.stringify(data));
+  updateBeerStatus();
+}
+
+const BEER_STATUS_ITEMS = [
+  'Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°',
+  'Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'
+];
+
+function updateBeerStatus() {
+  var sklad = getSklad();
+  BEER_STATUS_ITEMS.forEach(function(name, i) {
+    var qty = Math.round(((sklad[name] || {qty:0}).qty) * 10) / 10;
+    var label = qty + ' l';
+    var chip = document.getElementById('bc-' + i);
+    var btn  = document.getElementById('bs-' + i);
+    if (chip) chip.textContent = name.split(' ')[0] + ' ' + label;
+    if (btn)  btn.textContent  = label;
+  });
 }
 
 function skladDecrementFromReceipt(items) {
