@@ -1873,14 +1873,25 @@ function skladQtyClick(name, spanEl) {
   input.className = 'sklad-inline-input';
   input.type = 'number';
   input.step = unit === 'ks' ? '1' : '0.1';
+  input.min = '0';
   input.value = entry.qty;
   wrap.replaceChild(input, spanEl);
   input.select();
 
+  if (unit === 'ks') {
+    input.addEventListener('input', function() {
+      var v = parseFloat(input.value);
+      if (!isNaN(v)) input.value = Math.floor(Math.max(0, v));
+    });
+  }
+
   function save() {
     var val = parseFloat(input.value);
     if (!isNaN(val)) {
-      sklad[name] = { qty: Math.round(val * 1000) / 1000, unit: unit };
+      var qty = unit === 'ks'
+        ? Math.max(0, Math.round(val))
+        : Math.max(0, Math.round(val * 10) / 10);
+      sklad[name] = { qty: qty, unit: unit };
       saveSklad(sklad);
     }
     renderSklad();
