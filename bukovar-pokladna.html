@@ -1723,13 +1723,17 @@ function renderMiniHistory() {
   for (var i = 0; i < data.length && shown < 10; i++) {
     var r = data[i];
     var cls = r.storno ? ' storno' : r.nezaplaceno ? ' nezaplaceno' : (r.vraceno && r.zaplaceno_cislo ? ' dluh-ok' : '');
-    var icon = r.storno ? '<span class="mini-hist-icon" style="color:#b5381a;">✕</span>'
-      : r.nezaplaceno ? '<span class="mini-hist-icon" style="color:#c2410c;">!</span>'
-      : (r.vraceno && r.zaplaceno_cislo) ? '<span class="mini-hist-icon" style="color:#15803d;">✓</span>'
-      : '';
+    var statusLabel = r.storno
+      ? '<span class="mini-hist-icon" style="color:#b5381a;">✕ storno</span>'
+      : r.nezaplaceno
+        ? '<span class="mini-hist-icon" style="color:#c2410c;">! dluh</span>'
+        : (r.vraceno && r.zaplaceno_cislo)
+          ? '<span class="mini-hist-icon" style="color:#15803d;">✓ dluh OK</span>'
+          : '<span class="mini-hist-icon" style="color:#15803d;">✓ OK</span>';
     html += '<div class="mini-hist-item' + cls + '" onclick="miniHistClick(' + r.id + ')">'
-      + '<span class="mini-hist-num">#' + r.num + (icon ? '&nbsp;' + icon : '') + '</span>'
+      + '<span class="mini-hist-num">#' + r.num + '</span>'
       + '<span class="mini-hist-czk">' + r.celkem + ' Kč</span>'
+      + statusLabel
       + '</div>';
     shown++;
   }
