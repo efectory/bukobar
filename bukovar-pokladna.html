@@ -1610,51 +1610,26 @@ function stornoUctenka(id, e) {
   renderUctenky();
 }
 
-function zaplatitUctenka(id, method, e) {
+function zpetNaPlaceni(id, e) {
   e.stopPropagation();
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
-  var rec = data.find(function(r) { return r.id === id; });
-  if (!rec) return;
-  rec.nezaplaceno = false;
-  rec.platba = method;
+  var idx = data.findIndex(function(r) { return r.id === id; });
+  if (idx === -1) return;
+  var rec = data[idx];
+  skladRestoreFromReceipt(rec.polozky);
+  data.splice(idx, 1);
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
-  renderUctenky();
-  if (method === 'QR') {
-    showQrModalForRecord(rec);
-  } else {
-    printReceiptIframe(buildReceiptHtmlFromRecord(rec));
-  }
-}
-
-function buildReceiptHtmlFromRecord(rec) {
-  var dt = new Date(rec.cas);
-  var d = dt.getDate().toString().padStart(2,'0');
-  var mo = (dt.getMonth()+1).toString().padStart(2,'0');
-  var dateStr = d + '.' + mo + '.' + dt.getFullYear();
-  var timeStr = dt.getHours().toString().padStart(2,'0') + ':' + dt.getMinutes().toString().padStart(2,'0');
-  var html = '<div class="receipt-print">';
-  html += '<div class="rp-center"><strong>BUKOBAR s.r.o.</strong></div>';
-  html += '<div class="rp-center">nám. Jiráskovo 54</div>';
-  html += '<div class="rp-center">Dolní Bukovsko, 373 65</div>';
-  html += '<div class="rp-center">IČO: 24035491</div>';
-  html += '<hr class="rp-line">';
-  html += '<div class="rp-center">Účtenka č. ' + rec.num + '</div>';
-  html += '<div class="rp-center">' + dateStr + '&nbsp;&nbsp;' + timeStr + '</div>';
-  html += '<hr class="rp-line">';
-  rec.polozky.forEach(function(p) {
-    var sub = p.pocet * p.cena;
-    var name = p.nazev.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    var label = p.pocet > 1 ? p.pocet + '× ' + name : name;
-    html += '<div class="rp-row"><span>' + label + '</span><span>' + sub + ' Kč</span></div>';
+  receiptItems = rec.polozky.map(function(p) {
+    return { nazev: p.nazev, pocet: p.pocet, cena: p.cena, stamgast: p.stamgast || false };
   });
-  html += '<div class="rp-total"><span>CELKEM</span><span>' + rec.celkem + ' Kč</span></div>';
-  if (rec.platba) html += '<div class="rp-row" style="margin-top:4px;"><span>Způsob platby</span><span>' + rec.platba + '</span></div>';
-  html += '<hr class="rp-line">';
-  html += '<div class="rp-footer">Děkujeme za návštěvu!</div>';
-  html += '<div class="rp-footer">Bukobar s.r.o.</div>';
-  html += '<div style="height:32px;"></div>';
-  html += '</div>';
-  return html;
+  paymentMethod = '';
+  ['qr','karta','hotovost','dluh'].forEach(function(m) {
+    document.getElementById('btn-' + m).classList.remove('active');
+  });
+  document.getElementById('payment-method-line').classList.add('hidden');
+  renderItems();
+  switchTab('pokladna', document.querySelector('[onclick*="pokladna"]'));
+  renderUctenky();
 }
 
 function renderUctenky() {
@@ -1671,12 +1646,8 @@ function renderUctenky() {
     div.className = 'uctenka-row' + (rec.storno ? ' storno' : '') + (rec.nezaplaceno ? ' nezaplaceno' : '');
     var badge = rec.storno ? '<span class="storno-badge">STORNO</span>' : (rec.nezaplaceno ? '<span class="nezaplaceno-badge">NEZAPLACENO</span>' : '');
     var zaplatitBtns = rec.nezaplaceno
-      ? '<div class="btn-zaplatit-wrap">' +
-          '<span style="font-size:11px;color:var(--muted);align-self:center;">Zaplatit:</span>' +
-          '<button class="btn-zaplatit" onclick="zaplatitUctenka(' + rec.id + ',\'QR\',event)">QR</button>' +
-          '<button class="btn-zaplatit" onclick="zaplatitUctenka(' + rec.id + ',\'Karta\',event)">Karta</button>' +
-          '<button class="btn-zaplatit" onclick="zaplatitUctenka(' + rec.id + ',\'Hotovost\',event)">Hotovost</button>' +
-        '</div>' : '';
+      ? '<button class="btn-zaplatit" style="margin-top:.75rem;width:100%;" onclick="zpetNaPlaceni(' + rec.id + ',event)">↩ Zpět na placení</button>'
+      : '';
     div.innerHTML =
       '<div class="uctenka-row-header">' +
         '<div>' +
