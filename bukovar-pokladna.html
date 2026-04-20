@@ -231,6 +231,9 @@
   .vip-btn.modra:hover  { background:#2563eb; color:#fff; border-color:#2563eb; }
   .vip-btn.tmave-zelena { background:#f0fdf4; border-color:#166534; color:#14532d; }
   .vip-btn.tmave-zelena:hover { background:#166534; color:#fff; border-color:#166534; }
+  .vip-btn.bila     { background:#f8fafc; border-color:#94a3b8; color:#334155; }
+  .vip-btn.bila:hover   { background:#94a3b8; color:#fff; border-color:#94a3b8; }
+  .sklad-group-title.muted-section { color: var(--muted); opacity: .5; }
   .receipt-items-wrap { flex: 1; overflow-y: auto; max-height: 420px; margin-top: .5rem; }
 
   /* Workflow — levý sloupec */
@@ -1838,7 +1841,7 @@ const SKLAD_GROUPS = [
   { col: 1, label: 'Víčka & Etikety', type: 'vicka', beers: [
     { n: 'Hraďák 10°',      color: 'zelená',   colorClass: 'zelena' },
     { n: 'Štamgast 11°',    color: 'hnědá',    colorClass: 'hneda' },
-    { n: 'Šedá vlčice 11°', color: 'bílá',     colorClass: '' },
+    { n: 'Šedá vlčice 11°', color: 'bílá',     colorClass: 'bila' },
     { n: 'Kohoutí 12°',     color: 'zlatá',    colorClass: 'zlata' },
     { n: 'Zlatka 11°',      color: 'žlutá',    colorClass: 'zluta' },
     { n: 'Mezulánka 11°',   color: 'oranžová', colorClass: 'oranzova' },
@@ -1856,7 +1859,7 @@ const SKLAD_GROUPS = [
     { n: 'Ubrousky', unit: 'bal' }, { n: 'Mýdlo na ruce', unit: 'ks' },
     { n: 'Sáčky na odpadky', unit: 'bal' },
   ]},
-  { col: 2, label: 'Čepovaná piva', items: [
+  { col: 2, label: 'Čepovaná piva (řeší Pája)', muted: true, items: [
     { n: 'Hraďák 10°', unit: 'l' }, { n: 'Štamgast 11°', unit: 'l' },
     { n: 'Šedá vlčice 11°', unit: 'l' }, { n: 'Kohoutí 12°', unit: 'l' },
     { n: 'Zlatka 11°', unit: 'l' }, { n: 'Mezulánka 11°', unit: 'l' },
@@ -2016,7 +2019,7 @@ function renderSklad() {
   var sklad = getSklad();
   var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
-    var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
+    var html = '<div class="sklad-group"><div class="sklad-group-title' + (g.muted ? ' muted-section' : '') + '">' + g.label + '</div>';
     if (g.type === 'vicka') {
       html += '<table class="vicka-table">';
       html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
