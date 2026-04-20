@@ -186,6 +186,15 @@
   .sklad-bool-btn { font-size: 11px; font-weight: 500; padding: 0 5px; border-radius: 3px; cursor: pointer; border: 1px solid; white-space: nowrap; display: inline; }
   .sklad-bool-btn.yes { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
   .sklad-bool-btn.no  { background: var(--accent-light); color: var(--accent); border-color: rgba(181,56,26,.3); }
+  .vicka-table { width: 100%; border-collapse: collapse; }
+  .vicka-table th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 2px 4px; text-align: left; border-bottom: 1px solid var(--border-strong); }
+  .vicka-table th.right { text-align: right; }
+  .vicka-table td { font-size: 12px; padding: 1px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .vicka-table tr:last-child td { border-bottom: none; }
+  .vicka-table tr.ok td { background: var(--success-bg); }
+  .vicka-table tr.warn td { background: var(--accent-light); }
+  .vicka-table td.right { text-align: right; }
+  .vicka-color-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; border: 1px solid; display: inline-block; }
 
   /* Dvousloupcový layout */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
@@ -1859,12 +1868,15 @@ const SKLAD_GROUPS = [
     { n: 'Zápalky', unit: 'ks' }, { n: 'Podtácky', unit: 'ks' },
     { n: 'Pokladní páska', unit: 'ks' }, { n: 'Propisky', unit: 'ks' },
   ]},
-  { col: 1, label: 'Víčka & PETky', items: [
-    { n: 'Víčko zelená', unit: 'ks' }, { n: 'Víčko hnědá', unit: 'ks' },
-    { n: 'Víčko zlatá', unit: 'ks' }, { n: 'Víčko bílá', unit: 'ks' },
-    { n: 'Víčko žlutá', unit: 'ks' }, { n: 'Víčko oranžová', unit: 'ks' },
-    { n: 'Víčko modrá', unit: 'ks' }, { n: 'Víčko černá', unit: 'ks' },
-    { n: 'PETky', unit: 'ks' },
+  { col: 1, label: 'Víčka & Etikety', type: 'vicka', beers: [
+    { n: 'Hraďák 10°',      color: 'zelená',   colorClass: 'zelena' },
+    { n: 'Štamgast 11°',    color: 'hnědá',    colorClass: 'hneda' },
+    { n: 'Šedá vlčice 11°', color: 'zlatá',    colorClass: 'zlata' },
+    { n: 'Kohoutí 12°',     color: 'bílá',     colorClass: '' },
+    { n: 'Zlatka 11°',      color: 'žlutá',    colorClass: 'zluta' },
+    { n: 'Mezulánka 11°',   color: 'oranžová', colorClass: 'oranzova' },
+    { n: 'Nelson 12°',      color: 'modrá',    colorClass: 'modra' },
+    { n: 'Dublin 13°',      color: 'černá',    colorClass: 'tmave-zelena' },
   ]},
 ];
 
@@ -1922,13 +1934,16 @@ const SKLAD_MIN = {
   'Šenkýřka': 2, 'Čisticí tablety na kávovar': 10, 'Sklenice': 50,
   'Brčka': 50, 'Párátka': 100, 'Zápalky': 10, 'Podtácky': 100,
   'Pokladní páska': 5, 'Propisky': 5,
-  'Víčko zelená': 100, 'Víčko hnědá': 100, 'Víčko zlatá': 100, 'Víčko bílá': 100,
-  'Víčko žlutá': 100, 'Víčko oranžová': 100, 'Víčko modrá': 100, 'Víčko černá': 100,
+  'Víčko Hraďák 10°': 100, 'Víčko Štamgast 11°': 100, 'Víčko Šedá vlčice 11°': 100, 'Víčko Kohoutí 12°': 100,
+  'Víčko Zlatka 11°': 100, 'Víčko Mezulánka 11°': 100, 'Víčko Nelson 12°': 100, 'Víčko Dublin 13°': 100,
+  'Etiketa Hraďák 10°': 100, 'Etiketa Štamgast 11°': 100, 'Etiketa Šedá vlčice 11°': 100, 'Etiketa Kohoutí 12°': 100,
+  'Etiketa Zlatka 11°': 100, 'Etiketa Mezulánka 11°': 100, 'Etiketa Nelson 12°': 100, 'Etiketa Dublin 13°': 100,
   'PETky': 200,
 };
 
 function skladGetUnit(key) {
   for (var g = 0; g < SKLAD_GROUPS.length; g++) {
+    if (SKLAD_GROUPS[g].type === 'vicka') continue;
     var found = SKLAD_GROUPS[g].items.find(function(i) { return i.n === key; });
     if (found) return found.unit;
   }
@@ -2002,6 +2017,40 @@ function renderSklad() {
   var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
     var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
+    if (g.type === 'vicka') {
+      html += '<table class="vicka-table">';
+      html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="right">Víčka</th><th class="right">Etikety</th></tr></thead><tbody>';
+      g.beers.forEach(function(beer) {
+        var kv = 'Víčko ' + beer.n;
+        var ke = 'Etiketa ' + beer.n;
+        var qv = Math.round((sklad[kv] ? sklad[kv].qty : 0) * 1000) / 1000;
+        var qe = Math.round((sklad[ke] ? sklad[ke].qty : 0) * 1000) / 1000;
+        var minV = SKLAD_MIN[kv] || 0, minE = SKLAD_MIN[ke] || 0;
+        var warnV = minV > 0 && qv < minV, warnE = minE > 0 && qe < minE;
+        var rowClass = (warnV || warnE) ? ' class="warn"' : ((qv >= minV && qe >= minE) ? ' class="ok"' : '');
+        var snV = kv.replace(/'/g, "\\'"), snE = ke.replace(/'/g, "\\'");
+        var badge = beer.colorClass
+          ? '<span class="vicka-color-badge vip-btn ' + beer.colorClass + '">' + beer.color + '</span>'
+          : '<span class="vicka-color-badge" style="background:#f0f0f0;border-color:#ccc;color:#333;">' + beer.color + '</span>';
+        html += '<tr' + rowClass + '>'
+          + '<td>' + beer.n + '</td>'
+          + '<td>' + badge + '</td>'
+          + '<td class="right"><span class="sklad-qty-wrap"><span class="sklad-qty' + (qv < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(kv) + '" onclick="skladQtyClick(\'' + snV + '\',this)">' + qv + '</span><span class="sklad-unit">ks</span></span></td>'
+          + '<td class="right"><span class="sklad-qty-wrap"><span class="sklad-qty' + (qe < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(ke) + '" onclick="skladQtyClick(\'' + snE + '\',this)">' + qe + '</span><span class="sklad-unit">ks</span></span></td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+      var kp = 'PETky', qp = Math.round((sklad[kp] ? sklad[kp].qty : 0) * 1000) / 1000;
+      var minP = SKLAD_MIN[kp] || 0;
+      var stP = minP > 0 ? (qp < minP ? ' warn' : ' ok') : '';
+      html += '<div class="sklad-item' + stP + '" style="margin-top:3px;">'
+        + '<span class="sklad-item-name">PETky<span class="sklad-min"> (' + minP + ')</span></span>'
+        + '<span class="sklad-qty-wrap"><span class="sklad-qty' + (qp < 0 ? ' negative' : '') + '" id="sq-PETky" onclick="skladQtyClick(\'PETky\',this)">' + qp + '</span><span class="sklad-unit">ks</span></span>'
+        + '</div>';
+      html += '</div>';
+      cols[g.col].push(html);
+      return;
+    }
     g.items.forEach(function(item) {
       var entry = sklad[item.n] || { qty: 0, unit: item.unit };
       var safeName = item.n.replace(/'/g, "\\'");
