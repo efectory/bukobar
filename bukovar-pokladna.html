@@ -839,6 +839,25 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="dzbanek-modal">
+  <div class="modal">
+    <h3 id="dzbanek-modal-title">Jaké pivo do džbánku?</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;">
+      <button class="vip-btn zelena"  onclick="vyberDzbanekPivo('Hraďák 10°')">Hraďák 10°</button>
+      <button class="vip-btn hneda"   onclick="vyberDzbanekPivo('Štamgast 11°')">Štamgast 11°</button>
+      <button class="vip-btn bila"    onclick="vyberDzbanekPivo('Šedá vlčice 11°')">Šedá vlčice 11°</button>
+      <button class="vip-btn zlata"   onclick="vyberDzbanekPivo('Kohoutí 12°')">Kohoutí 12°</button>
+      <button class="vip-btn zluta"   onclick="vyberDzbanekPivo('Zlatka 11°')">Zlatka 11°</button>
+      <button class="vip-btn oranzova" onclick="vyberDzbanekPivo('Mezulánka 11°')">Mezulánka 11°</button>
+      <button class="vip-btn modra"   onclick="vyberDzbanekPivo('Nelson 12°')">Nelson 12°</button>
+      <button class="vip-btn tmave-zelena" onclick="vyberDzbanekPivo('Dublin 13°')">Dublin 13°</button>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeDzbanekModal()">Zrušit</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="stamgast-modal">
   <div class="modal">
     <h3>Štamgast?</h3>
@@ -1109,11 +1128,42 @@ function addCustomItem() {
   renderItems();
 }
 
+var pendingDzbanekItem = null;
+
 function quickAdd(item) {
-  var existing = receiptItems.find(function(r) { return r.nazev === item.n; });
+  if (item.n === 'Pivo s sebou do džbánku 2l' || item.n === 'Pivo s sebou do džbánku 5l') {
+    pendingDzbanekItem = item;
+    document.getElementById('dzbanek-modal-title').textContent = 'Jaké pivo do džbánku ' + (item.u || '') + '?';
+    document.getElementById('dzbanek-modal').classList.remove('hidden');
+    return;
+  }
+  quickAddDirect(item, null, null);
+}
+
+function quickAddDirect(item, skladKey, skladInc) {
+  var existing = receiptItems.find(function(r) {
+    return r.nazev === item.n && r.skladKey === skladKey;
+  });
   if (existing) { existing.pocet++; }
-  else { receiptItems.unshift({ nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false }); }
+  else {
+    var entry = { nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false };
+    if (skladKey) { entry.skladKey = skladKey; entry.skladInc = skladInc; entry.popisek = skladKey; }
+    receiptItems.unshift(entry);
+  }
   renderItems();
+}
+
+function vyberDzbanekPivo(beer) {
+  document.getElementById('dzbanek-modal').classList.add('hidden');
+  if (!pendingDzbanekItem) return;
+  var litry = pendingDzbanekItem.n.indexOf('2l') >= 0 ? 2 : 5;
+  quickAddDirect(pendingDzbanekItem, beer, litry);
+  pendingDzbanekItem = null;
+}
+
+function closeDzbanekModal() {
+  document.getElementById('dzbanek-modal').classList.add('hidden');
+  pendingDzbanekItem = null;
 }
 
 // --- Status ---
@@ -1352,6 +1402,7 @@ function renderItems() {
     var row = document.createElement('div');
     row.className = 'receipt-item' + (item.warn ? ' warn-row' : '');
     var safeName = item.nazev.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (item.popisek) safeName += ' <span style="font-size:11px;color:var(--muted);display:block;margin-top:1px;">' + item.popisek.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
     var priceHtml = sub + ' Kč' + (item.stamgast ? ' <span class="stamgast-badge">š</span>' : '');
     row.innerHTML =
       '<div class="qty-ctrl">' +
@@ -2203,10 +2254,16 @@ function updateBeerStatus() {
 function skladDecrementFromReceipt(items) {
   var sklad = getSklad();
   items.forEach(function(it) {
-    var map = SKLAD_MAP[it.nazev];
-    if (!map) return;
-    if (!sklad[map.key]) sklad[map.key] = { qty: 0, unit: skladGetUnit(map.key) };
-    sklad[map.key].qty = Math.round((sklad[map.key].qty - map.inc * it.pocet) * 1000) / 1000;
+    var key, inc;
+    if (it.skladKey) {
+      key = it.skladKey; inc = it.skladInc;
+    } else {
+      var map = SKLAD_MAP[it.nazev];
+      if (!map) return;
+      key = map.key; inc = map.inc;
+    }
+    if (!sklad[key]) sklad[key] = { qty: 0, unit: skladGetUnit(key) };
+    sklad[key].qty = Math.round((sklad[key].qty - inc * it.pocet) * 1000) / 1000;
   });
   saveSklad(sklad);
 }
@@ -2214,10 +2271,16 @@ function skladDecrementFromReceipt(items) {
 function skladRestoreFromReceipt(items) {
   var sklad = getSklad();
   items.forEach(function(it) {
-    var map = SKLAD_MAP[it.nazev];
-    if (!map) return;
-    if (!sklad[map.key]) sklad[map.key] = { qty: 0, unit: skladGetUnit(map.key) };
-    sklad[map.key].qty = Math.round((sklad[map.key].qty + map.inc * it.pocet) * 1000) / 1000;
+    var key, inc;
+    if (it.skladKey) {
+      key = it.skladKey; inc = it.skladInc;
+    } else {
+      var map = SKLAD_MAP[it.nazev];
+      if (!map) return;
+      key = map.key; inc = map.inc;
+    }
+    if (!sklad[key]) sklad[key] = { qty: 0, unit: skladGetUnit(key) };
+    sklad[key].qty = Math.round((sklad[key].qty + inc * it.pocet) * 1000) / 1000;
   });
   saveSklad(sklad);
 }
