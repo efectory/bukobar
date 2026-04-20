@@ -210,6 +210,14 @@
   .quick-add { height: 160px; overflow: hidden; flex-shrink: 0; }
 
   /* VIP piva — rychlé markování */
+  .mini-history { display: flex; align-items: center; gap: 4px; padding: 5px 2px; border-bottom: 1px solid var(--border); margin-bottom: 8px; overflow: hidden; flex-shrink: 0; }
+  .mini-hist-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background .1s; line-height: 1.4; }
+  .mini-hist-item:hover { background: var(--accent-light); border-color: var(--accent); }
+  .mini-hist-item.nezaplaceno { background: #fff7ed; border-color: #fdba74; }
+  .mini-hist-item.storno { opacity: .4; }
+  .mini-hist-num { font-weight: 600; color: var(--muted); font-size: 10px; }
+  .mini-hist-czk { font-weight: 500; }
+  .mini-hist-more { font-size: 11px; color: var(--accent); cursor: pointer; white-space: nowrap; flex-shrink: 0; margin-left: 2px; text-decoration: underline; }
   .vip-piva { border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0; }
   .vip-piva-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 5px; }
   .vip-row { display: flex; gap: 5px; flex-wrap: wrap; }
@@ -480,6 +488,7 @@
 
       <!-- Pravý sloupec: účtenka -->
       <div class="kasa-right card">
+        <div class="mini-history" id="mini-history"></div>
         <!-- VIP piva — rychlé markování -->
         <div class="vip-piva">
           <div class="vip-piva-label">Čepovaná piva</div>
@@ -1703,6 +1712,36 @@ function zpetNaPlaceni(id, e) {
   renderUctenky();
 }
 
+function renderMiniHistory() {
+  var el = document.getElementById('mini-history');
+  if (!el) return;
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var html = '';
+  var shown = 0;
+  for (var i = 0; i < data.length && shown < 10; i++) {
+    var r = data[i];
+    var cls = r.storno ? ' storno' : (r.nezaplaceno ? ' nezaplaceno' : '');
+    html += '<div class="mini-hist-item' + cls + '" onclick="miniHistClick(' + r.id + ')">'
+      + '<span class="mini-hist-num">#' + r.num + '</span>'
+      + '<span class="mini-hist-czk">' + r.celkem + '</span>'
+      + '</div>';
+    shown++;
+  }
+  if (data.length > 0) {
+    html += '<span class="mini-hist-more" onclick="document.querySelector(\'.subtab-btn[onclick*=\\\'kasa\\\'][onclick*=\\\'uctenky\\\']\').click()">více →</span>';
+  }
+  el.innerHTML = html;
+}
+
+function miniHistClick(id) {
+  var btn = document.querySelector('.subtab-btn[onclick*="kasa\',\'uctenky"]');
+  if (btn) btn.click();
+  setTimeout(function() {
+    var el = document.getElementById('ud-' + id);
+    if (el) { el.classList.add('open'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }, 50);
+}
+
 function renderUctenky() {
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
   var list = document.getElementById('uctenky-list');
@@ -1748,6 +1787,7 @@ function renderUctenky() {
     list.appendChild(div);
   });
   document.getElementById('uctenky-total-day').textContent = totalDay + ' Kč';
+  renderMiniHistory();
 }
 
 
