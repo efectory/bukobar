@@ -405,15 +405,17 @@
     <button class="tab-btn" id="tab-btn-otevreni" onclick="switchTab('otevreni',this);resetOtevreni()">Otevření hospody</button>
     <button class="tab-btn" id="tab-btn-pet" onclick="switchTab('pet',this);renderPetPlan()">Petkovací plán</button>
     <button class="tab-btn" id="tab-btn-uzavirka" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
-    <button class="tab-btn" onclick="switchTab('uctenky',this)">Historie účtenek</button>
-    <button class="tab-btn" onclick="switchTab('sklad',this);renderSklad()">Sklad</button>
     <button class="tab-btn" onclick="switchTab('administrace',this);renderAdminPetConfig()">Administrace</button>
-    <button class="tab-btn" onclick="switchTab('ostatni',this)">Ostatní</button>
   </div>
   <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
 </div>
 
 <div class="tab-content active" id="tab-kasa">
+  <div class="subtab-bar">
+    <button class="subtab-btn active" onclick="switchSubtab('kasa','pokladna',this)">Pokladna</button>
+    <button class="subtab-btn" onclick="switchSubtab('kasa','uctenky',this);renderUctenky()">Historie účtenek</button>
+  </div>
+  <div class="subtab-content active" id="subtab-kasa-pokladna">
 <main>
 
   <div class="api-notice hidden" id="api-notice">
@@ -529,6 +531,16 @@
   </div>
 
 </main>
+  </div><!-- /subtab-kasa-pokladna -->
+  <div class="subtab-content" id="subtab-kasa-uctenky">
+    <main>
+      <div class="card" id="uctenky-summary" style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--muted)">Celkem dnes</span>
+        <span style="font-size:18px;font-weight:500;" id="uctenky-total-day">0 Kč</span>
+      </div>
+      <div id="uctenky-list"></div>
+    </main>
+  </div><!-- /subtab-kasa-uctenky -->
 </div><!-- /tab-kasa -->
 
 <div class="tab-content" id="tab-otevreni">
@@ -572,15 +584,6 @@
 </main>
 </div><!-- /tab-pet -->
 
-<div class="tab-content" id="tab-uctenky">
-  <main>
-    <div class="card" id="uctenky-summary" style="display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:13px;color:var(--muted)">Celkem dnes</span>
-      <span style="font-size:18px;font-weight:500;" id="uctenky-total-day">0 Kč</span>
-    </div>
-    <div id="uctenky-list"></div>
-  </main>
-</div><!-- /tab-uctenky -->
 
 <div class="tab-content" id="tab-uzavirka">
 <main>
@@ -725,19 +728,12 @@
 </main>
 </div><!-- /tab-uzavirka -->
 
-<div class="tab-content" id="tab-sklad">
-  <main>
-    <div class="card">
-      <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1rem;">Stav skladu</div>
-      <div class="sklad-cols" id="sklad-cols"></div>
-    </div>
-  </main>
-</div><!-- /tab-sklad -->
 
 <div class="tab-content" id="tab-administrace">
   <main>
     <div class="subtab-bar">
       <button class="subtab-btn active" onclick="switchSubtab('admin','pet',this)">Petkovací plán</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','sklad',this);renderSklad()">Sklad</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
     </div>
 
@@ -745,6 +741,15 @@
       <div class="card">
         <div id="admin-pet-config"></div>
       </div>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-sklad">
+      <main>
+        <div class="card">
+          <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1rem;">Stav skladu</div>
+          <div class="sklad-cols" id="sklad-cols"></div>
+        </div>
+      </main>
     </div>
 
     <div class="subtab-content" id="subtab-admin-zaloha">
@@ -764,9 +769,6 @@
   </main>
 </div><!-- /tab-administrace -->
 
-<div class="tab-content" id="tab-ostatni">
-  <main style="text-align:center;padding-top:3rem;color:var(--muted);font-size:14px;">Brzy zde bude více...</main>
-</div><!-- /tab-ostatni -->
 
 <!-- Štamgast modal -->
 <div class="modal-overlay hidden" id="dluh-modal">
