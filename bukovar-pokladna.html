@@ -769,6 +769,18 @@
 </div><!-- /tab-ostatni -->
 
 <!-- Štamgast modal -->
+<div class="modal-overlay hidden" id="dluh-modal">
+  <div class="modal">
+    <h3>Platba na dluh</h3>
+    <p style="margin-bottom:.75rem;">Zadejte jméno zákazníka:</p>
+    <input type="text" id="dluh-jmeno" placeholder="Jméno…" style="width:100%;font-family:'DM Sans',sans-serif;font-size:15px;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;" onkeydown="if(event.key==='Enter')potvrzDluh()">
+    <div class="modal-actions">
+      <button onclick="closeDluhModal()">Zrušit</button>
+      <button class="primary" onclick="potvrzDluh()">Potvrdit</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="stamgast-modal">
   <div class="modal">
     <h3>Štamgast?</h3>
@@ -1403,6 +1415,7 @@ function closeItemPickerModal() {
 var paymentMethod = '';
 var lastUctenkaNum = null;
 var pendingDluhId = null;
+var dluhJmeno = '';
 
 function setPayment(method) {
   paymentMethod = method;
@@ -1426,8 +1439,9 @@ function uzavrit() {
   if (paymentMethod === 'QR') {
     showQrModal();
   } else if (paymentMethod === 'Dluh') {
-    saveUctenka();
-    resetApp();
+    document.getElementById('dluh-jmeno').value = '';
+    document.getElementById('dluh-modal').classList.remove('hidden');
+    setTimeout(function() { document.getElementById('dluh-jmeno').focus(); }, 50);
   } else {
     saveUctenka();
     printReceiptIframe(buildReceiptHtml());
@@ -1592,6 +1606,7 @@ function saveUctenka() {
     celkem: total,
     platba: paymentMethod,
     nezaplaceno: paymentMethod === 'Dluh',
+    dluh_jmeno: paymentMethod === 'Dluh' ? dluhJmeno : '',
     storno: false
   };
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
@@ -1603,6 +1618,7 @@ function saveUctenka() {
   data.unshift(record);
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
   skladDecrementFromReceipt(receiptItems);
+  dluhJmeno = '';
   renderUctenky();
 }
 
@@ -1616,6 +1632,17 @@ function stornoUctenka(id, e) {
   }
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
   renderUctenky();
+}
+
+function closeDluhModal() {
+  document.getElementById('dluh-modal').classList.add('hidden');
+}
+
+function potvrzDluh() {
+  dluhJmeno = document.getElementById('dluh-jmeno').value.trim();
+  closeDluhModal();
+  saveUctenka();
+  resetApp();
 }
 
 function zpetNaPlaceni(id, e) {
@@ -1669,7 +1696,7 @@ function renderUctenky() {
         '<div>' +
           '<div><span class="uctenka-num">#' + rec.num + '</span>' + badge + '</div>' +
           '<div style="font-weight:500;margin-top:1px">' + casStr + '</div>' +
-          '<div class="uctenka-row-meta">' + pocetStr + '</div>' +
+          '<div class="uctenka-row-meta">' + pocetStr + (rec.dluh_jmeno ? ' · <strong>' + rec.dluh_jmeno + '</strong>' : '') + '</div>' +
         '</div>' +
         '<span class="uctenka-row-total' + (rec.storno ? ' storno' : '') + '">' + rec.celkem + ' Kč</span>' +
       '</div>' +
