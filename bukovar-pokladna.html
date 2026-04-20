@@ -174,6 +174,17 @@
   .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
+  /* Tržby */
+  .trzby-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: 1.25rem; }
+  .trzby-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; }
+  .trzby-card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .3rem; }
+  .trzby-card-value { font-size: 26px; font-weight: 700; font-family: 'DM Serif Display', serif; color: var(--text); }
+  .trzby-card-sub { font-size: 11px; color: var(--muted); margin-top: .2rem; }
+  .trzby-breakdown { border-top: 1px solid var(--border); padding-top: .75rem; }
+  .trzby-breakdown-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .5rem; }
+  .trzby-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .trzby-row:last-child { border-bottom: none; font-weight: 600; }
+
   /* Sklad */
   .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; align-items: start; }
   .sklad-group { margin-bottom: .75rem; }
@@ -744,6 +755,7 @@
   <main>
     <div class="subtab-bar">
       <button class="subtab-btn active" onclick="switchSubtab('admin','pet',this)">Petkovací plán</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','trzby',this);renderTrzby()">Tržby</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','sklad',this);renderSklad()">Sklad</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
     </div>
@@ -751,6 +763,12 @@
     <div class="subtab-content active" id="subtab-admin-pet">
       <div class="card">
         <div id="admin-pet-config"></div>
+      </div>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-trzby">
+      <div class="card">
+        <div id="trzby-content"></div>
       </div>
     </div>
 
@@ -2183,6 +2201,78 @@ function skladRestoreFromReceipt(items) {
     sklad[map.key].qty = Math.round((sklad[map.key].qty + map.inc * it.pocet) * 1000) / 1000;
   });
   saveSklad(sklad);
+}
+
+function getBusinessDate(ts) {
+  var d = new Date(ts);
+  if (d.getHours() < 6) d.setDate(d.getDate() - 1);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function trzbySum(records, from, to) {
+  var total = 0, breakdown = {};
+  records.forEach(function(r) {
+    if (r.storno || r.nezaplaceno) return;
+    var bd = getBusinessDate(r.cas);
+    if (bd >= from && bd <= to) {
+      total += r.celkem;
+      var platba = r.platba || 'Neznámá';
+      if (platba === 'Dluh') platba = 'Na dluh';
+      breakdown[platba] = (breakdown[platba] || 0) + r.celkem;
+    }
+  });
+  return { total: total, breakdown: breakdown };
+}
+
+function renderTrzby() {
+  var el = document.getElementById('trzby-content');
+  if (!el) return;
+  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var now = new Date();
+  var today = getBusinessDate(now);
+
+  // Týden: pondělí–neděle
+  var dow = today.getDay(); // 0=Ne, 1=Po...
+  var diffMon = (dow === 0 ? -6 : 1 - dow);
+  var monday = new Date(today); monday.setDate(today.getDate() + diffMon);
+  var sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+
+  // Měsíc: první a poslední den
+  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  var monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  var dnes = trzbySum(data, today, today);
+  var tyden = trzbySum(data, monday, sunday);
+  var mesic = trzbySum(data, monthStart, monthEnd);
+
+  var mesiceCS = ['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
+  var dnyCS = ['ne','po','út','st','čt','pá','so'];
+
+  function fmtDate(d) { return d.getDate() + '. ' + (d.getMonth()+1) + '.'; }
+  function fmtCzk(n) { return n.toLocaleString('cs-CZ') + ' Kč'; }
+
+  var html = '<div class="trzby-grid">';
+  html += '<div class="trzby-card"><div class="trzby-card-label">Dnes</div><div class="trzby-card-value">' + fmtCzk(dnes.total) + '</div><div class="trzby-card-sub">' + fmtDate(today) + ' (od 6:00)</div></div>';
+  html += '<div class="trzby-card"><div class="trzby-card-label">Tento týden</div><div class="trzby-card-value">' + fmtCzk(tyden.total) + '</div><div class="trzby-card-sub">' + fmtDate(monday) + ' – ' + fmtDate(sunday) + '</div></div>';
+  html += '<div class="trzby-card"><div class="trzby-card-label">Tento měsíc</div><div class="trzby-card-value">' + fmtCzk(mesic.total) + '</div><div class="trzby-card-sub">' + mesiceCS[today.getMonth()] + ' ' + today.getFullYear() + '</div></div>';
+  html += '</div>';
+
+  // Breakdown dnes
+  html += '<div class="trzby-breakdown"><div class="trzby-breakdown-title">Dnes — způsob platby</div>';
+  var methods = ['Hotovost','Karta','QR','Na dluh'];
+  var bdTotal = 0;
+  methods.forEach(function(m) {
+    var v = dnes.breakdown[m] || 0;
+    if (v > 0) { html += '<div class="trzby-row"><span>' + m + '</span><span>' + fmtCzk(v) + '</span></div>'; bdTotal += v; }
+  });
+  Object.keys(dnes.breakdown).forEach(function(m) {
+    if (methods.indexOf(m) === -1) { html += '<div class="trzby-row"><span>' + m + '</span><span>' + fmtCzk(dnes.breakdown[m]) + '</span></div>'; bdTotal += dnes.breakdown[m]; }
+  });
+  if (bdTotal > 0) html += '<div class="trzby-row"><span>Celkem</span><span>' + fmtCzk(bdTotal) + '</span></div>';
+  else html += '<div style="font-size:13px;color:var(--muted);padding:6px 0;">Dnes zatím žádné tržby.</div>';
+  html += '</div>';
+
+  el.innerHTML = html;
 }
 
 function renderSklad() {
