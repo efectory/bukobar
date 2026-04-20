@@ -175,15 +175,18 @@
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
   /* Tržby */
-  .trzby-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: 1.25rem; }
-  .trzby-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; }
-  .trzby-card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .3rem; }
-  .trzby-card-value { font-size: 26px; font-weight: 700; font-family: 'DM Serif Display', serif; color: var(--text); }
-  .trzby-card-sub { font-size: 11px; color: var(--muted); margin-top: .2rem; }
-  .trzby-breakdown { border-top: 1px solid var(--border); padding-top: .75rem; }
-  .trzby-breakdown-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .5rem; }
-  .trzby-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px solid var(--border); }
-  .trzby-row:last-child { border-bottom: none; font-weight: 600; }
+  .trzby-section { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; margin-bottom: .75rem; background: var(--bg); }
+  .trzby-section-header { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
+  .trzby-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .trzby-section-range { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .trzby-section-total { font-size: 28px; font-weight: 700; font-family: 'DM Serif Display', serif; margin-bottom: .6rem; }
+  .trzby-breakdown-inner { border-top: 1px solid var(--border); padding-top: .5rem; }
+  .trzby-row { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; border-bottom: 1px solid var(--border); }
+  .trzby-row:last-child { border-bottom: none; }
+  .trzby-row-total { font-weight: 600; margin-top: 2px; }
+  .trzby-nav { display: flex; gap: 4px; }
+  .trzby-nav-btn { font-size: 14px; padding: 2px 8px; min-height: unset; border-radius: 4px; }
+  .trzby-nav-btn:disabled { opacity: .3; cursor: default; }
 
   /* Sklad */
   .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; align-items: start; }
@@ -2209,6 +2212,9 @@ function getBusinessDate(ts) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+var trzbyWeekOffset = 0;
+var trzbyMonthOffset = 0;
+
 function trzbySum(records, from, to) {
   var total = 0, breakdown = {};
   records.forEach(function(r) {
@@ -2224,6 +2230,38 @@ function trzbySum(records, from, to) {
   return { total: total, breakdown: breakdown };
 }
 
+function getWeekStart(base, offset) {
+  var d = new Date(base);
+  var dow = d.getDay();
+  var diffMon = (dow === 0 ? -6 : 1 - dow);
+  d.setDate(d.getDate() + diffMon + offset * 7);
+  return d;
+}
+
+function getBusinessMonthStart(year, month) {
+  var first = new Date(year, month, 1);
+  var dow = first.getDay(); // 0=Ne,1=Po,...,6=So
+  if (dow >= 4 && dow <= 6) {
+    // Čt/Pá/So → začátek příští pondělí
+    var toMon = 8 - dow;
+    return new Date(year, month, 1 + toMon);
+  } else {
+    // Ne/Po/Út/St → pondělí tohoto týdne
+    var back = dow === 0 ? 6 : dow - 1;
+    return new Date(year, month, 1 - back);
+  }
+}
+
+function getBusinessMonthEnd(year, month) {
+  var nextStart = getBusinessMonthStart(year, month + 1);
+  var end = new Date(nextStart);
+  end.setDate(end.getDate() - 1);
+  return end;
+}
+
+function trzbyNavWeek(delta) { trzbyWeekOffset += delta; renderTrzby(); }
+function trzbyNavMonth(delta) { trzbyMonthOffset += delta; renderTrzby(); }
+
 function renderTrzby() {
   var el = document.getElementById('trzby-content');
   if (!el) return;
@@ -2231,48 +2269,79 @@ function renderTrzby() {
   var now = new Date();
   var today = getBusinessDate(now);
 
-  // Týden: pondělí–neděle
-  var dow = today.getDay(); // 0=Ne, 1=Po...
-  var diffMon = (dow === 0 ? -6 : 1 - dow);
-  var monday = new Date(today); monday.setDate(today.getDate() + diffMon);
+  // Dnes
+  var dnesStart = today;
+  var dnesEnd = today;
+
+  // Týden s offsetem
+  var monday = getWeekStart(today, trzbyWeekOffset);
   var sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  var isCurrentWeek = trzbyWeekOffset === 0;
 
-  // Měsíc: první a poslední den
-  var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  var monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-  var dnes = trzbySum(data, today, today);
-  var tyden = trzbySum(data, monday, sunday);
-  var mesic = trzbySum(data, monthStart, monthEnd);
+  // Měsíc s offsetem
+  var mBase = new Date(today.getFullYear(), today.getMonth() + trzbyMonthOffset, 1);
+  var mStart = getBusinessMonthStart(mBase.getFullYear(), mBase.getMonth());
+  var mEnd = getBusinessMonthEnd(mBase.getFullYear(), mBase.getMonth());
+  var isCurrentMonth = trzbyMonthOffset === 0;
 
   var mesiceCS = ['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
-  var dnyCS = ['ne','po','út','st','čt','pá','so'];
 
-  function fmtDate(d) { return d.getDate() + '. ' + (d.getMonth()+1) + '.'; }
+  function fmtD(d) { return d.getDate() + '. ' + (d.getMonth()+1) + '. ' + d.getFullYear(); }
   function fmtCzk(n) { return n.toLocaleString('cs-CZ') + ' Kč'; }
+  function fmtRange(from, to) {
+    return fmtD(from) + ' 06:00 – ' + fmtD(to) + ' 05:59';
+  }
 
-  var html = '<div class="trzby-grid">';
-  html += '<div class="trzby-card"><div class="trzby-card-label">Dnes</div><div class="trzby-card-value">' + fmtCzk(dnes.total) + '</div><div class="trzby-card-sub">' + fmtDate(today) + ' (od 6:00)</div></div>';
-  html += '<div class="trzby-card"><div class="trzby-card-label">Tento týden</div><div class="trzby-card-value">' + fmtCzk(tyden.total) + '</div><div class="trzby-card-sub">' + fmtDate(monday) + ' – ' + fmtDate(sunday) + '</div></div>';
-  html += '<div class="trzby-card"><div class="trzby-card-label">Tento měsíc</div><div class="trzby-card-value">' + fmtCzk(mesic.total) + '</div><div class="trzby-card-sub">' + mesiceCS[today.getMonth()] + ' ' + today.getFullYear() + '</div></div>';
-  html += '</div>';
+  var dnes = trzbySum(data, dnesStart, dnesEnd);
+  var tyden = trzbySum(data, monday, sunday);
+  var mesic = trzbySum(data, mStart, mEnd);
 
-  // Breakdown dnes
-  html += '<div class="trzby-breakdown"><div class="trzby-breakdown-title">Dnes — způsob platby</div>';
   var methods = ['Hotovost','Karta','QR','Na dluh'];
-  var bdTotal = 0;
-  methods.forEach(function(m) {
-    var v = dnes.breakdown[m] || 0;
-    if (v > 0) { html += '<div class="trzby-row"><span>' + m + '</span><span>' + fmtCzk(v) + '</span></div>'; bdTotal += v; }
-  });
-  Object.keys(dnes.breakdown).forEach(function(m) {
-    if (methods.indexOf(m) === -1) { html += '<div class="trzby-row"><span>' + m + '</span><span>' + fmtCzk(dnes.breakdown[m]) + '</span></div>'; bdTotal += dnes.breakdown[m]; }
-  });
-  if (bdTotal > 0) html += '<div class="trzby-row"><span>Celkem</span><span>' + fmtCzk(bdTotal) + '</span></div>';
-  else html += '<div style="font-size:13px;color:var(--muted);padding:6px 0;">Dnes zatím žádné tržby.</div>';
-  html += '</div>';
 
-  el.innerHTML = html;
+  function buildBreakdown(res) {
+    var html = '';
+    var shown = false;
+    methods.forEach(function(m) {
+      if (res.breakdown[m]) { html += '<div class="trzby-row"><span>' + m + '</span><span>' + fmtCzk(res.breakdown[m]) + '</span></div>'; shown = true; }
+    });
+    Object.keys(res.breakdown).forEach(function(m) {
+      if (methods.indexOf(m) === -1) { html += '<div class="trzby-row"><span>' + m + '</span><span>' + fmtCzk(res.breakdown[m]) + '</span></div>'; shown = true; }
+    });
+    if (shown) html += '<div class="trzby-row trzby-row-total"><span>Celkem</span><span>' + fmtCzk(res.total) + '</span></div>';
+    else html += '<div style="font-size:12px;color:var(--muted);padding:4px 0;">Žádné tržby.</div>';
+    return html;
+  }
+
+  function buildSection(label, rangeStr, res, navHtml) {
+    return '<div class="trzby-section">'
+      + '<div class="trzby-section-header">'
+        + navHtml
+        + '<div><div class="trzby-section-label">' + label + '</div>'
+        + '<div class="trzby-section-range">' + rangeStr + '</div></div>'
+      + '</div>'
+      + '<div class="trzby-section-total">' + fmtCzk(res.total) + '</div>'
+      + '<div class="trzby-breakdown-inner">' + buildBreakdown(res) + '</div>'
+      + '</div>';
+  }
+
+  var dnesRange = fmtD(today) + ' 06:00 – ' + fmtD(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)) + ' 05:59';
+
+  var weekLabel = isCurrentWeek ? 'Tento týden' : 'Týden';
+  var weekNav = '<div class="trzby-nav">'
+    + '<button class="trzby-nav-btn" onclick="trzbyNavWeek(-1)">←</button>'
+    + (trzbyWeekOffset < 0 ? '<button class="trzby-nav-btn" onclick="trzbyNavWeek(1)">→</button>' : '<button class="trzby-nav-btn" disabled>→</button>')
+    + '</div>';
+
+  var monthLabel = isCurrentMonth ? 'Tento měsíc' : mesiceCS[mBase.getMonth()] + ' ' + mBase.getFullYear();
+  var monthNav = '<div class="trzby-nav">'
+    + '<button class="trzby-nav-btn" onclick="trzbyNavMonth(-1)">←</button>'
+    + (trzbyMonthOffset < 0 ? '<button class="trzby-nav-btn" onclick="trzbyNavMonth(1)">→</button>' : '<button class="trzby-nav-btn" disabled>→</button>')
+    + '</div>';
+
+  el.innerHTML =
+    buildSection('Dnes', dnesRange, dnes, '') +
+    buildSection(weekLabel, fmtRange(monday, sunday), tyden, weekNav) +
+    buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, monthNav);
 }
 
 function renderSklad() {
