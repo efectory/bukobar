@@ -174,6 +174,15 @@
   .dysko-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .dysko-btn.active { background: var(--text); color: #f5f1ea; border-color: var(--text); }
 
+  /* Nastavení sklad */
+  .sn-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sn-table th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 4px 8px; text-align: left; border-bottom: 2px solid var(--border-strong); }
+  .sn-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .sn-table tr:last-child td { border-bottom: none; }
+  .sn-table tr.no-rule td { color: var(--muted); font-style: italic; }
+  .sn-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 10px 8px 3px; }
+  .sn-inc { font-weight: 600; color: var(--accent); }
+
   /* Tržby */
   .trzby-section { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; margin-bottom: .75rem; background: var(--bg); }
   .trzby-section-header { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
@@ -760,6 +769,7 @@
       <button class="subtab-btn active" onclick="switchSubtab('admin','pet',this)">Petkovací plán</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','trzby',this);renderTrzby()">Tržby</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','sklad',this);renderSklad()">Sklad</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
     </div>
 
@@ -782,6 +792,12 @@
           <div class="sklad-cols" id="sklad-cols"></div>
         </div>
       </main>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-skladnast">
+      <div class="card">
+        <div id="sklad-nastaveni-content"></div>
+      </div>
     </div>
 
     <div class="subtab-content" id="subtab-admin-zaloha">
@@ -2210,6 +2226,41 @@ function getBusinessDate(ts) {
   var d = new Date(ts);
   if (d.getHours() < 6) d.setDate(d.getDate() - 1);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function renderSkladNastaveni() {
+  var el = document.getElementById('sklad-nastaveni-content');
+  if (!el) return;
+
+  // Seskup menu položky podle kategorie
+  var bycat = {};
+  MENU.forEach(function(item) {
+    if (!bycat[item.c]) bycat[item.c] = [];
+    bycat[item.c].push(item);
+  });
+
+  function fmtInc(inc, unit) {
+    if (unit === 'l') return inc + ' l';
+    return inc + ' ks';
+  }
+
+  var html = '<table class="sn-table"><thead><tr><th>Položka menu</th><th>Odečítá ze skladu</th><th>Množství</th></tr></thead><tbody>';
+
+  Object.keys(bycat).forEach(function(cat) {
+    html += '<tr><td colspan="3" class="sn-section-title">' + cat + '</td></tr>';
+    bycat[cat].forEach(function(item) {
+      var rule = SKLAD_MAP[item.n];
+      if (rule) {
+        var unit = skladGetUnit(rule.key);
+        html += '<tr><td>' + item.n + '</td><td>' + rule.key + '</td><td class="sn-inc">−' + fmtInc(rule.inc, unit) + '</td></tr>';
+      } else {
+        html += '<tr class="no-rule"><td>' + item.n + '</td><td colspan="2">— bez odečtu</td></tr>';
+      }
+    });
+  });
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
 }
 
 var trzbyWeekOffset = 0;
