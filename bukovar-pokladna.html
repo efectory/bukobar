@@ -727,10 +727,10 @@
       <div class="card" style="max-width:600px;">
         <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;">Záloha dat</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:1.2rem;">Exportuj všechna uložená data (účtenky, sklad, historii, konfiguraci) do souboru JSON. Na jiném počítači je lze importovat zpět.</p>
-        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-          <button onclick="zalohaExport()" style="font-size:13px;padding:8px 18px;min-height:unset;">Exportovat data</button>
-          <label style="font-size:13px;padding:8px 18px;min-height:unset;cursor:pointer;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);font-family:inherit;font-weight:500;">
-            Importovat data
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem;">
+          <button class="primary" onclick="zalohaExport()" style="font-size:14px;padding:10px 22px;min-height:unset;">⬇ Exportovat data</button>
+          <label style="display:inline-flex;align-items:center;font-size:14px;padding:10px 22px;cursor:pointer;background:var(--text);color:#f5f1ea;border:1px solid var(--text);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-weight:500;">
+            ⬆ Importovat data
             <input type="file" accept=".json" onchange="zalohaImport(event)" style="display:none;">
           </label>
         </div>
