@@ -156,7 +156,9 @@
   .uctenka-row-total.storno { text-decoration: line-through; color: var(--muted); }
   .storno-badge { font-size: 10px; font-weight: 600; background: #ffeaea; color: var(--accent); border: 1px solid rgba(181,56,26,.25); border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
   .nezaplaceno-badge { font-size: 10px; font-weight: 600; background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
+  .zaplaceno-badge { font-size: 10px; font-weight: 600; background: #f0fdf4; color: #15803d; border: 1px solid #86efac; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
   .uctenka-row.nezaplaceno { background: #fff7ed; border-left: 3px solid #fb923c; }
+  .uctenka-row.dluh-zaplaceno { opacity: .6; }
   .btn-zaplatit-wrap { display: flex; gap: 6px; flex-wrap: wrap; margin-top: .5rem; }
   .btn-zaplatit { font-size: 12px; padding: 5px 10px; color: #15803d; border-color: rgba(22,163,74,.35); background: #f0fdf4; }
   .btn-zaplatit:hover { background: #dcfce7; border-color: #16a34a; }
@@ -1400,6 +1402,7 @@ function closeItemPickerModal() {
 
 var paymentMethod = '';
 var lastUctenkaNum = null;
+var pendingDluhId = null;
 
 function setPayment(method) {
   paymentMethod = method;
@@ -1592,6 +1595,11 @@ function saveUctenka() {
     storno: false
   };
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  if (pendingDluhId !== null) {
+    var dluhRec = data.find(function(r) { return r.id === pendingDluhId; });
+    if (dluhRec) dluhRec.zaplaceno_cislo = lastUctenkaNum;
+    pendingDluhId = null;
+  }
   data.unshift(record);
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
   skladDecrementFromReceipt(receiptItems);
@@ -1613,12 +1621,13 @@ function stornoUctenka(id, e) {
 function zpetNaPlaceni(id, e) {
   e.stopPropagation();
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
-  var idx = data.findIndex(function(r) { return r.id === id; });
-  if (idx === -1) return;
-  var rec = data[idx];
+  var rec = data.find(function(r) { return r.id === id; });
+  if (!rec) return;
   skladRestoreFromReceipt(rec.polozky);
-  data.splice(idx, 1);
+  rec.nezaplaceno = false;
+  rec.vraceno = true;
   localStorage.setItem('bukovar_uctenky', JSON.stringify(data));
+  pendingDluhId = id;
   receiptItems = rec.polozky.map(function(p) {
     return { nazev: p.nazev, pocet: p.pocet, cena: p.cena, stamgast: p.stamgast || false };
   });
@@ -1643,9 +1652,16 @@ function renderUctenky() {
     var casStr = dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
     var pocetStr = rec.polozky.length + ' položk' + (rec.polozky.length === 1 ? 'a' : rec.polozky.length < 5 ? 'y' : 'í');
     var div = document.createElement('div');
-    div.className = 'uctenka-row' + (rec.storno ? ' storno' : '') + (rec.nezaplaceno ? ' nezaplaceno' : '');
-    var badge = rec.storno ? '<span class="storno-badge">STORNO</span>' : (rec.nezaplaceno ? '<span class="nezaplaceno-badge">NEZAPLACENO</span>' : '');
-    var zaplatitBtns = rec.nezaplaceno
+    var isDluhZaplaceno = rec.vraceno && rec.zaplaceno_cislo;
+    div.className = 'uctenka-row' + (rec.storno ? ' storno' : '') + (rec.nezaplaceno ? ' nezaplaceno' : '') + (isDluhZaplaceno ? ' dluh-zaplaceno' : '');
+    var badge = rec.storno
+      ? '<span class="storno-badge">STORNO</span>'
+      : rec.nezaplaceno
+        ? '<span class="nezaplaceno-badge">NEZAPLACENO</span>'
+        : isDluhZaplaceno
+          ? '<span class="zaplaceno-badge">DLUH → #' + rec.zaplaceno_cislo + '</span>'
+          : '';
+    var zaplatitBtns = (rec.nezaplaceno && !rec.vraceno)
       ? '<button class="btn-zaplatit" style="margin-top:.75rem;width:100%;" onclick="zpetNaPlaceni(' + rec.id + ',event)">↩ Zpět na placení</button>'
       : '';
     div.innerHTML =
