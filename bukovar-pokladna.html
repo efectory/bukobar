@@ -714,11 +714,27 @@
   <main>
     <div class="subtab-bar">
       <button class="subtab-btn active" onclick="switchSubtab('admin','pet',this)">Petkovací plán</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
     </div>
 
     <div class="subtab-content active" id="subtab-admin-pet">
       <div class="card">
         <div id="admin-pet-config"></div>
+      </div>
+    </div>
+
+    <div class="subtab-content hidden" id="subtab-admin-zaloha">
+      <div class="card" style="max-width:600px;">
+        <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;">Záloha dat</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1.2rem;">Exportuj všechna uložená data (účtenky, sklad, historii, konfiguraci) do souboru JSON. Na jiném počítači je lze importovat zpět.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+          <button onclick="zalohaExport()" style="font-size:13px;padding:8px 18px;min-height:unset;">Exportovat data</button>
+          <label style="font-size:13px;padding:8px 18px;min-height:unset;cursor:pointer;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);font-family:inherit;font-weight:500;">
+            Importovat data
+            <input type="file" accept=".json" onchange="zalohaImport(event)" style="display:none;">
+          </label>
+        </div>
+        <div id="zaloha-msg" style="margin-top:1rem;font-size:13px;"></div>
       </div>
     </div>
   </main>
@@ -2324,6 +2340,42 @@ function renderAdminPetConfig() {
     + '<textarea id="admin-pet-export-txt" readonly style="width:100%;font-family:monospace;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:.5rem;background:var(--surface);resize:vertical;" rows="10"></textarea>'
     + '</div></div>';
   el.innerHTML = html;
+}
+
+function zalohaExport() {
+  var keys = ['bukovar_uctenka_num','bukovar_checklist_history','bukovar_otevreni_history','bukovar_pet_history','bukovar_pet_config','bukovar_sklad','bukovar_stamgasti'];
+  var data = {};
+  keys.forEach(function(k) {
+    var v = localStorage.getItem(k);
+    if (v !== null) data[k] = JSON.parse(v);
+  });
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bukovar-zaloha-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  document.getElementById('zaloha-msg').innerHTML = '<span style="color:var(--success,green)">Data exportována.</span>';
+}
+
+function zalohaImport(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      Object.keys(data).forEach(function(k) {
+        localStorage.setItem(k, JSON.stringify(data[k]));
+      });
+      document.getElementById('zaloha-msg').innerHTML = '<span style="color:var(--success,green)">Data importována. Stránka se obnoví...</span>';
+      setTimeout(function() { location.reload(); }, 1500);
+    } catch(err) {
+      document.getElementById('zaloha-msg').innerHTML = '<span style="color:var(--accent)">Chyba: soubor není platný JSON.</span>';
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 function adminPetExport() {
