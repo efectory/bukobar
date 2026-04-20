@@ -827,7 +827,6 @@ const MENU = [
   {n:"Royal crown cola",c:"Nealkoholické nápoje",p:39},
   {n:"ChitoTonic",c:"Nealkoholické nápoje",p:39},
   {n:"Džus pomeranč",c:"Nealkoholické nápoje",p:39},
-  {n:"Džus jablko",c:"Nealkoholické nápoje",p:39},
   {n:"Perlivá voda",c:"Nealkoholické nápoje",p:39},
   {n:"Bukovská voda",c:"Nealkoholické nápoje",p:0},
   {n:"Rozlévané víno",c:"Víno",p:69,u:"0,2l"},
@@ -841,6 +840,8 @@ const MENU = [
   {n:"Cuba libre",c:"Míchané nápoje",p:109,u:"0,3l"},
   {n:"Aperol Spritz",c:"Míchané nápoje",p:159,u:"0,3l"},
   {n:"Mojito",c:"Míchané nápoje",p:159,u:"0,3l"},
+  {n:"Mimosa",c:"Míchané nápoje",p:59,u:"0,2dcl"},
+  {n:"Mimosa",c:"Míchané nápoje",p:109,u:"0,5l"},
   {n:"Utopenec",c:"Občerstvení",p:85},
   {n:"Pizza Della Casa",c:"Občerstvení",p:155},
   {n:"Nakládaný hermelín",c:"Občerstvení",p:85},
@@ -850,6 +851,8 @@ const MENU = [
   {n:"Paštiky Čongrády",c:"Občerstvení",p:99},
   {n:"Paštika ve skle Čongrády",c:"Občerstvení",p:109},
   {n:"Škvarky v sádle Čongrády",c:"Občerstvení",p:139},
+  {n:"Zákusek",c:"Občerstvení",p:65},
+  {n:"Zákusek",c:"Občerstvení",p:85},
   {n:"Rum standard (Republica, Heffron...)",c:"Destiláty",p:79,u:"0,05l"},
   {n:"Rum premium (Kraken, Espero...)",c:"Destiláty",p:99,u:"0,05l"},
   {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"}
@@ -1805,7 +1808,7 @@ const SKLAD_GROUPS = [
   { col: 0, label: 'Nealkoholické', items: [
     { n: 'Kofola', unit: 'ks' }, { n: 'Frizzante', unit: 'ks' },
     { n: 'Royal Crown Cola', unit: 'ks' }, { n: 'ChitoTonic', unit: 'ks' },
-    { n: 'Džus pomeranč', unit: 'ks' }, { n: 'Džus jablko', unit: 'ks' },
+    { n: 'Džus pomeranč', unit: 'ks' },
     { n: 'Perlivá voda', unit: 'ks' },
   ]},
   { col: 0, label: 'Víno', items: [
@@ -1863,7 +1866,7 @@ const SKLAD_MAP = {
   'Frizzante 0,3l': { key: 'Frizzante', inc: 1 }, 'Frizzante 0,5l': { key: 'Frizzante', inc: 1 },
   'Royal crown cola': { key: 'Royal Crown Cola', inc: 1 },
   'ChitoTonic': { key: 'ChitoTonic', inc: 1 },
-  'Džus pomeranč': { key: 'Džus pomeranč', inc: 1 }, 'Džus jablko': { key: 'Džus jablko', inc: 1 },
+  'Džus pomeranč': { key: 'Džus pomeranč', inc: 1 },
   'Perlivá voda': { key: 'Perlivá voda', inc: 1 }, 'Bukovská voda': { key: 'Bukovská voda', inc: 1 },
   'Rozlévané víno': { key: 'Rozlévané víno', inc: 0.2 },
   'Lahvové víno': { key: 'Lahvové víno', inc: 1 },
@@ -1895,8 +1898,7 @@ const SKLAD_MAP = {
 
 const SKLAD_MIN = {
   'Kofola': 100, 'Frizzante': 40,
-  'Royal Crown Cola': 20, 'ChitoTonic': 20, 'Džus pomeranč': 20,
-  'Džus jablko': 20, 'Perlivá voda': 20,
+  'Royal Crown Cola': 20, 'ChitoTonic': 20, 'Džus pomeranč': 20, 'Perlivá voda': 20,
   'Rozlévané víno': 0, 'Lahvové víno': 20,
   'Prosecco Mionetto': 20, 'Prosecco Treviso': 20, 'Prosecco rozlévané': 0,
   'Beefeater Gin': 3, 'Bacardi': 3, 'Aperol': 3,
