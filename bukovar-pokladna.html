@@ -233,7 +233,11 @@
   .vip-btn.tmave-zelena:hover { background:#166534; color:#fff; border-color:#166534; }
   .vip-btn.bila     { background:#f8fafc; border-color:#94a3b8; color:#334155; }
   .vip-btn.bila:hover   { background:#94a3b8; color:#fff; border-color:#94a3b8; }
-  .sklad-group-title.muted-section { color: var(--muted); opacity: .5; }
+  .sklad-group.beer-section { background: #fef9c3; border-radius: 6px; padding: 4px 6px; border: 1px solid #fde68a; }
+  .sklad-group.beer-section .sklad-group-title { border-bottom-color: #fde68a; color: #92400e; }
+  .sklad-group.beer-section .sklad-item { border-bottom-color: #fde68a; }
+  .sklad-group.beer-section .sklad-item.ok { background: #d1fae5; }
+  .sklad-group.beer-section .sklad-item.warn { background: #fee2e2; }
   .receipt-items-wrap { flex: 1; overflow-y: auto; max-height: 420px; margin-top: .5rem; }
 
   /* Workflow — levý sloupec */
@@ -1859,7 +1863,7 @@ const SKLAD_GROUPS = [
     { n: 'Ubrousky', unit: 'bal' }, { n: 'Mýdlo na ruce', unit: 'ks' },
     { n: 'Sáčky na odpadky', unit: 'bal' },
   ]},
-  { col: 2, label: 'Čepovaná piva (řeší Pája)', muted: true, items: [
+  { col: 2, label: 'Čepovaná piva (řeší Pája)', beerSection: true, items: [
     { n: 'Hraďák 10°', unit: 'l' }, { n: 'Štamgast 11°', unit: 'l' },
     { n: 'Šedá vlčice 11°', unit: 'l' }, { n: 'Kohoutí 12°', unit: 'l' },
     { n: 'Zlatka 11°', unit: 'l' }, { n: 'Mezulánka 11°', unit: 'l' },
@@ -2019,7 +2023,7 @@ function renderSklad() {
   var sklad = getSklad();
   var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
-    var html = '<div class="sklad-group"><div class="sklad-group-title' + (g.muted ? ' muted-section' : '') + '">' + g.label + '</div>';
+    var html = '<div class="sklad-group' + (g.beerSection ? ' beer-section' : '') + '"><div class="sklad-group-title">' + g.label + '</div>';
     if (g.type === 'vicka') {
       html += '<table class="vicka-table">';
       html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
