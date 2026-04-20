@@ -188,12 +188,12 @@
   .sklad-bool-btn.no  { background: var(--accent-light); color: var(--accent); border-color: rgba(181,56,26,.3); }
   .vicka-table { width: 100%; border-collapse: collapse; }
   .vicka-table th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 2px 4px; text-align: left; border-bottom: 1px solid var(--border-strong); }
-  .vicka-table th.right { text-align: right; }
+  .vicka-table th.center { text-align: center; }
   .vicka-table td { font-size: 12px; padding: 1px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   .vicka-table tr:last-child td { border-bottom: none; }
   .vicka-table tr.ok td { background: var(--success-bg); }
   .vicka-table tr.warn td { background: var(--accent-light); }
-  .vicka-table td.right { text-align: right; }
+  .vicka-table td.center { text-align: center; }
   .vicka-color-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; border: 1px solid; display: inline-block; }
 
   /* Dvousloupcový layout */
@@ -1835,6 +1835,16 @@ const SKLAD_GROUPS = [
     { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
     { n: 'Škvarky v sádle Čongrády', unit: 'ks' },
   ]},
+  { col: 1, label: 'Víčka & Etikety', type: 'vicka', beers: [
+    { n: 'Hraďák 10°',      color: 'zelená',   colorClass: 'zelena' },
+    { n: 'Štamgast 11°',    color: 'hnědá',    colorClass: 'hneda' },
+    { n: 'Šedá vlčice 11°', color: 'bílá',     colorClass: '' },
+    { n: 'Kohoutí 12°',     color: 'zlatá',    colorClass: 'zlata' },
+    { n: 'Zlatka 11°',      color: 'žlutá',    colorClass: 'zluta' },
+    { n: 'Mezulánka 11°',   color: 'oranžová', colorClass: 'oranzova' },
+    { n: 'Nelson 12°',      color: 'modrá',    colorClass: 'modra' },
+    { n: 'Dublin 13°',      color: 'černá',    colorClass: 'tmave-zelena' },
+  ]},
   { col: 0, label: 'Potraviny & ingredience', bool: true, items: [
     { n: 'Cukr', unit: 'kg' }, { n: 'Mléko', unit: 'l' }, { n: 'Sůl', unit: 'kg' },
     { n: 'Olej', unit: 'l' }, { n: 'Sirup bezový', unit: 'l' }, { n: 'Citron', unit: 'ks' }, { n: 'Limetky', unit: 'ks' }, { n: 'Pomeranče', unit: 'ks' },
@@ -1867,16 +1877,6 @@ const SKLAD_GROUPS = [
     { n: 'Sklenice', unit: 'ks' }, { n: 'Brčka', unit: 'ks' }, { n: 'Párátka', unit: 'ks' },
     { n: 'Zápalky', unit: 'ks' }, { n: 'Podtácky', unit: 'ks' },
     { n: 'Pokladní páska', unit: 'ks' }, { n: 'Propisky', unit: 'ks' },
-  ]},
-  { col: 1, label: 'Víčka & Etikety', type: 'vicka', beers: [
-    { n: 'Hraďák 10°',      color: 'zelená',   colorClass: 'zelena' },
-    { n: 'Štamgast 11°',    color: 'hnědá',    colorClass: 'hneda' },
-    { n: 'Šedá vlčice 11°', color: 'zlatá',    colorClass: 'zlata' },
-    { n: 'Kohoutí 12°',     color: 'bílá',     colorClass: '' },
-    { n: 'Zlatka 11°',      color: 'žlutá',    colorClass: 'zluta' },
-    { n: 'Mezulánka 11°',   color: 'oranžová', colorClass: 'oranzova' },
-    { n: 'Nelson 12°',      color: 'modrá',    colorClass: 'modra' },
-    { n: 'Dublin 13°',      color: 'černá',    colorClass: 'tmave-zelena' },
   ]},
 ];
 
@@ -2019,7 +2019,7 @@ function renderSklad() {
     var html = '<div class="sklad-group"><div class="sklad-group-title">' + g.label + '</div>';
     if (g.type === 'vicka') {
       html += '<table class="vicka-table">';
-      html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="right">Víčka</th><th class="right">Etikety</th></tr></thead><tbody>';
+      html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
       g.beers.forEach(function(beer) {
         var kv = 'Víčko ' + beer.n;
         var ke = 'Etiketa ' + beer.n;
@@ -2035,8 +2035,8 @@ function renderSklad() {
         html += '<tr' + rowClass + '>'
           + '<td>' + beer.n + '</td>'
           + '<td>' + badge + '</td>'
-          + '<td class="right"><span class="sklad-qty-wrap"><span class="sklad-qty' + (qv < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(kv) + '" onclick="skladQtyClick(\'' + snV + '\',this)">' + qv + '</span><span class="sklad-unit">ks</span></span></td>'
-          + '<td class="right"><span class="sklad-qty-wrap"><span class="sklad-qty' + (qe < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(ke) + '" onclick="skladQtyClick(\'' + snE + '\',this)">' + qe + '</span><span class="sklad-unit">ks</span></span></td>'
+          + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qv < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(kv) + '" onclick="skladQtyClick(\'' + snV + '\',this)">' + qv + '</span><span class="sklad-unit">ks</span></span></td>'
+          + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qe < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(ke) + '" onclick="skladQtyClick(\'' + snE + '\',this)">' + qe + '</span><span class="sklad-unit">ks</span></span></td>'
           + '</tr>';
       });
       html += '</tbody></table>';
