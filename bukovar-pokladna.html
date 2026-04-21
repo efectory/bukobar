@@ -955,8 +955,8 @@ const MENU = [
   {n:"Cuba libre",c:"Míchané nápoje",p:109,u:"0,3l"},
   {n:"Aperol Spritz",c:"Míchané nápoje",p:159,u:"0,3l"},
   {n:"Mojito",c:"Míchané nápoje",p:159,u:"0,3l"},
-  {n:"Mimosa",c:"Míchané nápoje",p:59,u:"0,2dcl"},
-  {n:"Mimosa",c:"Míchané nápoje",p:109,u:"0,5l"},
+  {n:"Mimosa malá",c:"Míchané nápoje",p:59,u:"0,2l"},
+  {n:"Mimosa velká",c:"Míchané nápoje",p:109,u:"0,5l"},
   {n:"Utopenec",c:"Občerstvení",p:85},
   {n:"Pizza Della Casa",c:"Občerstvení",p:155},
   {n:"Nakládaný hermelín",c:"Občerstvení",p:85},
@@ -2096,7 +2096,7 @@ const SKLAD_GROUPS = [
     { n: 'Nakládaný hermelín', unit: 'ks' }, { n: 'Chipsy', unit: 'ks' },
     { n: 'Slané tyčinky', unit: 'ks' }, { n: 'Arašídy', unit: 'ks' },
     { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
-    { n: 'Škvarky v sádle Čongrády', unit: 'ks' },
+    { n: 'Škvarky v sádle Čongrády', unit: 'ks' }, { n: 'Zákusek', unit: 'ks' },
   ]},
   { col: 1, label: 'Víčka & Etikety', type: 'vicka', beers: [
     { n: 'Hraďák 10°',      color: 'zelená',   colorClass: 'zelena' },
@@ -2157,9 +2157,15 @@ const SKLAD_MAP = {
   'Prosecco Mionetto': { key: 'Prosecco Mionetto', inc: 1 },
   'Prosecco Treviso': { key: 'Prosecco Treviso', inc: 1 },
   'Prosecco rozlévané': { key: 'Prosecco rozlévané', inc: 0.15 },
+  'Vinný střik': { key: 'Rozlévané víno', inc: 0.15 },
   'Gin s tonikem': { key: 'Beefeater Gin', inc: 0.04 },
+  'Hugo Spritz': { key: 'Prosecco rozlévané', inc: 0.2 },
   'Cuba libre': { key: 'Bacardi', inc: 0.04 },
   'Aperol Spritz': { key: 'Aperol', inc: 0.06 },
+  'Mojito': { key: 'Bacardi', inc: 0.05 },
+  'Mimosa malá': [{ key: 'Prosecco rozlévané', inc: 0.1 }, { key: 'Džus pomeranč', inc: 0.1 }],
+  'Mimosa velká': [{ key: 'Prosecco rozlévané', inc: 0.2 }, { key: 'Džus pomeranč', inc: 0.2 }],
+  'Zákusek': { key: 'Zákusek', inc: 1 },
   'Radler': { key: 'Radler', inc: 1 },
   'Birel nealko neochucený': { key: 'Birel neochucený', inc: 1 },
   'Birel nealko ochucený': { key: 'Birel ochucený', inc: 1 },
@@ -2189,6 +2195,7 @@ const SKLAD_MIN = {
   'Utopenec': 10, 'Pizza Della Casa': 50, 'Nakládaný hermelín': 10,
   'Chipsy': 10, 'Slané tyčinky': 10, 'Arašídy': 10,
   'Paštiky Čongrády': 10, 'Paštika ve skle Čongrády': 10, 'Škvarky v sádle Čongrády': 10,
+  'Zákusek': 5,
   'Radler': 20, 'Birel neochucený': 20, 'Birel ochucený': 20, "Maisel's Weisse": 20,
   'Hraďák 10° v PET': 10, 'Štamgast 11° v PET': 8, 'Šedá vlčice 11° v PET': 12, 'Kohoutí 12° v PET': 16,
   'Zlatka 11° v PET': 4, 'Mezulánka 11° v PET': 8, 'Nelson 12° v PET': 8, 'Dublin 13° v PET': 6,
@@ -2255,37 +2262,31 @@ function updateBeerStatus() {
   });
 }
 
+function applySkladRules(sklad, it, sign) {
+  if (it.skladKey) {
+    var k = it.skladKey, i = it.skladInc;
+    if (!sklad[k]) sklad[k] = { qty: 0, unit: skladGetUnit(k) };
+    sklad[k].qty = Math.round((sklad[k].qty + sign * i * it.pocet) * 1000) / 1000;
+    return;
+  }
+  var map = SKLAD_MAP[it.nazev];
+  if (!map) return;
+  var rules = Array.isArray(map) ? map : [map];
+  rules.forEach(function(r) {
+    if (!sklad[r.key]) sklad[r.key] = { qty: 0, unit: skladGetUnit(r.key) };
+    sklad[r.key].qty = Math.round((sklad[r.key].qty + sign * r.inc * it.pocet) * 1000) / 1000;
+  });
+}
+
 function skladDecrementFromReceipt(items) {
   var sklad = getSklad();
-  items.forEach(function(it) {
-    var key, inc;
-    if (it.skladKey) {
-      key = it.skladKey; inc = it.skladInc;
-    } else {
-      var map = SKLAD_MAP[it.nazev];
-      if (!map) return;
-      key = map.key; inc = map.inc;
-    }
-    if (!sklad[key]) sklad[key] = { qty: 0, unit: skladGetUnit(key) };
-    sklad[key].qty = Math.round((sklad[key].qty - inc * it.pocet) * 1000) / 1000;
-  });
+  items.forEach(function(it) { applySkladRules(sklad, it, -1); });
   saveSklad(sklad);
 }
 
 function skladRestoreFromReceipt(items) {
   var sklad = getSklad();
-  items.forEach(function(it) {
-    var key, inc;
-    if (it.skladKey) {
-      key = it.skladKey; inc = it.skladInc;
-    } else {
-      var map = SKLAD_MAP[it.nazev];
-      if (!map) return;
-      key = map.key; inc = map.inc;
-    }
-    if (!sklad[key]) sklad[key] = { qty: 0, unit: skladGetUnit(key) };
-    sklad[key].qty = Math.round((sklad[key].qty + inc * it.pocet) * 1000) / 1000;
-  });
+  items.forEach(function(it) { applySkladRules(sklad, it, +1); });
   saveSklad(sklad);
 }
 
@@ -2318,8 +2319,15 @@ function renderSkladNastaveni() {
     bycat[cat].forEach(function(item) {
       var rule = SKLAD_MAP[item.n];
       if (rule) {
-        var unit = skladGetUnit(rule.key);
-        html += '<tr><td>' + item.n + '</td><td>' + rule.key + '</td><td class="sn-inc">−' + fmtInc(rule.inc, unit) + '</td></tr>';
+        var rules = Array.isArray(rule) ? rule : [rule];
+        rules.forEach(function(r, ri) {
+          var unit = skladGetUnit(r.key);
+          if (ri === 0) {
+            html += '<tr><td rowspan="' + rules.length + '">' + item.n + '</td><td>' + r.key + '</td><td class="sn-inc">−' + fmtInc(r.inc, unit) + '</td></tr>';
+          } else {
+            html += '<tr><td>' + r.key + '</td><td class="sn-inc">−' + fmtInc(r.inc, unit) + '</td></tr>';
+          }
+        });
       } else {
         html += '<tr class="no-rule"><td>' + item.n + '</td><td colspan="2">— bez odečtu</td></tr>';
       }
