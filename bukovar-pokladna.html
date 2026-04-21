@@ -2078,7 +2078,7 @@ function saveClEdit(idx) {
 
 const SKLAD_GROUPS = [
   { col: 0, label: 'Nealkoholické', items: [
-    { n: 'Kofola', unit: 'ks' }, { n: 'Frizzante', unit: 'ks' },
+    { n: 'Kofola', unit: 'l' }, { n: 'Frizzante', unit: 'l' },
     { n: 'Royal Crown Cola', unit: 'ks' }, { n: 'ChitoTonic', unit: 'ks' },
     { n: 'Džus pomeranč', unit: 'l' },
     { n: 'Perlivá voda', unit: 'ks' },
@@ -2144,8 +2144,8 @@ const SKLAD_GROUPS = [
 ];
 
 const SKLAD_MAP = {
-  'Kofola 0,3l': { key: 'Kofola', inc: 1 }, 'Kofola 0,5l': { key: 'Kofola', inc: 1 },
-  'Frizzante 0,3l': { key: 'Frizzante', inc: 1 }, 'Frizzante 0,5l': { key: 'Frizzante', inc: 1 },
+  'Kofola 0,3l': { key: 'Kofola', inc: 0.3 }, 'Kofola 0,5l': { key: 'Kofola', inc: 0.5 },
+  'Frizzante 0,3l': { key: 'Frizzante', inc: 0.3 }, 'Frizzante 0,5l': { key: 'Frizzante', inc: 0.5 },
   'Royal crown cola': { key: 'Royal Crown Cola', inc: 1 },
   'ChitoTonic': { key: 'ChitoTonic', inc: 1 },
   'Džus pomeranč': { key: 'Džus pomeranč', inc: 1 },  // 1 l = celá lahev
