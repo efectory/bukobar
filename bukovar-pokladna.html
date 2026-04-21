@@ -2089,7 +2089,7 @@ const SKLAD_GROUPS = [
     { n: 'Prosecco rozlévané', unit: 'l' },
   ]},
   { col: 1, label: 'Alkohol', items: [
-    { n: 'Beefeater Gin', unit: 'ks' }, { n: 'Bacardi', unit: 'ks' }, { n: 'Aperol', unit: 'ks' },
+    { n: 'Beefeater Gin', unit: 'l' }, { n: 'Bacardi', unit: 'l' }, { n: 'Aperol', unit: 'l' },
   ]},
   { col: 1, label: 'Občerstvení', items: [
     { n: 'Utopenec', unit: 'ks' }, { n: 'Pizza Della Casa', unit: 'ks' },
@@ -2158,10 +2158,10 @@ const SKLAD_MAP = {
   'Prosecco Treviso': { key: 'Prosecco Treviso', inc: 1 },
   'Prosecco rozlévané': { key: 'Prosecco rozlévané', inc: 0.15 },
   'Vinný střik': { key: 'Rozlévané víno', inc: 0.15 },
-  'Gin s tonikem': { key: 'Beefeater Gin', inc: 0.04 },
+  'Gin s tonikem': [{ key: 'Beefeater Gin', inc: 0.05 }, { key: 'ChitoTonic', inc: 1 }],
   'Hugo Spritz': { key: 'Prosecco rozlévané', inc: 0.2 },
-  'Cuba libre': { key: 'Bacardi', inc: 0.04 },
-  'Aperol Spritz': { key: 'Aperol', inc: 0.06 },
+  'Cuba libre': [{ key: 'Bacardi', inc: 0.05 }, { key: 'Royal Crown Cola', inc: 1 }],
+  'Aperol Spritz': [{ key: 'Prosecco rozlévané', inc: 0.15 }, { key: 'Aperol', inc: 0.15 }],
   'Mojito': { key: 'Bacardi', inc: 0.05 },
   'Mimosa malá': [{ key: 'Prosecco rozlévané', inc: 0.1 }, { key: 'Džus pomeranč', inc: 0.1 }],
   'Mimosa velká': [{ key: 'Prosecco rozlévané', inc: 0.2 }, { key: 'Džus pomeranč', inc: 0.2 }],
