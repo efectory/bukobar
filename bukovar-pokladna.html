@@ -768,7 +768,8 @@
     <div class="subtab-bar">
       <button class="subtab-btn active" onclick="switchSubtab('admin','pet',this)">Petkovací plán</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','trzby',this);renderTrzby()">Tržby</button>
-      <button class="subtab-btn" onclick="switchSubtab('admin','sklad',this);renderSklad()">Sklad</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','skladhospoda',this);renderSkladHospoda()">Sklad — hospoda</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','skladpivovar',this);renderSkladPivovar()">Sklad — pivovar</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
     </div>
@@ -785,11 +786,20 @@
       </div>
     </div>
 
-    <div class="subtab-content" id="subtab-admin-sklad">
+    <div class="subtab-content" id="subtab-admin-skladhospoda">
       <main>
         <div class="card">
-          <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1rem;">Stav skladu</div>
-          <div class="sklad-cols" id="sklad-cols"></div>
+          <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1rem;">Sklad — hospoda</div>
+          <div class="sklad-cols" id="sklad-cols-hospoda"></div>
+        </div>
+      </main>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-skladpivovar">
+      <main>
+        <div class="card">
+          <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1rem;">Sklad — pivovar</div>
+          <div id="sklad-cols-pivovar"></div>
         </div>
       </main>
     </div>
@@ -2555,76 +2565,97 @@ function renderTrzby() {
     buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, monthNav);
 }
 
-function renderSklad() {
+function _renderSkladGroup(g, sklad) {
+  var html = '<div class="sklad-group' + (g.beerSection ? ' beer-section' : '') + '"><div class="sklad-group-title">' + g.label + '</div>';
+  if (g.type === 'vicka') {
+    html += '<table class="vicka-table">';
+    html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
+    g.beers.forEach(function(beer) {
+      var kv = 'Víčko ' + beer.n;
+      var ke = 'Etiketa ' + beer.n;
+      var qv = Math.round((sklad[kv] ? sklad[kv].qty : 0) * 1000) / 1000;
+      var qe = Math.round((sklad[ke] ? sklad[ke].qty : 0) * 1000) / 1000;
+      var minV = SKLAD_MIN[kv] || 0, minE = SKLAD_MIN[ke] || 0;
+      var warnV = minV > 0 && qv < minV, warnE = minE > 0 && qe < minE;
+      var rowClass = (warnV || warnE) ? ' class="warn"' : ((qv >= minV && qe >= minE) ? ' class="ok"' : '');
+      var snV = kv.replace(/'/g, "\\'"), snE = ke.replace(/'/g, "\\'");
+      var badge = beer.colorClass
+        ? '<span class="vicka-color-badge vip-btn ' + beer.colorClass + '">' + beer.color + '</span>'
+        : '<span class="vicka-color-badge" style="background:#f0f0f0;border-color:#ccc;color:#333;">' + beer.color + '</span>';
+      html += '<tr' + rowClass + '>'
+        + '<td>' + beer.n + '</td>'
+        + '<td>' + badge + '</td>'
+        + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qv < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(kv) + '" onclick="skladQtyClick(\'' + snV + '\',this)">' + qv + '</span><span class="sklad-unit">ks</span></span></td>'
+        + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qe < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(ke) + '" onclick="skladQtyClick(\'' + snE + '\',this)">' + qe + '</span><span class="sklad-unit">ks</span></span></td>'
+        + '</tr>';
+    });
+    html += '</tbody></table>';
+    var kp = 'PETky', qp = Math.round((sklad[kp] ? sklad[kp].qty : 0) * 1000) / 1000;
+    var minP = SKLAD_MIN[kp] || 0;
+    var stP = minP > 0 ? (qp < minP ? ' warn' : ' ok') : '';
+    html += '<div class="sklad-item' + stP + '" style="margin-top:3px;">'
+      + '<span class="sklad-item-name">PETky<span class="sklad-min"> (' + minP + ')</span></span>'
+      + '<span class="sklad-qty-wrap"><span class="sklad-qty' + (qp < 0 ? ' negative' : '') + '" id="sq-PETky" onclick="skladQtyClick(\'PETky\',this)">' + qp + '</span><span class="sklad-unit">ks</span></span>'
+      + '</div>';
+    html += '</div>';
+    return html;
+  }
+  g.items.forEach(function(item) {
+    var entry = sklad[item.n] || { qty: 0, unit: item.unit };
+    var safeName = item.n.replace(/'/g, "\\'");
+    if (g.bool) {
+      var yes = !!entry.qty;
+      var stateClass = yes ? ' ok' : ' warn';
+      html += '<div class="sklad-item' + stateClass + '">' +
+        '<span class="sklad-item-name">' + (item.d || item.n) + '</span>' +
+        '<span class="sklad-bool-btn' + (yes ? ' yes' : ' no') + '" onclick="skladBoolToggle(\'' + safeName + '\')">' + (yes ? '✓ Ano' : '✗ Ne') + '</span>' +
+        '</div>';
+    } else {
+      var qty = Math.round(entry.qty * 1000) / 1000;
+      var min = SKLAD_MIN[item.n] || 0;
+      var neg = qty < 0 ? ' negative' : '';
+      var stateClass = min > 0 ? (qty < min ? ' warn' : ' ok') : '';
+      var id = 'sq-' + encodeURIComponent(item.n);
+      html += '<div class="sklad-item' + stateClass + '">' +
+        '<span class="sklad-item-name">' + (item.d || item.n) + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
+        '<span class="sklad-qty-wrap">' +
+          '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
+          '<span class="sklad-unit">' + item.unit + '</span>' +
+        '</span>' +
+        '</div>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderSkladHospoda() {
+  var el = document.getElementById('sklad-cols-hospoda');
+  if (!el) return;
   var sklad = getSklad();
   var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
-    var html = '<div class="sklad-group' + (g.beerSection ? ' beer-section' : '') + '"><div class="sklad-group-title">' + g.label + '</div>';
-    if (g.type === 'vicka') {
-      html += '<table class="vicka-table">';
-      html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
-      g.beers.forEach(function(beer) {
-        var kv = 'Víčko ' + beer.n;
-        var ke = 'Etiketa ' + beer.n;
-        var qv = Math.round((sklad[kv] ? sklad[kv].qty : 0) * 1000) / 1000;
-        var qe = Math.round((sklad[ke] ? sklad[ke].qty : 0) * 1000) / 1000;
-        var minV = SKLAD_MIN[kv] || 0, minE = SKLAD_MIN[ke] || 0;
-        var warnV = minV > 0 && qv < minV, warnE = minE > 0 && qe < minE;
-        var rowClass = (warnV || warnE) ? ' class="warn"' : ((qv >= minV && qe >= minE) ? ' class="ok"' : '');
-        var snV = kv.replace(/'/g, "\\'"), snE = ke.replace(/'/g, "\\'");
-        var badge = beer.colorClass
-          ? '<span class="vicka-color-badge vip-btn ' + beer.colorClass + '">' + beer.color + '</span>'
-          : '<span class="vicka-color-badge" style="background:#f0f0f0;border-color:#ccc;color:#333;">' + beer.color + '</span>';
-        html += '<tr' + rowClass + '>'
-          + '<td>' + beer.n + '</td>'
-          + '<td>' + badge + '</td>'
-          + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qv < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(kv) + '" onclick="skladQtyClick(\'' + snV + '\',this)">' + qv + '</span><span class="sklad-unit">ks</span></span></td>'
-          + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qe < 0 ? ' negative' : '') + '" id="sq-' + encodeURIComponent(ke) + '" onclick="skladQtyClick(\'' + snE + '\',this)">' + qe + '</span><span class="sklad-unit">ks</span></span></td>'
-          + '</tr>';
-      });
-      html += '</tbody></table>';
-      var kp = 'PETky', qp = Math.round((sklad[kp] ? sklad[kp].qty : 0) * 1000) / 1000;
-      var minP = SKLAD_MIN[kp] || 0;
-      var stP = minP > 0 ? (qp < minP ? ' warn' : ' ok') : '';
-      html += '<div class="sklad-item' + stP + '" style="margin-top:3px;">'
-        + '<span class="sklad-item-name">PETky<span class="sklad-min"> (' + minP + ')</span></span>'
-        + '<span class="sklad-qty-wrap"><span class="sklad-qty' + (qp < 0 ? ' negative' : '') + '" id="sq-PETky" onclick="skladQtyClick(\'PETky\',this)">' + qp + '</span><span class="sklad-unit">ks</span></span>'
-        + '</div>';
-      html += '</div>';
-      cols[g.col].push(html);
-      return;
-    }
-    g.items.forEach(function(item) {
-      var entry = sklad[item.n] || { qty: 0, unit: item.unit };
-      var safeName = item.n.replace(/'/g, "\\'");
-      if (g.bool) {
-        var yes = !!entry.qty;
-        var stateClass = yes ? ' ok' : ' warn';
-        html += '<div class="sklad-item' + stateClass + '">' +
-          '<span class="sklad-item-name">' + (item.d || item.n) + '</span>' +
-          '<span class="sklad-bool-btn' + (yes ? ' yes' : ' no') + '" onclick="skladBoolToggle(\'' + safeName + '\')">' + (yes ? '✓ Ano' : '✗ Ne') + '</span>' +
-          '</div>';
-      } else {
-        var qty = Math.round(entry.qty * 1000) / 1000;
-        var min = SKLAD_MIN[item.n] || 0;
-        var neg = qty < 0 ? ' negative' : '';
-        var stateClass = min > 0 ? (qty < min ? ' warn' : ' ok') : '';
-        var id = 'sq-' + encodeURIComponent(item.n);
-        html += '<div class="sklad-item' + stateClass + '">' +
-          '<span class="sklad-item-name">' + (item.d || item.n) + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</span>' +
-          '<span class="sklad-qty-wrap">' +
-            '<span class="sklad-qty' + neg + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span>' +
-            '<span class="sklad-unit">' + item.unit + '</span>' +
-          '</span>' +
-          '</div>';
-      }
-    });
-    html += '</div>';
-    cols[g.col].push(html);
+    if (g.beerSection) return;
+    cols[g.col].push(_renderSkladGroup(g, sklad));
   });
-
-  var el = document.getElementById('sklad-cols');
   el.innerHTML = '<div>' + cols[0].join('') + '</div><div>' + cols[1].join('') + '</div><div>' + cols[2].join('') + '</div>';
+}
+
+function renderSkladPivovar() {
+  var el = document.getElementById('sklad-cols-pivovar');
+  if (!el) return;
+  var sklad = getSklad();
+  var html = '';
+  SKLAD_GROUPS.forEach(function(g) {
+    if (!g.beerSection) return;
+    html += _renderSkladGroup(g, sklad);
+  });
+  el.innerHTML = html;
+}
+
+function renderSklad() {
+  renderSkladHospoda();
+  renderSkladPivovar();
 }
 
 function skladBoolToggle(name) {
