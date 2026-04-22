@@ -2635,7 +2635,7 @@ function renderSkladHospoda() {
   var sklad = getSklad();
   var cols = [[], [], []];
   SKLAD_GROUPS.forEach(function(g) {
-    if (g.beerSection) return;
+    if (g.beerSection || g.type === 'vicka') return;
     cols[g.col].push(_renderSkladGroup(g, sklad));
   });
   el.innerHTML = '<div>' + cols[0].join('') + '</div><div>' + cols[1].join('') + '</div><div>' + cols[2].join('') + '</div>';
@@ -2647,7 +2647,7 @@ function renderSkladPivovar() {
   var sklad = getSklad();
   var html = '';
   SKLAD_GROUPS.forEach(function(g) {
-    if (!g.beerSection) return;
+    if (!g.beerSection && g.type !== 'vicka') return;
     html += _renderSkladGroup(g, sklad);
   });
   el.innerHTML = html;
