@@ -858,6 +858,26 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="radler-modal">
+  <div class="modal">
+    <h3>Radler — z jakého piva?</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;" id="radler-beer-grid">
+      <button class="vip-btn zelena"       id="radler-btn-hradak"   onclick="selectRadlerPivo('Hraďák 10°')">Hraďák 10°</button>
+      <button class="vip-btn hneda"        id="radler-btn-stamgast" onclick="selectRadlerPivo('Štamgast 11°')">Štamgast 11°</button>
+      <button class="vip-btn seda"         id="radler-btn-seda"     onclick="selectRadlerPivo('Šedá vlčice 11°')">Šedá vlčice 11°</button>
+      <button class="vip-btn zlata"        id="radler-btn-kohouti"  onclick="selectRadlerPivo('Kohoutí 12°')">Kohoutí 12°</button>
+      <button class="vip-btn zluta"        id="radler-btn-zlatka"   onclick="selectRadlerPivo('Zlatka 11°')">Zlatka 11°</button>
+      <button class="vip-btn oranzova"     id="radler-btn-mezul"    onclick="selectRadlerPivo('Mezulánka 11°')">Mezulánka 11°</button>
+      <button class="vip-btn modra"        id="radler-btn-nelson"   onclick="selectRadlerPivo('Nelson 12°')">Nelson 12°</button>
+      <button class="vip-btn tmave-zelena" id="radler-btn-dublin"   onclick="selectRadlerPivo('Dublin 13°')">Dublin 13°</button>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeRadlerModal()">Zrušit</button>
+      <button class="primary" onclick="confirmRadlerPivo()">Potvrdit</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="stamgast-modal">
   <div class="modal">
     <h3>Štamgast?</h3>
@@ -1131,12 +1151,21 @@ function addCustomItem() {
 }
 
 var pendingDzbanekItem = null;
+var pendingRadlerItem = null;
+var selectedRadlerBeer = 'Kohoutí 12°';
 
 function quickAdd(item) {
   if (item.n === 'Pivo s sebou do džbánku 2l' || item.n === 'Pivo s sebou do džbánku 5l') {
     pendingDzbanekItem = item;
     document.getElementById('dzbanek-modal-title').textContent = 'Jaké pivo do džbánku ' + (item.u || '') + '?';
     document.getElementById('dzbanek-modal').classList.remove('hidden');
+    return;
+  }
+  if (item.n === 'Radler') {
+    pendingRadlerItem = item;
+    selectedRadlerBeer = 'Kohoutí 12°';
+    updateRadlerBeerHighlight();
+    document.getElementById('radler-modal').classList.remove('hidden');
     return;
   }
   quickAddDirect(item, null, null);
@@ -1166,6 +1195,56 @@ function vyberDzbanekPivo(beer) {
 function closeDzbanekModal() {
   document.getElementById('dzbanek-modal').classList.add('hidden');
   pendingDzbanekItem = null;
+}
+
+var RADLER_BEER_BUTTONS = {
+  'Hraďák 10°':      'radler-btn-hradak',
+  'Štamgast 11°':    'radler-btn-stamgast',
+  'Šedá vlčice 11°': 'radler-btn-seda',
+  'Kohoutí 12°':     'radler-btn-kohouti',
+  'Zlatka 11°':      'radler-btn-zlatka',
+  'Mezulánka 11°':   'radler-btn-mezul',
+  'Nelson 12°':      'radler-btn-nelson',
+  'Dublin 13°':      'radler-btn-dublin',
+};
+
+function updateRadlerBeerHighlight() {
+  Object.keys(RADLER_BEER_BUTTONS).forEach(function(beer) {
+    var btn = document.getElementById(RADLER_BEER_BUTTONS[beer]);
+    if (!btn) return;
+    btn.style.outline = beer === selectedRadlerBeer ? '3px solid #1e3a8a' : '';
+    btn.style.outlineOffset = beer === selectedRadlerBeer ? '2px' : '';
+  });
+}
+
+function selectRadlerPivo(beer) {
+  selectedRadlerBeer = beer;
+  updateRadlerBeerHighlight();
+}
+
+function confirmRadlerPivo() {
+  document.getElementById('radler-modal').classList.add('hidden');
+  if (!pendingRadlerItem) return;
+  var item = pendingRadlerItem;
+  var beer = selectedRadlerBeer;
+  pendingRadlerItem = null;
+  var existing = receiptItems.find(function(r) {
+    return r.nazev === item.n && r.popisek === beer;
+  });
+  if (existing) { existing.pocet++; }
+  else {
+    receiptItems.unshift({
+      nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false,
+      popisek: beer,
+      skladRules: [{ key: beer, inc: 0.2 }, { key: 'Frizzante', inc: 0.2 }]
+    });
+  }
+  renderItems();
+}
+
+function closeRadlerModal() {
+  document.getElementById('radler-modal').classList.add('hidden');
+  pendingRadlerItem = null;
 }
 
 // --- Status ---
@@ -2126,7 +2205,7 @@ const SKLAD_GROUPS = [
     { n: 'Nelson 12°', unit: 'l' }, { n: 'Dublin 13°', unit: 'l' },
   ]},
   { col: 2, label: 'Lahvová piva', items: [
-    { n: 'Radler', unit: 'ks' }, { n: 'Birel neochucený', unit: 'ks' },
+    { n: 'Birel neochucený', unit: 'ks' },
     { n: 'Birel ochucený', unit: 'ks' }, { n: "Maisel's Weisse", unit: 'ks' },
   ]},
   { col: 2, label: 'Piva v PET', items: [
@@ -2166,7 +2245,6 @@ const SKLAD_MAP = {
   'Mimosa malá': [{ key: 'Prosecco rozlévané', inc: 0.1 }, { key: 'Džus pomeranč', inc: 0.1 }],
   'Mimosa velká': [{ key: 'Prosecco rozlévané', inc: 0.2 }, { key: 'Džus pomeranč', inc: 0.2 }],
   'Zákusek': { key: 'Zákusek', inc: 1 },
-  'Radler': { key: 'Radler', inc: 1 },
   'Birel nealko neochucený': { key: 'Birel neochucený', inc: 1 },
   'Birel nealko ochucený': { key: 'Birel ochucený', inc: 1 },
   "Maisel's Weisse Alkoholfrei": { key: "Maisel's Weisse", inc: 1 },
@@ -2196,7 +2274,7 @@ const SKLAD_MIN = {
   'Chipsy': 10, 'Slané tyčinky': 10, 'Arašídy': 10,
   'Paštiky Čongrády': 10, 'Paštika ve skle Čongrády': 10, 'Škvarky v sádle Čongrády': 10,
   'Zákusek': 5,
-  'Radler': 20, 'Birel neochucený': 20, 'Birel ochucený': 20, "Maisel's Weisse": 20,
+  'Birel neochucený': 20, 'Birel ochucený': 20, "Maisel's Weisse": 20,
   'Hraďák 10° v PET': 10, 'Štamgast 11° v PET': 8, 'Šedá vlčice 11° v PET': 12, 'Kohoutí 12° v PET': 16,
   'Zlatka 11° v PET': 4, 'Mezulánka 11° v PET': 8, 'Nelson 12° v PET': 8, 'Dublin 13° v PET': 6,
   'Cukr': 2, 'Mléko': 5, 'Sůl': 2, 'Olej': 2, 'Sirup bezový': 2,
@@ -2263,6 +2341,13 @@ function updateBeerStatus() {
 }
 
 function applySkladRules(sklad, it, sign) {
+  if (it.skladRules) {
+    it.skladRules.forEach(function(r) {
+      if (!sklad[r.key]) sklad[r.key] = { qty: 0, unit: skladGetUnit(r.key) };
+      sklad[r.key].qty = Math.round((sklad[r.key].qty + sign * r.inc * it.pocet) * 1000) / 1000;
+    });
+    return;
+  }
   if (it.skladKey) {
     var k = it.skladKey, i = it.skladInc;
     if (!sklad[k]) sklad[k] = { qty: 0, unit: skladGetUnit(k) };
