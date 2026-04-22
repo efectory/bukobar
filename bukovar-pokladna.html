@@ -1183,7 +1183,7 @@ function quickAdd(item) {
 
 function quickAddDirect(item, skladKey, skladInc) {
   var existing = receiptItems.find(function(r) {
-    return r.nazev === item.n && r.skladKey === skladKey;
+    return r.nazev === item.n && r.skladKey == skladKey;
   });
   if (existing) { existing.pocet++; }
   else {
