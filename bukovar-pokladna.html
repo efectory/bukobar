@@ -212,6 +212,16 @@
   .sklad-qty.negative { color: var(--accent); }
   .sklad-unit { font-size: 10px; color: var(--muted); }
   .sklad-inline-input { width: 55px; padding: 1px 4px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500; border: 1px solid var(--accent); border-radius: 3px; background: var(--surface); color: var(--text); outline: none; text-align: right; }
+  .impl-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .impl-item:last-child { border-bottom:none; }
+  .impl-item.done .impl-text { text-decoration:line-through; color:var(--muted); }
+  .impl-check { width:20px; height:20px; flex-shrink:0; margin-top:2px; accent-color:var(--accent); cursor:pointer; }
+  .impl-text { flex:1; font-size:14px; line-height:1.5; word-break:break-word; }
+  .impl-text[contenteditable="true"] { outline:1px solid var(--accent); border-radius:3px; padding:0 3px; }
+  .impl-del { font-size:16px; color:var(--muted); background:none; border:none; cursor:pointer; padding:0 4px; flex-shrink:0; line-height:1; }
+  .impl-del:hover { color:var(--accent); }
+  .impl-empty { font-size:13px; color:var(--muted); text-align:center; padding:2rem 0; }
+
   .sklad-bool-btn { font-size: 11px; font-weight: 500; padding: 0 5px; border-radius: 3px; cursor: pointer; border: 1px solid; white-space: nowrap; display: inline; }
   .sklad-bool-btn.yes { background: var(--success-bg); color: var(--success-text); border-color: rgba(26,107,58,.3); }
   .sklad-bool-btn.no  { background: var(--accent-light); color: var(--accent); border-color: rgba(181,56,26,.3); }
@@ -771,6 +781,7 @@
       <button class="subtab-btn" onclick="switchSubtab('admin','skladpivovar',this);renderSkladPivovar()">Sklad — pivovar</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','impl',this);renderImpl()">Implementace</button>
     </div>
 
     <div class="subtab-content active" id="subtab-admin-pet">
@@ -821,6 +832,17 @@
           </label>
         </div>
         <div id="zaloha-msg" style="margin-top:1rem;font-size:13px;"></div>
+      </div>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-impl">
+      <div class="card" style="max-width:700px;">
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:1.2rem;">Implementace & úkoly</div>
+        <div style="display:flex;gap:8px;margin-bottom:1.2rem;">
+          <input type="text" id="impl-input" placeholder="Nový úkol…" style="flex:1;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;" onkeydown="if(event.key==='Enter')implAdd()" />
+          <button class="primary" onclick="implAdd()" style="padding:9px 18px;font-size:14px;">+ Přidat</button>
+        </div>
+        <div id="impl-list"></div>
       </div>
     </div>
   </main>
@@ -3068,6 +3090,87 @@ function zalohaImport(event) {
   };
   reader.readAsText(file);
   event.target.value = '';
+}
+
+// --- Implementace & úkoly ---
+
+function implGet() {
+  return JSON.parse(localStorage.getItem('bukovar_impl') || '[]');
+}
+function implSave(items) {
+  localStorage.setItem('bukovar_impl', JSON.stringify(items));
+}
+
+function implAdd() {
+  var input = document.getElementById('impl-input');
+  var text = input.value.trim();
+  if (!text) return;
+  var items = implGet();
+  items.unshift({ id: Date.now(), text: text, done: false });
+  implSave(items);
+  input.value = '';
+  renderImpl();
+  input.focus();
+}
+
+function implToggle(id) {
+  var items = implGet();
+  var item = items.find(function(i) { return i.id === id; });
+  if (item) item.done = !item.done;
+  implSave(items);
+  renderImpl();
+}
+
+function implDelete(id) {
+  var items = implGet().filter(function(i) { return i.id !== id; });
+  implSave(items);
+  renderImpl();
+}
+
+function implEditStart(id, el) {
+  el.contentEditable = 'true';
+  el.focus();
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+}
+
+function implEditSave(id, el) {
+  el.contentEditable = 'false';
+  var text = el.textContent.trim();
+  if (!text) { renderImpl(); return; }
+  var items = implGet();
+  var item = items.find(function(i) { return i.id === id; });
+  if (item) item.text = text;
+  implSave(items);
+}
+
+function renderImpl() {
+  var el = document.getElementById('impl-list');
+  if (!el) return;
+  var items = implGet();
+  if (!items.length) {
+    el.innerHTML = '<div class="impl-empty">Žádné úkoly. Přidej první!</div>';
+    return;
+  }
+  var todo = items.filter(function(i) { return !i.done; });
+  var done = items.filter(function(i) { return i.done; });
+  var html = '';
+  function renderItem(item) {
+    return '<div class="impl-item' + (item.done ? ' done' : '') + '" id="impl-row-' + item.id + '">'
+      + '<input type="checkbox" class="impl-check"' + (item.done ? ' checked' : '') + ' onchange="implToggle(' + item.id + ')" />'
+      + '<span class="impl-text" ondblclick="implEditStart(' + item.id + ',this)" onblur="implEditSave(' + item.id + ',this)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' + item.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>'
+      + '<button class="impl-del" onclick="implDelete(' + item.id + ')" title="Smazat">×</button>'
+      + '</div>';
+  }
+  todo.forEach(function(i) { html += renderItem(i); });
+  if (done.length) {
+    html += '<div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:1rem 0 .5rem;">Hotovo (' + done.length + ')</div>';
+    done.forEach(function(i) { html += renderItem(i); });
+  }
+  el.innerHTML = html;
 }
 
 function adminPetExport() {
