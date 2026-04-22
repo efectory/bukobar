@@ -3162,7 +3162,7 @@ function renderImpl() {
     return '<div class="impl-item' + (item.done ? ' done' : '') + '" id="impl-row-' + item.id + '">'
       + '<input type="checkbox" class="impl-check"' + (item.done ? ' checked' : '') + ' onchange="implToggle(' + item.id + ')" />'
       + '<span class="impl-text" ondblclick="implEditStart(' + item.id + ',this)" onblur="implEditSave(' + item.id + ',this)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' + item.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>'
-      + '<button class="impl-del" onclick="implDelete(' + item.id + ')" title="Smazat">×</button>'
+      + ''
       + '</div>';
   }
   todo.forEach(function(i) { html += renderItem(i); });
