@@ -2285,6 +2285,8 @@ const SKLAD_MIN = {
   'Paštiky Čongrády': 10, 'Paštika ve skle Čongrády': 10, 'Škvarky v sádle Čongrády': 10,
   'Zákusek': 5,
   'Birel neochucený': 20, 'Birel ochucený': 20, "Maisel's Weisse": 20,
+  'Hraďák 10°': 30, 'Štamgast 11°': 30, 'Šedá vlčice 11°': 30, 'Kohoutí 12°': 30,
+  'Zlatka 11°': 30, 'Mezulánka 11°': 30, 'Nelson 12°': 30, 'Dublin 13°': 30,
   'Hraďák 10° v PET': 10, 'Štamgast 11° v PET': 8, 'Šedá vlčice 11° v PET': 12, 'Kohoutí 12° v PET': 16,
   'Zlatka 11° v PET': 4, 'Mezulánka 11° v PET': 8, 'Nelson 12° v PET': 8, 'Dublin 13° v PET': 6,
   'Cukr': 2, 'Mléko': 5, 'Sůl': 2, 'Olej': 2, 'Sirup bezový': 2,
@@ -2565,11 +2567,67 @@ function renderTrzby() {
     buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, monthNav);
 }
 
-function _renderSkladGroup(g, sklad) {
-  var html = '<div class="sklad-group' + (g.beerSection ? ' beer-section' : '') + '"><div class="sklad-group-title">' + g.label + '</div>';
+function getCepovanaStats() {
+  var CEP_BEERS = ['Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°','Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'];
+  var uctenky = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
+  var now = new Date();
+  var todayBiz = getBusinessDate(now.getTime());
+  var todayTime = todayBiz.getTime();
+  var dow = todayBiz.getDay();
+  var weekStart = new Date(todayBiz);
+  weekStart.setDate(todayBiz.getDate() + (dow === 0 ? -6 : 1 - dow));
+  var weekStartTime = weekStart.getTime();
+  var stats = {};
+  CEP_BEERS.forEach(function(b) { stats[b] = { dnes: 0, tyden: 0, mesic: 0, rok: 0 }; });
+  uctenky.forEach(function(u) {
+    if (u.storno) return;
+    var biz = getBusinessDate(u.id);
+    var bt = biz.getTime();
+    var isToday = bt === todayTime;
+    var isWeek  = bt >= weekStartTime && bt <= todayTime;
+    var isMonth = biz.getMonth() === todayBiz.getMonth() && biz.getFullYear() === todayBiz.getFullYear();
+    var isYear  = biz.getFullYear() === todayBiz.getFullYear();
+    u.polozky.forEach(function(it) {
+      if (!stats[it.nazev]) return;
+      var l = Math.round(0.4 * it.pocet * 10) / 10;
+      if (isToday) stats[it.nazev].dnes  = Math.round((stats[it.nazev].dnes  + l) * 10) / 10;
+      if (isWeek)  stats[it.nazev].tyden = Math.round((stats[it.nazev].tyden + l) * 10) / 10;
+      if (isMonth) stats[it.nazev].mesic = Math.round((stats[it.nazev].mesic + l) * 10) / 10;
+      if (isYear)  stats[it.nazev].rok   = Math.round((stats[it.nazev].rok   + l) * 10) / 10;
+    });
+  });
+  return stats;
+}
+
+function _renderSkladGroup(g, sklad, noStyle) {
+  var html = '<div class="sklad-group' + (g.beerSection && !noStyle ? ' beer-section' : '') + '"><div class="sklad-group-title">' + g.label + '</div>';
+  if (g.beerSection) {
+    var stats = getCepovanaStats();
+    html += '<table class="vicka-table">';
+    html += '<thead><tr><th>Pivo</th><th class="center">Zásoba</th><th class="center">Dnes</th><th class="center">Týden</th><th class="center">Měsíc</th><th class="center">Rok</th></tr></thead><tbody>';
+    g.items.forEach(function(item) {
+      var entry = sklad[item.n] || { qty: 0, unit: 'l' };
+      var qty = Math.round(entry.qty * 10) / 10;
+      var min = SKLAD_MIN[item.n] || 0;
+      var stateClass = min > 0 ? (qty < min ? ' class="warn"' : ' class="ok"') : '';
+      var safeName = item.n.replace(/'/g, "\\'");
+      var id = 'sq-' + encodeURIComponent(item.n);
+      var s = stats[item.n] || { dnes: 0, tyden: 0, mesic: 0, rok: 0 };
+      html += '<tr' + stateClass + '>'
+        + '<td>' + item.n + (min > 0 ? '<span class="sklad-min"> (' + min + ')</span>' : '') + '</td>'
+        + '<td class="center"><span class="sklad-qty-wrap" style="justify-content:center;"><span class="sklad-qty' + (qty < 0 ? ' negative' : '') + '" id="' + id + '" onclick="skladQtyClick(\'' + safeName + '\',this)">' + qty + '</span><span class="sklad-unit">l</span></span></td>'
+        + '<td class="center" style="color:var(--muted);font-size:13px;">' + s.dnes + ' l</td>'
+        + '<td class="center" style="color:var(--muted);font-size:13px;">' + s.tyden + ' l</td>'
+        + '<td class="center" style="color:var(--muted);font-size:13px;">' + s.mesic + ' l</td>'
+        + '<td class="center" style="color:var(--muted);font-size:13px;">' + s.rok + ' l</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table></div>';
+    return html;
+  }
   if (g.type === 'vicka') {
     html += '<table class="vicka-table">';
-    html += '<thead><tr><th>Pivo</th><th>Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
+    html += '<thead><tr><th>Pivo</th><th style="width:75px;">Barva víčka</th><th class="center">Víčka</th><th class="center">Etikety</th></tr></thead><tbody>';
     g.beers.forEach(function(beer) {
       var kv = 'Víčko ' + beer.n;
       var ke = 'Etiketa ' + beer.n;
@@ -2648,7 +2706,7 @@ function renderSkladPivovar() {
   var html = '';
   SKLAD_GROUPS.forEach(function(g) {
     if (!g.beerSection && g.type !== 'vicka') return;
-    html += _renderSkladGroup(g, sklad);
+    html += _renderSkladGroup(g, sklad, true);
   });
   el.innerHTML = html;
 }
