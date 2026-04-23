@@ -397,6 +397,26 @@
   .pet-input-row input { flex: 1; min-width: 0; padding: 4px 5px; font-size: 13px; font-family: 'DM Sans',sans-serif; border: 1px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; text-align: center; }
   .pet-input-row .btn-ok { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; min-height: unset; }
   .pet-input-row .btn-zr { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 4px 6px; border-radius: 4px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); cursor: pointer; min-height: unset; }
+  /* Nákres skládání petek do lednice */
+  .fridge-diagram { border: 2px solid var(--border-strong); border-radius: 8px; padding: 12px; margin-bottom: 1.2rem; background: var(--surface); }
+  .fridge-title { font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 10px; color: var(--text); text-transform: uppercase; letter-spacing: .05em; }
+  .fridge-shelf { border: 1px solid var(--border-strong); border-radius: 6px; margin-bottom: 6px; background: var(--bg); padding: 8px; }
+  .fridge-shelf:last-child { margin-bottom: 0; }
+  .fridge-shelf-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .fridge-rows { display: flex; flex-direction: column; gap: 3px; }
+  .fridge-row { display: flex; gap: 3px; }
+  .fridge-bottle { flex: 1; height: 22px; border: 1px solid; border-radius: 3px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; line-height: 1; }
+  .fridge-bottle.zelena       { background:#dcfce7; border-color:#16a34a; color:#15803d; }
+  .fridge-bottle.hneda        { background:#f5e6d3; border-color:#92400e; color:#78350f; }
+  .fridge-bottle.bila         { background:#f8fafc; border-color:#94a3b8; color:#334155; }
+  .fridge-bottle.zlata        { background:#fef9c3; border-color:#b45309; color:#92400e; }
+  .fridge-bottle.zluta        { background:#fefce8; border-color:#ca8a04; color:#713f12; }
+  .fridge-bottle.oranzova     { background:#fff7ed; border-color:#ea580c; color:#c2410c; }
+  .fridge-bottle.tmave-zelena { background:#f0fdf4; border-color:#166534; color:#14532d; }
+  .fridge-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); align-items: center; }
+  .fridge-legend-item { display: flex; align-items: center; gap: 6px; }
+  .fridge-legend-swatch { width: 16px; height: 16px; border: 1px solid; border-radius: 3px; display: inline-block; }
+  .fridge-legend-total { margin-left: auto; font-weight: 700; color: var(--text); }
   .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
   .admin-pet-grid { display: flex; flex-direction: column; gap: 4px; }
   .admin-pet-row { display: grid; grid-template-columns: 110px repeat(8, 1fr); gap: 4px; align-items: center; }
@@ -3210,6 +3230,61 @@ function adminPetExport() {
 
 var PET_COLORS = ['zelena','hneda','seda','zlata','zluta','oranzova','modra','tmave-zelena'];
 
+function renderFridgeDiagram() {
+  function row(label, colorClass, count) {
+    var cells = '';
+    for (var i = 0; i < count; i++) {
+      cells += '<div class="fridge-bottle ' + colorClass + '">' + label + '</div>';
+    }
+    return '<div class="fridge-row">' + cells + '</div>';
+  }
+  function shelfHtml(patroLabel, totalKs, rows) {
+    var html = '<div class="fridge-shelf"><div class="fridge-shelf-label">' + patroLabel + ' — ' + totalKs + ' ks</div><div class="fridge-rows">';
+    rows.forEach(function(r) {
+      for (var i = 0; i < r.count; i++) html += row(r.label, r.color, r.cols);
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  var html = '<div class="fridge-diagram">';
+  html += '<div class="fridge-title">Jak skládat petky do lednice</div>';
+  html += shelfHtml('1. patro (nahoře)', 18, [
+    { label: 'K12', color: 'zlata', count: 6, cols: 3 }
+  ]);
+  html += shelfHtml('2. patro', 24, [
+    { label: 'V',  color: 'bila',  count: 4, cols: 4 },
+    { label: 'Š',  color: 'hneda', count: 2, cols: 4 }
+  ]);
+  html += shelfHtml('3. patro', 24, [
+    { label: 'H',  color: 'zelena',       count: 4, cols: 4 },
+    { label: 'D',  color: 'tmave-zelena', count: 2, cols: 4 }
+  ]);
+  html += shelfHtml('4. patro (dole)', 24, [
+    { label: 'Z',  color: 'zluta',    count: 2, cols: 4 },
+    { label: 'M',  color: 'oranzova', count: 4, cols: 4 }
+  ]);
+
+  var legend = [
+    { n: 'K12 — Kohoutí 12°',     c: 'zlata',        q: 18 },
+    { n: 'V — Šedá vlčice 11°',   c: 'bila',         q: 16 },
+    { n: 'Š — Štamgast 11°',      c: 'hneda',        q: 8 },
+    { n: 'H — Hraďák 10°',        c: 'zelena',       q: 16 },
+    { n: 'D — Dublin 13°',        c: 'tmave-zelena', q: 8 },
+    { n: 'Z — Zlatka 11°',        c: 'zluta',        q: 8 },
+    { n: 'M — Mezulánka 11°',     c: 'oranzova',     q: 16 }
+  ];
+  html += '<div class="fridge-legend">';
+  legend.forEach(function(l) {
+    html += '<div class="fridge-legend-item"><span class="fridge-legend-swatch ' + l.c + '" style="background:' + ({zlata:'#fef9c3',bila:'#f8fafc',hneda:'#f5e6d3',zelena:'#dcfce7','tmave-zelena':'#f0fdf4',zluta:'#fefce8',oranzova:'#fff7ed'})[l.c] + ';border-color:' + ({zlata:'#b45309',bila:'#94a3b8',hneda:'#92400e',zelena:'#16a34a','tmave-zelena':'#166534',zluta:'#ca8a04',oranzova:'#ea580c'})[l.c] + ';"></span>' + l.n + ' — ' + l.q + ' ks</div>';
+  });
+  html += '<div class="fridge-legend-total">Celkem: 90 ks</div>';
+  html += '</div>';
+
+  html += '</div>';
+  return html;
+}
+
 function renderPetPlan() {
   var el = document.getElementById('pet-plan-content');
   if (!el) return;
@@ -3230,7 +3305,8 @@ function renderPetPlan() {
     return { beer: beer, current: current, needs: needs, priority: priority, toBottle: toBottle, col: PET_COLORS[i] };
   });
 
-  var html = '<div class="pet-plan-grid">';
+  var html = renderFridgeDiagram();
+  html += '<div class="pet-plan-grid">';
 
   // Řádek 0 — hlavičky piv
   html += '<div class="pet-plan-row"><div class="pet-plan-row-label"></div>';
