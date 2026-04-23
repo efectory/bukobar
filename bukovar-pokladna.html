@@ -3281,7 +3281,7 @@ function renderPetPlan() {
     var threshold = getPetThresholdToday(petCfg, beer);
     var ideal = petCfg[beer].capacity;
     var needs = current <= threshold;
-    var priority = current <= ideal * 0.5;
+    var priority = current > 0 && current <= ideal * 0.5;
     var toBottle = needs ? Math.max(ideal - current, 0) : 0;
     if (needs) { total += toBottle; druhy++; }
     return { beer: beer, current: current, needs: needs, priority: priority, toBottle: toBottle, col: PET_COLORS[i] };
@@ -3402,7 +3402,7 @@ function updateTabBadges() {
     var petCfg = getPetConfig();
     var hasPriority = UKOLY_PET_BEERS.some(function(beer) {
       var current = (sklad[beer + ' v PET'] || {}).qty || 0;
-      return current <= petCfg[beer].capacity * 0.5;
+      return current > 0 && current <= petCfg[beer].capacity * 0.5;
     });
     petBtn.innerHTML = 'Petkovací plán' + (hasPriority ? ' <span class="tab-warn-badge">⚠ Petkovat!</span>' : ' <span class="tab-done-badge">✓</span>');
   }
