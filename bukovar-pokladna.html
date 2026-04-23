@@ -1050,6 +1050,7 @@ const MENU = [
 const CAT_ORDER = ["Piva","Nealkoholické nápoje","Horké nápoje","Víno","Míchané nápoje","Občerstvení","Destiláty"];
 
 let stream, snapB64, receiptItems = [];
+let isStamgastActive = false;
 let openCategory = null;
 let pendingData = null, uncertainItems = [];
 let analyzeController = null;
@@ -1197,7 +1198,9 @@ function addCustomItem() {
   var name = document.getElementById('custom-name').value.trim();
   var price = parseInt(document.getElementById('custom-price').value) || 0;
   if (!name) { document.getElementById('custom-name').focus(); return; }
-  receiptItems.unshift({ nazev: name, pocet: 1, cena: price, warn: false, stamgast: false });
+  var entry = { nazev: name, pocet: 1, cena: price, warn: false, stamgast: false };
+  applyStamgastToItem(entry);
+  receiptItems.unshift(entry);
   document.getElementById('custom-name').value = '';
   document.getElementById('custom-price').value = '';
   document.getElementById('custom-form').classList.add('hidden');
@@ -1233,6 +1236,7 @@ function quickAddDirect(item, skladKey, skladInc) {
   else {
     var entry = { nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false };
     if (skladKey) { entry.skladKey = skladKey; entry.skladInc = skladInc; entry.popisek = skladKey; }
+    applyStamgastToItem(entry);
     receiptItems.unshift(entry);
   }
   renderItems();
@@ -1287,11 +1291,13 @@ function confirmRadlerPivo() {
   });
   if (existing) { existing.pocet++; }
   else {
-    receiptItems.unshift({
+    var entry = {
       nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false,
       popisek: beer,
       skladRules: [{ key: beer, inc: 0.2 }, { key: 'Frizzante', inc: 0.2 }]
-    });
+    };
+    applyStamgastToItem(entry);
+    receiptItems.unshift(entry);
   }
   renderItems();
 }
@@ -1361,6 +1367,7 @@ function retake() {
 
 function retakeFromReceipt() {
   receiptItems = [];
+  isStamgastActive = false;
   document.getElementById('receipt-card').classList.add('hidden');
   document.getElementById('confirm-card').classList.add('hidden');
   document.getElementById('cam-card').classList.remove('hidden');
@@ -1511,7 +1518,9 @@ function showReceipt() {
 function renderReceipt(data) {
   receiptItems = [];
   (data.polozky || []).forEach(function(p) {
-    receiptItems.push({ nazev: p.menu_nazev, pocet: p.pocet, cena: p.cena_kus, warn: false, stamgast: false });
+    var entry = { nazev: p.menu_nazev, pocet: p.pocet, cena: p.cena_kus, warn: false, stamgast: false };
+    applyStamgastToItem(entry);
+    receiptItems.push(entry);
   });
   if (data.nerozpoznano && data.nerozpoznano.length) {
     data.nerozpoznano.forEach(function(n) {
@@ -1545,7 +1554,7 @@ function renderItems() {
         '<span class="item-qty-input">' + item.pocet + '</span>' +
         '<button class="qty-btn" onclick="changeQty(' + i + ',1)">+</button>' +
       '</div>' +
-      '<button class="item-name-btn" onclick="openItemPickerModal(function(m){receiptItems[' + i + '].nazev=m.n;receiptItems[' + i + '].cena=m.p;receiptItems[' + i + '].warn=false;receiptItems[' + i + '].stamgast=false;closeItemPickerModal();renderItems();})" title="Klikněte pro změnu">' + safeName + '</button>' +
+      '<button class="item-name-btn" onclick="openItemPickerModal(function(m){receiptItems[' + i + '].nazev=m.n;receiptItems[' + i + '].cena=m.p;receiptItems[' + i + '].warn=false;receiptItems[' + i + '].stamgast=false;applyStamgastToItem(receiptItems[' + i + ']);closeItemPickerModal();renderItems();})" title="Klikněte pro změnu">' + safeName + '</button>' +
       '<span class="item-price" id="price-' + i + '">' + priceHtml + '</span>' +
       '<button class="item-del" onclick="deleteItem(' + i + ')">×</button>';
     lines.appendChild(row);
@@ -1590,24 +1599,30 @@ function applyStamgast(isStamgast) {
   setStamgast(isStamgast);
 }
 
+function isStamgastDiscountable(name) {
+  return name === 'Radler' || BEER_STATUS_CEP.indexOf(name) !== -1;
+}
+
+function applyStamgastToItem(item) {
+  if (isStamgastActive && isStamgastDiscountable(item.nazev) && !item.stamgast) {
+    item.cena = 39;
+    item.stamgast = true;
+  }
+}
+
 function setStamgast(isStamgast) {
+  isStamgastActive = isStamgast;
   ['ano','ne'].forEach(function(o) {
     document.getElementById('btn-stamgast-' + o).classList.remove('active');
   });
   document.getElementById('btn-stamgast-' + (isStamgast ? 'ano' : 'ne')).classList.add('active');
-  if (isStamgast) {
-    receiptItems.forEach(function(item) {
-      var m = MENU.find(function(m) { return m.n === item.nazev; });
-      if (m && (m.n === 'Bukovar' || m.n === 'Radler')) { item.cena = 39; item.stamgast = true; }
-    });
-  } else {
-    receiptItems.forEach(function(item) {
-      if (item.stamgast) {
-        var m = MENU.find(function(m) { return m.n === item.nazev; });
-        if (m) { item.cena = m.p; item.stamgast = false; }
-      }
-    });
-  }
+  receiptItems.forEach(function(item) {
+    if (isStamgast) {
+      if (isStamgastDiscountable(item.nazev) && !item.stamgast) { item.cena = 39; item.stamgast = true; }
+    } else {
+      if (item.stamgast) { item.cena = 49; item.stamgast = false; }
+    }
+  });
   renderItems();
 }
 
@@ -2036,6 +2051,7 @@ function resetApp() {
   document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   snapB64 = null; receiptItems = [];
+  isStamgastActive = false;
   openCategory = null; pendingData = null; uncertainItems = [];
   pickerCallback = null;
   paymentMethod = '';
