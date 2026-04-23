@@ -404,15 +404,15 @@
   .fridge-shelf:last-child { margin-bottom: 0; }
   .fridge-shelf-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
   .fridge-rows { display: flex; flex-direction: column; gap: 3px; }
-  .fridge-row { display: flex; gap: 3px; }
-  .fridge-bottle { flex: 1; height: 22px; border: 1px solid; border-radius: 3px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; line-height: 1; }
-  .fridge-bottle.zelena       { background:#dcfce7; border-color:#16a34a; color:#15803d; }
-  .fridge-bottle.hneda        { background:#f5e6d3; border-color:#92400e; color:#78350f; }
-  .fridge-bottle.bila         { background:#f8fafc; border-color:#94a3b8; color:#334155; }
-  .fridge-bottle.zlata        { background:#fef9c3; border-color:#b45309; color:#92400e; }
-  .fridge-bottle.zluta        { background:#fefce8; border-color:#ca8a04; color:#713f12; }
-  .fridge-bottle.oranzova     { background:#fff7ed; border-color:#ea580c; color:#c2410c; }
-  .fridge-bottle.tmave-zelena { background:#f0fdf4; border-color:#166534; color:#14532d; }
+  .fridge-stripe { padding: 5px 10px; border: 1px solid; border-radius: 4px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-family: 'DM Sans', sans-serif; line-height: 1.2; }
+  .fridge-stripe-meta { font-weight: 500; opacity: .9; font-variant-numeric: tabular-nums; }
+  .fridge-stripe.zelena       { background:#dcfce7; border-color:#16a34a; color:#15803d; }
+  .fridge-stripe.hneda        { background:#f5e6d3; border-color:#92400e; color:#78350f; }
+  .fridge-stripe.bila         { background:#f8fafc; border-color:#94a3b8; color:#334155; }
+  .fridge-stripe.zlata        { background:#fef9c3; border-color:#b45309; color:#92400e; }
+  .fridge-stripe.zluta        { background:#fefce8; border-color:#ca8a04; color:#713f12; }
+  .fridge-stripe.oranzova     { background:#fff7ed; border-color:#ea580c; color:#c2410c; }
+  .fridge-stripe.tmave-zelena { background:#f0fdf4; border-color:#166534; color:#14532d; }
   .fridge-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); align-items: center; }
   .fridge-legend-item { display: flex; align-items: center; gap: 6px; }
   .fridge-legend-swatch { width: 16px; height: 16px; border: 1px solid; border-radius: 3px; display: inline-block; }
@@ -3231,56 +3231,38 @@ function adminPetExport() {
 var PET_COLORS = ['zelena','hneda','seda','zlata','zluta','oranzova','modra','tmave-zelena'];
 
 function renderFridgeDiagram() {
-  function row(label, colorClass, count) {
-    var cells = '';
-    for (var i = 0; i < count; i++) {
-      cells += '<div class="fridge-bottle ' + colorClass + '">' + label + '</div>';
-    }
-    return '<div class="fridge-row">' + cells + '</div>';
+  function stripe(beer, colorClass, rowCount, depth) {
+    var total = rowCount * depth;
+    return '<div class="fridge-stripe ' + colorClass + '">'
+      + '<span>' + beer + '</span>'
+      + '<span class="fridge-stripe-meta">' + rowCount + ' řad × ' + depth + ' ks = ' + total + ' ks</span>'
+      + '</div>';
   }
-  function shelfHtml(patroLabel, totalKs, rows) {
-    var html = '<div class="fridge-shelf"><div class="fridge-shelf-label">' + patroLabel + ' — ' + totalKs + ' ks</div><div class="fridge-rows">';
-    rows.forEach(function(r) {
-      for (var i = 0; i < r.count; i++) html += row(r.label, r.color, r.cols);
-    });
-    html += '</div></div>';
-    return html;
+  function shelfHtml(patroLabel, totalKs, stripes) {
+    return '<div class="fridge-shelf">'
+      + '<div class="fridge-shelf-label">' + patroLabel + ' — ' + totalKs + ' ks</div>'
+      + '<div class="fridge-rows">' + stripes.join('') + '</div>'
+      + '</div>';
   }
 
   var html = '<div class="fridge-diagram">';
   html += '<div class="fridge-title">Jak skládat petky do lednice</div>';
   html += shelfHtml('1. patro (nahoře)', 18, [
-    { label: 'K12', color: 'zlata', count: 6, cols: 3 }
+    stripe('Kohoutí 12°', 'zlata', 6, 3)
   ]);
   html += shelfHtml('2. patro', 24, [
-    { label: 'V',  color: 'bila',  count: 4, cols: 4 },
-    { label: 'Š',  color: 'hneda', count: 2, cols: 4 }
+    stripe('Šedá vlčice 11°', 'bila',  4, 4),
+    stripe('Štamgast 11°',    'hneda', 2, 4)
   ]);
   html += shelfHtml('3. patro', 24, [
-    { label: 'H',  color: 'zelena',       count: 4, cols: 4 },
-    { label: 'D',  color: 'tmave-zelena', count: 2, cols: 4 }
+    stripe('Hraďák 10°', 'zelena',       4, 4),
+    stripe('Dublin 13°', 'tmave-zelena', 2, 4)
   ]);
   html += shelfHtml('4. patro (dole)', 24, [
-    { label: 'Z',  color: 'zluta',    count: 2, cols: 4 },
-    { label: 'M',  color: 'oranzova', count: 4, cols: 4 }
+    stripe('Zlatka 11°',    'zluta',    2, 4),
+    stripe('Mezulánka 11°', 'oranzova', 4, 4)
   ]);
-
-  var legend = [
-    { n: 'K12 — Kohoutí 12°',     c: 'zlata',        q: 18 },
-    { n: 'V — Šedá vlčice 11°',   c: 'bila',         q: 16 },
-    { n: 'Š — Štamgast 11°',      c: 'hneda',        q: 8 },
-    { n: 'H — Hraďák 10°',        c: 'zelena',       q: 16 },
-    { n: 'D — Dublin 13°',        c: 'tmave-zelena', q: 8 },
-    { n: 'Z — Zlatka 11°',        c: 'zluta',        q: 8 },
-    { n: 'M — Mezulánka 11°',     c: 'oranzova',     q: 16 }
-  ];
-  html += '<div class="fridge-legend">';
-  legend.forEach(function(l) {
-    html += '<div class="fridge-legend-item"><span class="fridge-legend-swatch ' + l.c + '" style="background:' + ({zlata:'#fef9c3',bila:'#f8fafc',hneda:'#f5e6d3',zelena:'#dcfce7','tmave-zelena':'#f0fdf4',zluta:'#fefce8',oranzova:'#fff7ed'})[l.c] + ';border-color:' + ({zlata:'#b45309',bila:'#94a3b8',hneda:'#92400e',zelena:'#16a34a','tmave-zelena':'#166534',zluta:'#ca8a04',oranzova:'#ea580c'})[l.c] + ';"></span>' + l.n + ' — ' + l.q + ' ks</div>';
-  });
-  html += '<div class="fridge-legend-total">Celkem: 90 ks</div>';
-  html += '</div>';
-
+  html += '<div class="fridge-legend"><div class="fridge-legend-total">Celkem: 90 ks</div></div>';
   html += '</div>';
   return html;
 }
