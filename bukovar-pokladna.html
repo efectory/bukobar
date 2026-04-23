@@ -2325,10 +2325,10 @@ const SKLAD_MIN = {
   'Šenkýřka': 2, 'Čisticí tablety na kávovar': 10, 'Sklenice': 50,
   'Brčka': 50, 'Párátka': 100, 'Zápalky': 10, 'Podtácky': 100,
   'Pokladní páska': 5, 'Propisky': 5,
-  'Víčko Hraďák 10°': 100, 'Víčko Štamgast 11°': 100, 'Víčko Šedá vlčice 11°': 100, 'Víčko Kohoutí 12°': 100,
-  'Víčko Zlatka 11°': 100, 'Víčko Mezulánka 11°': 100, 'Víčko Nelson 12°': 100, 'Víčko Dublin 13°': 100,
-  'Etiketa Hraďák 10°': 100, 'Etiketa Štamgast 11°': 100, 'Etiketa Šedá vlčice 11°': 100, 'Etiketa Kohoutí 12°': 100,
-  'Etiketa Zlatka 11°': 100, 'Etiketa Mezulánka 11°': 100, 'Etiketa Nelson 12°': 100, 'Etiketa Dublin 13°': 100,
+  'Víčko Hraďák 10°': 50, 'Víčko Štamgast 11°': 50, 'Víčko Šedá vlčice 11°': 50, 'Víčko Kohoutí 12°': 50,
+  'Víčko Zlatka 11°': 50, 'Víčko Mezulánka 11°': 50, 'Víčko Nelson 12°': 50, 'Víčko Dublin 13°': 50,
+  'Etiketa Hraďák 10°': 50, 'Etiketa Štamgast 11°': 50, 'Etiketa Šedá vlčice 11°': 50, 'Etiketa Kohoutí 12°': 50,
+  'Etiketa Zlatka 11°': 50, 'Etiketa Mezulánka 11°': 50, 'Etiketa Nelson 12°': 50, 'Etiketa Dublin 13°': 50,
   'PETky': 200,
 };
 
@@ -2432,6 +2432,19 @@ function renderSkladNastaveni() {
     if (!bycat[item.c]) bycat[item.c] = [];
     bycat[item.c].push(item);
   });
+
+  // Doplnit čepovaná a PET piva (jsou jen pod VIP tlačítky, ne v MENU)
+  if (!bycat['Piva']) bycat['Piva'] = [];
+  var existingPiva = {};
+  bycat['Piva'].forEach(function(it) { existingPiva[it.n] = true; });
+  var pivaPrefix = [];
+  BEER_STATUS_CEP.forEach(function(name) {
+    if (!existingPiva[name]) pivaPrefix.push({ n: name, c: 'Piva' });
+  });
+  BEER_STATUS_PET.forEach(function(name) {
+    if (!existingPiva[name]) pivaPrefix.push({ n: name, c: 'Piva' });
+  });
+  bycat['Piva'] = pivaPrefix.concat(bycat['Piva']);
 
   function fmtInc(inc, unit) {
     if (unit === 'l') return inc + ' l';
