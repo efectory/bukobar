@@ -400,12 +400,12 @@
   /* Nákres skládání petek do lednice */
   .fridge-diagram { border: 2px solid var(--border-strong); border-radius: 8px; padding: 12px; margin-bottom: 1.2rem; background: var(--surface); }
   .fridge-title { font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 10px; color: var(--text); text-transform: uppercase; letter-spacing: .05em; }
-  .fridge-shelf { border: 1px solid var(--border-strong); border-radius: 6px; margin-bottom: 6px; background: var(--bg); padding: 8px; }
-  .fridge-shelf:last-child { margin-bottom: 0; }
-  .fridge-shelf-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
-  .fridge-rows { display: flex; flex-direction: column; gap: 3px; }
-  .fridge-stripe { padding: 5px 10px; border: 1px solid; border-radius: 4px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-family: 'DM Sans', sans-serif; line-height: 1.2; }
-  .fridge-stripe-meta { font-weight: 500; opacity: .9; font-variant-numeric: tabular-nums; }
+  .fridge-shelves-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .fridge-shelf { border: 1px solid var(--border-strong); border-radius: 6px; background: var(--bg); padding: 8px; display: flex; flex-direction: column; }
+  .fridge-shelf-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; text-align: center; }
+  .fridge-rows { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+  .fridge-stripe { padding: 5px 6px; border: 1px solid; border-radius: 4px; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1px; font-family: 'DM Sans', sans-serif; line-height: 1.15; }
+  .fridge-stripe-meta { font-size: 11px; font-weight: 500; opacity: .85; font-variant-numeric: tabular-nums; }
   .fridge-stripe.zelena       { background:#dcfce7; border-color:#16a34a; color:#15803d; }
   .fridge-stripe.hneda        { background:#f5e6d3; border-color:#92400e; color:#78350f; }
   .fridge-stripe.bila         { background:#f8fafc; border-color:#94a3b8; color:#334155; }
@@ -3247,6 +3247,7 @@ function renderFridgeDiagram() {
 
   var html = '<div class="fridge-diagram">';
   html += '<div class="fridge-title">Jak skládat petky do lednice</div>';
+  html += '<div class="fridge-shelves-row">';
   html += shelfHtml('1. patro (nahoře)', 18, [
     stripe('Kohoutí 12°', 'zlata', 6, 3)
   ]);
@@ -3262,6 +3263,7 @@ function renderFridgeDiagram() {
     stripe('Zlatka 11°',    'zluta',    2, 4),
     stripe('Mezulánka 11°', 'oranzova', 4, 4)
   ]);
+  html += '</div>';
   html += '<div class="fridge-legend"><div class="fridge-legend-total">Celkem: 90 ks</div></div>';
   html += '</div>';
   return html;
