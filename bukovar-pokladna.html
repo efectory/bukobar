@@ -413,6 +413,7 @@
   .fridge-stripe.zluta        { background:#fefce8; border-color:#ca8a04; color:#713f12; }
   .fridge-stripe.oranzova     { background:#fff7ed; border-color:#ea580c; color:#c2410c; }
   .fridge-stripe.tmave-zelena { background:#f0fdf4; border-color:#166534; color:#14532d; }
+  .fridge-stripe.modra        { background:#dbeafe; border-color:#1d4ed8; color:#1e3a8a; }
   .fridge-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); align-items: center; }
   .fridge-legend-item { display: flex; align-items: center; gap: 6px; }
   .fridge-legend-swatch { width: 16px; height: 16px; border: 1px solid; border-radius: 3px; display: inline-block; }
@@ -3275,12 +3276,13 @@ function renderFridgeDiagram() {
     stripe('Štamgast 11°',    'hneda', 2, 4)
   ]);
   html += shelfHtml('2. patro', 24, [
-    stripe('Hraďák 10°', 'zelena',       4, 4),
-    stripe('Dublin 13°', 'tmave-zelena', 2, 4)
+    stripe('Hraďák 10°', 'zelena', 4, 4),
+    stripe('Nelson 12°', 'modra',  2, 4)
   ]);
   html += shelfHtml('1. patro (dole)', 24, [
-    stripe('Zlatka 11°',    'zluta',    2, 4),
-    stripe('Mezulánka 11°', 'oranzova', 4, 4)
+    stripe('Zlatka 11°',    'zluta',        2, 4),
+    stripe('Dublin 13°',    'tmave-zelena', 1, 4),
+    stripe('Mezulánka 11°', 'oranzova',     3, 4)
   ]);
   html += '</div>';
   html += '<div class="fridge-legend"><div class="fridge-legend-total">Celkem: 90 ks</div></div>';
