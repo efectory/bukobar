@@ -1036,6 +1036,18 @@
 </div>
 
 <script>
+// V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
+(function migrateChitoTonic(){
+  var keys = ['bukovar_sklad','bukovar_uctenky','bukovar_checklist_history',
+              'bukovar_otevreni_history','bukovar_pet_history','bukovar_pet_config','bukovar_impl'];
+  keys.forEach(function(k){
+    var v = localStorage.getItem(k);
+    if (v && v.indexOf('ChitoTonic') !== -1) {
+      localStorage.setItem(k, v.replace(/ChitoTonic/g, 'Targa Tonic'));
+    }
+  });
+})();
+
 const MENU = [
   {n:"Radler",c:"Piva",p:49,u:"0,4l"},
   {n:"Birel nealko neochucený",c:"Piva",p:49,u:"0,5l"},
@@ -1060,7 +1072,7 @@ const MENU = [
   {n:"Domácí limonáda 1l",c:"Nealkoholické nápoje",p:90,u:"1l"},
   {n:"Domácí limonáda 2l",c:"Nealkoholické nápoje",p:160,u:"2l"},
   {n:"Royal crown cola",c:"Nealkoholické nápoje",p:39},
-  {n:"ChitoTonic",c:"Nealkoholické nápoje",p:39},
+  {n:"Targa Tonic",c:"Nealkoholické nápoje",p:39},
   {n:"Džus pomeranč",c:"Nealkoholické nápoje",p:39},
   {n:"Perlivá voda",c:"Nealkoholické nápoje",p:39},
   {n:"Bukovská voda",c:"Nealkoholické nápoje",p:0},
@@ -2386,7 +2398,7 @@ function saveClEdit(idx) {
 const SKLAD_GROUPS = [
   { col: 0, label: 'Nealkoholické', items: [
     { n: 'Kofola', unit: 'l' }, { n: 'Frizzante', unit: 'l' },
-    { n: 'Royal Crown Cola', unit: 'ks' }, { n: 'ChitoTonic', unit: 'ks' },
+    { n: 'Royal Crown Cola', unit: 'ks' }, { n: 'Targa Tonic', unit: 'ks' },
     { n: 'Džus pomeranč', unit: 'l' },
     { n: 'Perlivá voda', unit: 'ks' },
   ]},
@@ -2454,7 +2466,7 @@ const SKLAD_MAP = {
   'Kofola 0,3l': { key: 'Kofola', inc: 0.3 }, 'Kofola 0,5l': { key: 'Kofola', inc: 0.5 },
   'Frizzante 0,3l': { key: 'Frizzante', inc: 0.3 }, 'Frizzante 0,5l': { key: 'Frizzante', inc: 0.5 },
   'Royal crown cola': { key: 'Royal Crown Cola', inc: 1 },
-  'ChitoTonic': { key: 'ChitoTonic', inc: 1 },
+  'Targa Tonic': { key: 'Targa Tonic', inc: 1 },
   'Džus pomeranč': { key: 'Džus pomeranč', inc: 1 },  // 1 l = celá lahev
   'Perlivá voda': { key: 'Perlivá voda', inc: 1 }, 'Bukovská voda': { key: 'Bukovská voda', inc: 1 },
   'Rozlévané víno': { key: 'Rozlévané víno', inc: 0.2 },
@@ -2465,7 +2477,7 @@ const SKLAD_MAP = {
   'Prosecco Treviso': { key: 'Prosecco Treviso', inc: 1 },
   'Prosecco rozlévané': { key: 'Prosecco rozlévané', inc: 0.15 },
   'Vinný střik': { key: 'Rozlévané víno', inc: 0.15 },
-  'Gin s tonikem': [{ key: 'Beefeater Gin', inc: 0.05 }, { key: 'ChitoTonic', inc: 1 }],
+  'Gin s tonikem': [{ key: 'Beefeater Gin', inc: 0.05 }, { key: 'Targa Tonic', inc: 1 }],
   'Hugo Spritz': { key: 'Prosecco rozlévané', inc: 0.2 },
   'Cuba libre': [{ key: 'Bacardi', inc: 0.05 }, { key: 'Royal Crown Cola', inc: 1 }],
   'Aperol Spritz': [{ key: 'Prosecco rozlévané', inc: 0.15 }, { key: 'Aperol', inc: 0.15 }],
@@ -2502,7 +2514,7 @@ const SKLAD_MAP = {
 
 const SKLAD_MIN = {
   'Kofola': 100, 'Frizzante': 40,
-  'Royal Crown Cola': 20, 'ChitoTonic': 20, 'Džus pomeranč': 20, 'Perlivá voda': 20,
+  'Royal Crown Cola': 20, 'Targa Tonic': 20, 'Džus pomeranč': 20, 'Perlivá voda': 20,
   'Rozlévané víno': 0, 'Lahvové víno bílé': 20, 'Lahvové víno bílé premium': 20, 'Lahvové víno červené': 20,
   'Prosecco Mionetto': 20, 'Prosecco Treviso': 20, 'Prosecco rozlévané': 0,
   'Beefeater Gin': 3, 'Bacardi': 3, 'Aperol': 3,
