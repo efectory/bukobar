@@ -188,6 +188,7 @@
   .trzby-section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
   .trzby-section-range { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .trzby-section-total { font-size: 28px; font-weight: 700; font-family: 'DM Serif Display', serif; margin-bottom: .6rem; }
+  .trzby-body { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
   .trzby-breakdown-inner { border-top: 1px solid var(--border); padding-top: .5rem; }
   .trzby-row { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; border-bottom: 1px solid var(--border); }
   .trzby-row:last-child { border-bottom: none; }
@@ -195,6 +196,8 @@
   .trzby-nav { display: flex; gap: 4px; }
   .trzby-nav-btn { font-size: 14px; padding: 2px 8px; min-height: unset; border-radius: 4px; }
   .trzby-nav-btn:disabled { opacity: .3; cursor: default; }
+  .trzby-pivo-inner { border-top: 1px solid var(--border); padding-top: .5rem; }
+  .trzby-pivo-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .3rem; }
 
   /* Sklad */
   .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; align-items: start; }
@@ -2535,6 +2538,28 @@ function trzbySum(records, from, to) {
   return { total: total, breakdown: breakdown };
 }
 
+var CEP_BEER_NAMES = ['Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°','Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'];
+var PET_BEER_NAMES = ['Hraďák 10° v PET','Štamgast 11° v PET','Šedá vlčice 11° v PET','Kohoutí 12° v PET','Zlatka 11° v PET','Mezulánka 11° v PET','Nelson 12° v PET','Dublin 13° v PET'];
+
+function pivoSum(records, from, to) {
+  var cep = 0, pet = 0;
+  records.forEach(function(r) {
+    if (r.storno || r.nezaplaceno) return;
+    var bd = getBusinessDate(r.cas);
+    if (bd < from || bd > to) return;
+    (r.polozky || []).forEach(function(it) {
+      var n = it.nazev;
+      var p = it.pocet || 0;
+      if (CEP_BEER_NAMES.indexOf(n) >= 0) cep += 0.4 * p;
+      else if (n === 'Radler') cep += 0.4 * p;
+      else if (n === 'Pivo s sebou do džbánku 2l') cep += 2 * p;
+      else if (n === 'Pivo s sebou do džbánku 5l') cep += 5 * p;
+      else if (PET_BEER_NAMES.indexOf(n) >= 0) pet += 1 * p;
+    });
+  });
+  return { cep: Math.round(cep * 10) / 10, pet: Math.round(pet * 10) / 10, total: Math.round((cep + pet) * 10) / 10 };
+}
+
 function getWeekStart(base, offset) {
   var d = new Date(base);
   var dow = d.getDay();
@@ -2583,6 +2608,14 @@ function renderTrzby() {
   var sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
   var isCurrentWeek = trzbyWeekOffset === 0;
 
+  // Minulý týden (po–ne)
+  var lastMonday = getWeekStart(today, -1);
+  var lastSunday = new Date(lastMonday); lastSunday.setDate(lastMonday.getDate() + 6);
+
+  // Posledních 7 dní (dnes − 6 → dnes)
+  var last7Start = new Date(today); last7Start.setDate(today.getDate() - 6);
+  var last7End = today;
+
   // Měsíc s offsetem
   var mBase = new Date(today.getFullYear(), today.getMonth() + trzbyMonthOffset, 1);
   var mStart = getBusinessMonthStart(mBase.getFullYear(), mBase.getMonth());
@@ -2593,13 +2626,22 @@ function renderTrzby() {
 
   function fmtD(d) { return d.getDate() + '. ' + (d.getMonth()+1) + '. ' + d.getFullYear(); }
   function fmtCzk(n) { return n.toLocaleString('cs-CZ') + ' Kč'; }
+  function fmtL(n) { return n.toLocaleString('cs-CZ', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' l'; }
   function fmtRange(from, to) {
     return fmtD(from) + ' 06:00 – ' + fmtD(to) + ' 05:59';
   }
 
   var dnes = trzbySum(data, dnesStart, dnesEnd);
   var tyden = trzbySum(data, monday, sunday);
+  var minTyden = trzbySum(data, lastMonday, lastSunday);
+  var pos7 = trzbySum(data, last7Start, last7End);
   var mesic = trzbySum(data, mStart, mEnd);
+
+  var dnesPivo = pivoSum(data, dnesStart, dnesEnd);
+  var tydenPivo = pivoSum(data, monday, sunday);
+  var minTydenPivo = pivoSum(data, lastMonday, lastSunday);
+  var pos7Pivo = pivoSum(data, last7Start, last7End);
+  var mesicPivo = pivoSum(data, mStart, mEnd);
 
   var methods = ['Hotovost','Karta','QR','Na dluh'];
 
@@ -2617,7 +2659,19 @@ function renderTrzby() {
     return html;
   }
 
-  function buildSection(label, rangeStr, res, navHtml) {
+  function buildPivoBox(p) {
+    var html = '<div class="trzby-pivo-title">Pivo (prodané litry)</div>';
+    if (p.total === 0) {
+      html += '<div style="font-size:12px;color:var(--muted);padding:4px 0;">Žádné pivo.</div>';
+      return html;
+    }
+    html += '<div class="trzby-row"><span>Čepované</span><span>' + fmtL(p.cep) + '</span></div>';
+    html += '<div class="trzby-row"><span>PET</span><span>' + fmtL(p.pet) + '</span></div>';
+    html += '<div class="trzby-row trzby-row-total"><span>Celkem</span><span>' + fmtL(p.total) + '</span></div>';
+    return html;
+  }
+
+  function buildSection(label, rangeStr, res, pivo, navHtml) {
     return '<div class="trzby-section">'
       + '<div class="trzby-section-header">'
         + navHtml
@@ -2625,7 +2679,10 @@ function renderTrzby() {
         + '<div class="trzby-section-range">' + rangeStr + '</div></div>'
       + '</div>'
       + '<div class="trzby-section-total">' + fmtCzk(res.total) + '</div>'
-      + '<div class="trzby-breakdown-inner">' + buildBreakdown(res) + '</div>'
+      + '<div class="trzby-body">'
+        + '<div class="trzby-breakdown-inner">' + buildBreakdown(res) + '</div>'
+        + '<div class="trzby-pivo-inner">' + buildPivoBox(pivo) + '</div>'
+      + '</div>'
       + '</div>';
   }
 
@@ -2644,9 +2701,11 @@ function renderTrzby() {
     + '</div>';
 
   el.innerHTML =
-    buildSection('Dnes', dnesRange, dnes, '') +
-    buildSection(weekLabel, fmtRange(monday, sunday), tyden, weekNav) +
-    buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, monthNav);
+    buildSection('Dnes', dnesRange, dnes, dnesPivo, '') +
+    buildSection(weekLabel, fmtRange(monday, sunday), tyden, tydenPivo, weekNav) +
+    buildSection('Minulý týden', fmtRange(lastMonday, lastSunday), minTyden, minTydenPivo, '') +
+    buildSection('Posledních 7 dní', fmtRange(last7Start, last7End), pos7, pos7Pivo, '') +
+    buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, mesicPivo, monthNav);
 }
 
 function getCepovanaStats() {

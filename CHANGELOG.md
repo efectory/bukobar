@@ -1,5 +1,14 @@
 # Bukovar — Pokladna | Historie vývoje
 
+## V7.6 — Tržby report: Minulý týden, Posledních 7 dní, pivo v litrech
+**Soubor:** `bukovar-pokladna.html`
+
+- Přidány dvě nové sekce v Administraci → Tržby: **Minulý týden** (po–ne minulého týdne) a **Posledních 7 dní** (dnes − 6 dní → dnes)
+- V každé sekci tržeb nově vpravo přehled prodaného piva v litrech, členěno na **Čepované** (8 piv × 0,4 l + Radler + džbánky 2 l/5 l) a **PET** (8 piv „v PET" × 1 l)
+- Sekce dostala 2sloupcový layout: vlevo rozpad plateb, vpravo pivo
+
+---
+
 ## V5 — Auto-rozpoznání, kategorie, potvrzení nejistých položek
 **Soubor:** `bukovar-pokladna-V5.html`
 
