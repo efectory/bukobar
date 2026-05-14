@@ -1,5 +1,14 @@
 # Bukovar — Pokladna | Historie vývoje
 
+## V7.6 — Tržby report: sloupcový graf prodeje piv
+**Soubor:** `bukovar-pokladna.html`
+
+- Pod každou sekci tržeb (Dnes, Tento týden, Minulý týden, Posledních 7 dní, Tento měsíc) přidán **sloupcový graf** s 8 sloupci (jeden per druh piva), seřazeno dle celkového prodeje
+- Sloupce dvojbarevné: tmavá = čepované, světlá = PET. Barvy dle víček (zelená, hnědá, šedá, zlatá, žlutá, oranžová, modrá, tmavě zelená)
+- Litry zobrazeny uvnitř segmentů (pokud se vejdou), pod osou jméno piva + celkový součet
+- **Radler a Pivo s sebou do džbánku 2l/5l**: do účtenky se nově ukládá popisek (vybrané pivo), takže se přiřadí do správného sloupce. Staré účtenky bez popisku spadnou jen do celkového souhrnu vpravo.
+- **Bugfix:** Radler obsahuje 0,2 l piva (nikoliv 0,4 l) — opraveno v součtu čepovaných litrů
+
 ## V7.6 — Tržby report: Minulý týden, Posledních 7 dní, pivo v litrech
 **Soubor:** `bukovar-pokladna.html`
 

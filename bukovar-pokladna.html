@@ -199,6 +199,37 @@
   .trzby-pivo-inner { border-top: 1px solid var(--border); padding-top: .5rem; }
   .trzby-pivo-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .3rem; }
 
+  /* Tržby — sloupcový graf piv */
+  .pivo-chart-wrap { margin-top: .75rem; border-top: 1px solid var(--border); padding-top: .6rem; }
+  .pivo-chart-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .4rem; }
+  .pivo-chart { display: grid; grid-template-columns: repeat(8, 1fr); gap: .35rem; align-items: end; }
+  .pivo-bar-col { display: flex; flex-direction: column; align-items: stretch; min-width: 0; }
+  .pivo-bar-stack { display: flex; flex-direction: column-reverse; height: 140px; border-radius: 4px; overflow: hidden; background: var(--bg-soft, #f6f1e6); border: 1px solid var(--border); }
+  .pivo-bar-cep, .pivo-bar-pet { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; line-height: 1; min-height: 0; overflow: hidden; }
+  .pivo-bar-cep { color: #fff; }
+  .pivo-bar-pet { color: rgba(0,0,0,.72); }
+  .pivo-bar-foot { margin-top: .25rem; text-align: center; }
+  .pivo-bar-name { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pivo-bar-total { font-size: 12px; font-weight: 700; }
+  .pivo-chart-empty { font-size: 12px; color: var(--muted); padding: 4px 0; }
+  /* Barvy víček: tmavá = čepované, světlá = PET */
+  .pb-zelena .pivo-bar-cep       { background:#16a34a; }
+  .pb-zelena .pivo-bar-pet       { background:#dcfce7; }
+  .pb-hneda .pivo-bar-cep        { background:#92400e; }
+  .pb-hneda .pivo-bar-pet        { background:#f5e6d3; }
+  .pb-seda .pivo-bar-cep         { background:#64748b; }
+  .pb-seda .pivo-bar-pet         { background:#f1f5f9; }
+  .pb-zlata .pivo-bar-cep        { background:#b45309; }
+  .pb-zlata .pivo-bar-pet        { background:#fef9c3; }
+  .pb-zluta .pivo-bar-cep        { background:#ca8a04; }
+  .pb-zluta .pivo-bar-pet        { background:#fefce8; }
+  .pb-oranzova .pivo-bar-cep     { background:#ea580c; }
+  .pb-oranzova .pivo-bar-pet     { background:#fff7ed; }
+  .pb-modra .pivo-bar-cep        { background:#2563eb; }
+  .pb-modra .pivo-bar-pet        { background:#dbeafe; }
+  .pb-tmave-zelena .pivo-bar-cep { background:#166534; }
+  .pb-tmave-zelena .pivo-bar-pet { background:#f0fdf4; }
+
   /* Sklad */
   .sklad-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; align-items: start; }
   .sklad-group { margin-bottom: .75rem; }
@@ -1864,7 +1895,11 @@ function saveUctenka() {
     id: Date.now(),
     num: lastUctenkaNum,
     cas: new Date().toISOString(),
-    polozky: receiptItems.map(function(it) { return { nazev: it.nazev, pocet: it.pocet, cena: it.cena, stamgast: it.stamgast }; }),
+    polozky: receiptItems.map(function(it) {
+      var p = { nazev: it.nazev, pocet: it.pocet, cena: it.cena, stamgast: it.stamgast };
+      if (it.popisek) p.popisek = it.popisek;
+      return p;
+    }),
     celkem: total,
     platba: paymentMethod,
     nezaplaceno: paymentMethod === 'Dluh',
@@ -2540,6 +2575,10 @@ function trzbySum(records, from, to) {
 
 var CEP_BEER_NAMES = ['Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°','Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'];
 var PET_BEER_NAMES = ['Hraďák 10° v PET','Štamgast 11° v PET','Šedá vlčice 11° v PET','Kohoutí 12° v PET','Zlatka 11° v PET','Mezulánka 11° v PET','Nelson 12° v PET','Dublin 13° v PET'];
+var BEER_COLOR_CLASS = {
+  'Hraďák 10°': 'zelena', 'Štamgast 11°': 'hneda', 'Šedá vlčice 11°': 'seda', 'Kohoutí 12°': 'zlata',
+  'Zlatka 11°': 'zluta', 'Mezulánka 11°': 'oranzova', 'Nelson 12°': 'modra', 'Dublin 13°': 'tmave-zelena'
+};
 
 function pivoSum(records, from, to) {
   var cep = 0, pet = 0;
@@ -2551,13 +2590,48 @@ function pivoSum(records, from, to) {
       var n = it.nazev;
       var p = it.pocet || 0;
       if (CEP_BEER_NAMES.indexOf(n) >= 0) cep += 0.4 * p;
-      else if (n === 'Radler') cep += 0.4 * p;
+      else if (n === 'Radler') cep += 0.2 * p;
       else if (n === 'Pivo s sebou do džbánku 2l') cep += 2 * p;
       else if (n === 'Pivo s sebou do džbánku 5l') cep += 5 * p;
       else if (PET_BEER_NAMES.indexOf(n) >= 0) pet += 1 * p;
     });
   });
   return { cep: Math.round(cep * 10) / 10, pet: Math.round(pet * 10) / 10, total: Math.round((cep + pet) * 10) / 10 };
+}
+
+function pivoPerBeer(records, from, to) {
+  var res = {};
+  CEP_BEER_NAMES.forEach(function(n) { res[n] = { name: n, cep: 0, pet: 0, total: 0, colorClass: 'pb-' + BEER_COLOR_CLASS[n] }; });
+  records.forEach(function(r) {
+    if (r.storno || r.nezaplaceno) return;
+    var bd = getBusinessDate(r.cas);
+    if (bd < from || bd > to) return;
+    (r.polozky || []).forEach(function(it) {
+      var n = it.nazev;
+      var p = it.pocet || 0;
+      if (CEP_BEER_NAMES.indexOf(n) >= 0) {
+        res[n].cep += 0.4 * p;
+      } else if (n === 'Radler' && it.popisek && res[it.popisek]) {
+        res[it.popisek].cep += 0.2 * p;
+      } else if (n === 'Pivo s sebou do džbánku 2l' && it.popisek && res[it.popisek]) {
+        res[it.popisek].cep += 2 * p;
+      } else if (n === 'Pivo s sebou do džbánku 5l' && it.popisek && res[it.popisek]) {
+        res[it.popisek].cep += 5 * p;
+      } else {
+        var idx = PET_BEER_NAMES.indexOf(n);
+        if (idx >= 0) res[CEP_BEER_NAMES[idx]].pet += 1 * p;
+      }
+    });
+  });
+  var arr = CEP_BEER_NAMES.map(function(n) {
+    var b = res[n];
+    b.cep = Math.round(b.cep * 10) / 10;
+    b.pet = Math.round(b.pet * 10) / 10;
+    b.total = Math.round((b.cep + b.pet) * 10) / 10;
+    return b;
+  });
+  arr.sort(function(a, b) { return b.total - a.total; });
+  return arr;
 }
 
 function getWeekStart(base, offset) {
@@ -2643,6 +2717,12 @@ function renderTrzby() {
   var pos7Pivo = pivoSum(data, last7Start, last7End);
   var mesicPivo = pivoSum(data, mStart, mEnd);
 
+  var dnesChart = pivoPerBeer(data, dnesStart, dnesEnd);
+  var tydenChart = pivoPerBeer(data, monday, sunday);
+  var minTydenChart = pivoPerBeer(data, lastMonday, lastSunday);
+  var pos7Chart = pivoPerBeer(data, last7Start, last7End);
+  var mesicChart = pivoPerBeer(data, mStart, mEnd);
+
   var methods = ['Hotovost','Karta','QR','Na dluh'];
 
   function buildBreakdown(res) {
@@ -2671,7 +2751,37 @@ function renderTrzby() {
     return html;
   }
 
-  function buildSection(label, rangeStr, res, pivo, navHtml) {
+  function buildPivoChart(perBeer) {
+    var maxL = 0;
+    perBeer.forEach(function(b) { if (b.total > maxL) maxL = b.total; });
+    var html = '<div class="pivo-chart-wrap"><div class="pivo-chart-title">Prodej dle piva (tmavá = čepované, světlá = PET)</div>';
+    if (maxL === 0) {
+      html += '<div class="pivo-chart-empty">Žádný prodej piva v období.</div></div>';
+      return html;
+    }
+    html += '<div class="pivo-chart">';
+    perBeer.forEach(function(b) {
+      var totalPct = maxL > 0 ? (b.total / maxL) * 100 : 0;
+      var cepPct = b.total > 0 ? (b.cep / b.total) * totalPct : 0;
+      var petPct = b.total > 0 ? (b.pet / b.total) * totalPct : 0;
+      var cepLabel = (b.cep > 0 && cepPct >= 8) ? fmtL(b.cep) : '';
+      var petLabel = (b.pet > 0 && petPct >= 8) ? fmtL(b.pet) : '';
+      html += '<div class="pivo-bar-col ' + b.colorClass + '">'
+        + '<div class="pivo-bar-stack">'
+          + '<div class="pivo-bar-cep" style="height:' + cepPct + '%;">' + cepLabel + '</div>'
+          + '<div class="pivo-bar-pet" style="height:' + petPct + '%;">' + petLabel + '</div>'
+        + '</div>'
+        + '<div class="pivo-bar-foot">'
+          + '<div class="pivo-bar-name" title="' + b.name + '">' + b.name + '</div>'
+          + '<div class="pivo-bar-total">' + fmtL(b.total) + '</div>'
+        + '</div>'
+      + '</div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  function buildSection(label, rangeStr, res, pivo, perBeer, navHtml) {
     return '<div class="trzby-section">'
       + '<div class="trzby-section-header">'
         + navHtml
@@ -2683,6 +2793,7 @@ function renderTrzby() {
         + '<div class="trzby-breakdown-inner">' + buildBreakdown(res) + '</div>'
         + '<div class="trzby-pivo-inner">' + buildPivoBox(pivo) + '</div>'
       + '</div>'
+      + buildPivoChart(perBeer)
       + '</div>';
   }
 
@@ -2701,11 +2812,11 @@ function renderTrzby() {
     + '</div>';
 
   el.innerHTML =
-    buildSection('Dnes', dnesRange, dnes, dnesPivo, '') +
-    buildSection(weekLabel, fmtRange(monday, sunday), tyden, tydenPivo, weekNav) +
-    buildSection('Minulý týden', fmtRange(lastMonday, lastSunday), minTyden, minTydenPivo, '') +
-    buildSection('Posledních 7 dní', fmtRange(last7Start, last7End), pos7, pos7Pivo, '') +
-    buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, mesicPivo, monthNav);
+    buildSection('Dnes', dnesRange, dnes, dnesPivo, dnesChart, '') +
+    buildSection(weekLabel, fmtRange(monday, sunday), tyden, tydenPivo, tydenChart, weekNav) +
+    buildSection('Minulý týden', fmtRange(lastMonday, lastSunday), minTyden, minTydenPivo, minTydenChart, '') +
+    buildSection('Posledních 7 dní', fmtRange(last7Start, last7End), pos7, pos7Pivo, pos7Chart, '') +
+    buildSection(monthLabel, fmtRange(mStart, mEnd), mesic, mesicPivo, mesicChart, monthNav);
 }
 
 function getCepovanaStats() {
