@@ -1,5 +1,12 @@
 # Bukovar — Pokladna | Historie vývoje
 
+## V7.10 — Merch: Sklenice 105 Kč
+**Soubor:** `bukovar-pokladna.html`
+
+- Do kategorie Merch přidána položka **Sklenice** za 105 Kč
+
+---
+
 ## V7.6 — Tržby report: sloupcový graf prodeje piv
 **Soubor:** `bukovar-pokladna.html`
 
