@@ -970,6 +970,7 @@
       <button class="vip-btn oranzova"     id="radler-btn-mezul"    onclick="selectRadlerPivo('Mezulánka 11°')">Mezulánka 11°</button>
       <button class="vip-btn modra"        id="radler-btn-nelson"   onclick="selectRadlerPivo('Nelson 12°')">Nelson 12°</button>
       <button class="vip-btn tmave-zelena" id="radler-btn-dublin"   onclick="selectRadlerPivo('Dublin 13°')">Dublin 13°</button>
+      <button class="vip-btn bila" style="grid-column:1/-1;" id="radler-btn-nealko" onclick="selectRadlerPivo('Nealko')">Nealko</button>
     </div>
     <div class="modal-actions">
       <button onclick="closeRadlerModal()">Zrušit</button>
@@ -1425,6 +1426,7 @@ var RADLER_BEER_BUTTONS = {
   'Mezulánka 11°':   'radler-btn-mezul',
   'Nelson 12°':      'radler-btn-nelson',
   'Dublin 13°':      'radler-btn-dublin',
+  'Nealko':          'radler-btn-nealko',
 };
 
 function updateRadlerBeerHighlight() {
@@ -1452,10 +1454,13 @@ function confirmRadlerPivo() {
   });
   if (existing) { existing.pocet++; }
   else {
+    var skladRules = beer === 'Nealko'
+      ? [{ key: 'Birel neochucený', inc: 0.5 }, { key: 'Frizzante', inc: 0.2 }]
+      : [{ key: beer, inc: 0.2 }, { key: 'Frizzante', inc: 0.2 }];
     var entry = {
       nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false,
       popisek: beer,
-      skladRules: [{ key: beer, inc: 0.2 }, { key: 'Frizzante', inc: 0.2 }]
+      skladRules: skladRules
     };
     applyStamgastToItem(entry);
     receiptItems.unshift(entry);
@@ -2722,7 +2727,7 @@ function pivoSum(records, from, to) {
       var n = it.nazev;
       var p = it.pocet || 0;
       if (CEP_BEER_NAMES.indexOf(n) >= 0) cep += 0.4 * p;
-      else if (n === 'Radler') cep += 0.2 * p;
+      else if (n === 'Radler') { if (it.popisek !== 'Nealko') cep += 0.2 * p; }
       else if (n === 'Pivo s sebou do džbánku 2l') cep += 2 * p;
       else if (n === 'Pivo s sebou do džbánku 5l') cep += 5 * p;
       else if (PET_BEER_NAMES.indexOf(n) >= 0) pet += 1 * p;
