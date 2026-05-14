@@ -927,13 +927,10 @@
 
 <!-- Dárkové trojbalení modal -->
 <div class="modal-overlay hidden" id="trojbaleni-modal">
-  <div class="modal" style="max-width:560px;">
+  <div class="modal" style="max-width:580px;">
     <h3>Dárkové trojbalení — 320 Kč</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem;">Vyber 3 piva (mohou být i stejná):</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem;">Vyber 3 položky (piva i sklenice, mohou se opakovat):</p>
     <div id="trojbaleni-sloty"></div>
-    <label style="display:flex;align-items:center;gap:10px;margin-top:1rem;font-size:15px;cursor:pointer;padding:8px 10px;background:var(--surface);border-radius:var(--radius);">
-      <input type="checkbox" id="trojbaleni-sklenice" /> + Sklenice 105 Kč
-    </label>
     <div class="modal-actions" style="margin-top:1rem;">
       <button onclick="closeTrojbaleniModal()">Zrušit</button>
       <button class="primary" id="trojbaleni-potvrdit-btn" onclick="potvrdTrojbaleni()" disabled>Přidat na účet</button>
@@ -1313,7 +1310,7 @@ function closeDzbanekModal() {
 }
 
 // --- Dárkové trojbalení ---
-var TROJBALENI_PIVA = [
+var TROJBALENI_VOLBY = [
   {name:'Hraďák 10°', cls:'zelena'},
   {name:'Štamgast 11°', cls:'hneda'},
   {name:'Šedá vlčice 11°', cls:'seda'},
@@ -1321,7 +1318,8 @@ var TROJBALENI_PIVA = [
   {name:'Zlatka 11°', cls:'zluta'},
   {name:'Mezulánka 11°', cls:'oranzova'},
   {name:'Nelson 12°', cls:'modra'},
-  {name:'Dublin 13°', cls:'tmave-zelena'}
+  {name:'Dublin 13°', cls:'tmave-zelena'},
+  {name:'Sklenice', cls:''}
 ];
 var trojbaleniVybrane = [null, null, null];
 var trojbaleniEditGroupId = null;
@@ -1329,19 +1327,18 @@ var trojbaleniEditGroupId = null;
 function otevriTrojbaleniModal(groupId) {
   trojbaleniEditGroupId = groupId || null;
   trojbaleniVybrane = [null, null, null];
-  var sklenice = false;
   if (groupId) {
     receiptItems.forEach(function(r) {
       if (r.giftGroupId !== groupId) return;
       if (r.nazev === 'Dárkové trojbalení' && r.skladRules) {
         r.skladRules.forEach(function(rule, idx) {
-          if (idx < 3) trojbaleniVybrane[idx] = rule.key.replace(' v PET', '');
+          if (idx < 3) {
+            trojbaleniVybrane[idx] = rule.key === 'Sklenice' ? 'Sklenice' : rule.key.replace(' v PET', '');
+          }
         });
       }
-      if (r.nazev === 'Sklenice (k trojbalení)') sklenice = true;
     });
   }
-  document.getElementById('trojbaleni-sklenice').checked = sklenice;
   renderTrojbaleniSloty();
   document.getElementById('trojbaleni-modal').classList.remove('hidden');
   updateTrojbaleniBtn();
@@ -1351,9 +1348,9 @@ function renderTrojbaleniSloty() {
   var html = '';
   for (var s = 0; s < 3; s++) {
     html += '<div style="margin-bottom:.7rem;">';
-    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:5px;">' + (s+1) + '. pivo: <strong style="color:var(--text);">' + (trojbaleniVybrane[s] || '—') + '</strong></div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:5px;">';
-    TROJBALENI_PIVA.forEach(function(p) {
+    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:5px;">' + (s+1) + '. položka: <strong style="color:var(--text);">' + (trojbaleniVybrane[s] || '—') + '</strong></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:5px;">';
+    TROJBALENI_VOLBY.forEach(function(p) {
       var selected = trojbaleniVybrane[s] === p.name;
       var style = 'font-size:11px;padding:7px 4px;min-height:unset;' + (selected ? 'outline:3px solid var(--accent);outline-offset:-2px;' : '');
       html += '<button class="vip-btn ' + p.cls + '" style="' + style + '" onclick="vyberTrojbaleniPivo(' + s + ', \'' + p.name + '\')">' + p.name + '</button>';
@@ -1387,7 +1384,9 @@ function potvrdTrojbaleni() {
   }
   var groupId = 'gift-' + Date.now() + '-' + Math.floor(Math.random()*10000);
   var popisek = trojbaleniVybrane.join(', ');
-  var skladRules = trojbaleniVybrane.map(function(b){ return { key: b + ' v PET', inc: 1 }; });
+  var skladRules = trojbaleniVybrane.map(function(b){
+    return { key: b === 'Sklenice' ? 'Sklenice' : (b + ' v PET'), inc: 1 };
+  });
   var trojItem = {
     nazev: 'Dárkové trojbalení',
     pocet: 1,
@@ -1400,19 +1399,6 @@ function potvrdTrojbaleni() {
   };
   applyStamgastToItem(trojItem);
   receiptItems.unshift(trojItem);
-  if (document.getElementById('trojbaleni-sklenice').checked) {
-    var sklenItem = {
-      nazev: 'Sklenice (k trojbalení)',
-      pocet: 1,
-      cena: 105,
-      warn: false,
-      stamgast: false,
-      skladRules: [{ key: 'Sklenice', inc: 1 }],
-      giftGroupId: groupId
-    };
-    applyStamgastToItem(sklenItem);
-    receiptItems.unshift(sklenItem);
-  }
   renderItems();
   closeTrojbaleniModal();
 }
