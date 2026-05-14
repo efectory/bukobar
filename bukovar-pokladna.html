@@ -602,10 +602,6 @@
             <button class="vip-btn modra"        onclick="quickAdd({n:'Nelson 12° v PET',c:'Piva',p:105,u:'1,0l'})">Nelson 12°<span class="vip-btn-stock" id="bp-6"></span></button>
             <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13° v PET',c:'Piva',p:105,u:'1,0l'})">Dublin 13°<span class="vip-btn-stock" id="bp-7"></span></button>
           </div>
-          <div class="vip-piva-label">Merch</div>
-          <div class="vip-row" style="flex-wrap:nowrap;">
-            <button class="vip-btn" onclick="otevriTrojbaleniModal()">Dárkové trojbalení<br><span style="font-size:11px;font-weight:400;opacity:.75;">320 Kč</span></button>
-          </div>
         </div>
 
         <!-- Nahoře: přidat položku (fixní výška) -->
@@ -1100,10 +1096,11 @@ const MENU = [
   {n:"Zákusek",c:"Občerstvení",p:85},
   {n:"Rum standard (Republica, Heffron...)",c:"Destiláty",p:79,u:"0,05l"},
   {n:"Rum premium (Kraken, Espero...)",c:"Destiláty",p:99,u:"0,05l"},
-  {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"}
+  {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"},
+  {n:"Dárkové trojbalení",c:"Merch",p:320}
 ];
 
-const CAT_ORDER = ["Piva","Nealkoholické nápoje","Horké nápoje","Víno","Míchané nápoje","Občerstvení","Destiláty"];
+const CAT_ORDER = ["Piva","Nealkoholické nápoje","Horké nápoje","Víno","Míchané nápoje","Občerstvení","Destiláty","Merch"];
 
 let stream, snapB64, receiptItems = [];
 let isStamgastActive = false;
@@ -1279,6 +1276,10 @@ function quickAdd(item) {
     selectedRadlerBeer = 'Kohoutí 12°';
     updateRadlerBeerHighlight();
     document.getElementById('radler-modal').classList.remove('hidden');
+    return;
+  }
+  if (item.n === 'Dárkové trojbalení') {
+    otevriTrojbaleniModal();
     return;
   }
   quickAddDirect(item, null, null);
