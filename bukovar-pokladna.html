@@ -602,6 +602,10 @@
             <button class="vip-btn modra"        onclick="quickAdd({n:'Nelson 12° v PET',c:'Piva',p:105,u:'1,0l'})">Nelson 12°<span class="vip-btn-stock" id="bp-6"></span></button>
             <button class="vip-btn tmave-zelena" onclick="quickAdd({n:'Dublin 13° v PET',c:'Piva',p:105,u:'1,0l'})">Dublin 13°<span class="vip-btn-stock" id="bp-7"></span></button>
           </div>
+          <div class="vip-piva-label">Merch</div>
+          <div class="vip-row" style="flex-wrap:nowrap;">
+            <button class="vip-btn" onclick="otevriTrojbaleniModal()">Dárkové trojbalení<br><span style="font-size:11px;font-weight:400;opacity:.75;">320 Kč</span></button>
+          </div>
         </div>
 
         <!-- Nahoře: přidat položku (fixní výška) -->
@@ -921,6 +925,22 @@
     <div class="modal-actions" style="margin-top:.75rem;">
       <button onclick="closeDluhModal()">Zrušit</button>
       <button class="primary" id="dluh-potvrdit-btn" onclick="potvrzDluh()" style="display:none;">Potvrdit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dárkové trojbalení modal -->
+<div class="modal-overlay hidden" id="trojbaleni-modal">
+  <div class="modal" style="max-width:560px;">
+    <h3>Dárkové trojbalení — 320 Kč</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem;">Vyber 3 piva (mohou být i stejná):</p>
+    <div id="trojbaleni-sloty"></div>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:1rem;font-size:15px;cursor:pointer;padding:8px 10px;background:var(--surface);border-radius:var(--radius);">
+      <input type="checkbox" id="trojbaleni-sklenice" /> + Sklenice 105 Kč
+    </label>
+    <div class="modal-actions" style="margin-top:1rem;">
+      <button onclick="closeTrojbaleniModal()">Zrušit</button>
+      <button class="primary" id="trojbaleni-potvrdit-btn" onclick="potvrdTrojbaleni()" disabled>Přidat na účet</button>
     </div>
   </div>
 </div>
@@ -1290,6 +1310,111 @@ function closeDzbanekModal() {
   pendingDzbanekItem = null;
 }
 
+// --- Dárkové trojbalení ---
+var TROJBALENI_PIVA = [
+  {name:'Hraďák 10°', cls:'zelena'},
+  {name:'Štamgast 11°', cls:'hneda'},
+  {name:'Šedá vlčice 11°', cls:'seda'},
+  {name:'Kohoutí 12°', cls:'zlata'},
+  {name:'Zlatka 11°', cls:'zluta'},
+  {name:'Mezulánka 11°', cls:'oranzova'},
+  {name:'Nelson 12°', cls:'modra'},
+  {name:'Dublin 13°', cls:'tmave-zelena'}
+];
+var trojbaleniVybrane = [null, null, null];
+var trojbaleniEditGroupId = null;
+
+function otevriTrojbaleniModal(groupId) {
+  trojbaleniEditGroupId = groupId || null;
+  trojbaleniVybrane = [null, null, null];
+  var sklenice = false;
+  if (groupId) {
+    receiptItems.forEach(function(r) {
+      if (r.giftGroupId !== groupId) return;
+      if (r.nazev === 'Dárkové trojbalení' && r.skladRules) {
+        r.skladRules.forEach(function(rule, idx) {
+          if (idx < 3) trojbaleniVybrane[idx] = rule.key.replace(' v PET', '');
+        });
+      }
+      if (r.nazev === 'Sklenice (k trojbalení)') sklenice = true;
+    });
+  }
+  document.getElementById('trojbaleni-sklenice').checked = sklenice;
+  renderTrojbaleniSloty();
+  document.getElementById('trojbaleni-modal').classList.remove('hidden');
+  updateTrojbaleniBtn();
+}
+
+function renderTrojbaleniSloty() {
+  var html = '';
+  for (var s = 0; s < 3; s++) {
+    html += '<div style="margin-bottom:.7rem;">';
+    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:5px;">' + (s+1) + '. pivo: <strong style="color:var(--text);">' + (trojbaleniVybrane[s] || '—') + '</strong></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:5px;">';
+    TROJBALENI_PIVA.forEach(function(p) {
+      var selected = trojbaleniVybrane[s] === p.name;
+      var style = 'font-size:11px;padding:7px 4px;min-height:unset;' + (selected ? 'outline:3px solid var(--accent);outline-offset:-2px;' : '');
+      html += '<button class="vip-btn ' + p.cls + '" style="' + style + '" onclick="vyberTrojbaleniPivo(' + s + ', \'' + p.name + '\')">' + p.name + '</button>';
+    });
+    html += '</div></div>';
+  }
+  document.getElementById('trojbaleni-sloty').innerHTML = html;
+}
+
+function vyberTrojbaleniPivo(slot, beer) {
+  trojbaleniVybrane[slot] = beer;
+  renderTrojbaleniSloty();
+  updateTrojbaleniBtn();
+}
+
+function updateTrojbaleniBtn() {
+  var ok = trojbaleniVybrane.every(function(b){ return b !== null; });
+  document.getElementById('trojbaleni-potvrdit-btn').disabled = !ok;
+}
+
+function closeTrojbaleniModal() {
+  document.getElementById('trojbaleni-modal').classList.add('hidden');
+  trojbaleniEditGroupId = null;
+  trojbaleniVybrane = [null, null, null];
+}
+
+function potvrdTrojbaleni() {
+  if (!trojbaleniVybrane.every(function(b){ return b !== null; })) return;
+  if (trojbaleniEditGroupId) {
+    receiptItems = receiptItems.filter(function(r){ return r.giftGroupId !== trojbaleniEditGroupId; });
+  }
+  var groupId = 'gift-' + Date.now() + '-' + Math.floor(Math.random()*10000);
+  var popisek = trojbaleniVybrane.join(', ');
+  var skladRules = trojbaleniVybrane.map(function(b){ return { key: b + ' v PET', inc: 1 }; });
+  var trojItem = {
+    nazev: 'Dárkové trojbalení',
+    pocet: 1,
+    cena: 320,
+    warn: false,
+    stamgast: false,
+    popisek: popisek,
+    skladRules: skladRules,
+    giftGroupId: groupId
+  };
+  applyStamgastToItem(trojItem);
+  receiptItems.unshift(trojItem);
+  if (document.getElementById('trojbaleni-sklenice').checked) {
+    var sklenItem = {
+      nazev: 'Sklenice (k trojbalení)',
+      pocet: 1,
+      cena: 105,
+      warn: false,
+      stamgast: false,
+      skladRules: [{ key: 'Sklenice', inc: 1 }],
+      giftGroupId: groupId
+    };
+    applyStamgastToItem(sklenItem);
+    receiptItems.unshift(sklenItem);
+  }
+  renderItems();
+  closeTrojbaleniModal();
+}
+
 var RADLER_BEER_BUTTONS = {
   'Hraďák 10°':      'radler-btn-hradak',
   'Štamgast 11°':    'radler-btn-stamgast',
@@ -1583,13 +1708,19 @@ function renderItems() {
     var safeName = item.nazev.replace(/</g,'&lt;').replace(/>/g,'&gt;');
     if (item.popisek) safeName += ' <span style="font-size:11px;color:var(--muted);display:block;margin-top:1px;">' + item.popisek.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
     var priceHtml = sub + ' Kč' + (item.stamgast ? ' <span class="stamgast-badge">š</span>' : '');
+    var nameOnclick;
+    if (item.giftGroupId && item.nazev === 'Dárkové trojbalení') {
+      nameOnclick = "otevriTrojbaleniModal('" + item.giftGroupId + "')";
+    } else {
+      nameOnclick = "openItemPickerModal(function(m){receiptItems[" + i + "].nazev=m.n;receiptItems[" + i + "].cena=m.p;receiptItems[" + i + "].warn=false;receiptItems[" + i + "].stamgast=false;applyStamgastToItem(receiptItems[" + i + "]);closeItemPickerModal();renderItems();})";
+    }
     row.innerHTML =
       '<div class="qty-ctrl">' +
         '<button class="qty-btn" onclick="changeQty(' + i + ',-1)">−</button>' +
         '<span class="item-qty-input">' + item.pocet + '</span>' +
         '<button class="qty-btn" onclick="changeQty(' + i + ',1)">+</button>' +
       '</div>' +
-      '<button class="item-name-btn" onclick="openItemPickerModal(function(m){receiptItems[' + i + '].nazev=m.n;receiptItems[' + i + '].cena=m.p;receiptItems[' + i + '].warn=false;receiptItems[' + i + '].stamgast=false;applyStamgastToItem(receiptItems[' + i + ']);closeItemPickerModal();renderItems();})" title="Klikněte pro změnu">' + safeName + '</button>' +
+      '<button class="item-name-btn" onclick="' + nameOnclick + '" title="Klikněte pro změnu">' + safeName + '</button>' +
       '<span class="item-price" id="price-' + i + '">' + priceHtml + '</span>' +
       '<button class="item-del" onclick="deleteItem(' + i + ')">×</button>';
     lines.appendChild(row);
