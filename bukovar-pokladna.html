@@ -493,9 +493,35 @@
     #print-area .rp-total { display: flex; justify-content: space-between; padding: 3px 0; font-weight: 700; font-size: 14px; border-top: 1px solid #000; margin-top: 3px; }
     #print-area .rp-footer { text-align: center; margin-top: 6px; font-size: 11px; }
   }
+
+  /* Auth login overlay */
+  #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 99999; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: 'DM Sans', sans-serif; }
+  #auth-overlay .auth-box { background: var(--surface); padding: 2.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border); max-width: 380px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,.08); }
+  #auth-overlay h2 { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 1.2rem; text-align: center; font-weight: normal; }
+  #auth-overlay h2 span { color: var(--accent); }
+  #auth-overlay .auth-status { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 1.4rem; }
+  #auth-overlay input { width: 100%; padding: 14px; border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 16px; margin-bottom: 10px; font-family: inherit; outline: none; background: var(--surface); color: var(--text); }
+  #auth-overlay input:focus { border-color: var(--accent); }
+  #auth-overlay button { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 500; cursor: pointer; font-family: inherit; margin-top: 4px; min-height: unset; }
+  #auth-overlay button:hover { background: #9c2e14; }
+  #auth-overlay button:disabled { opacity: .55; cursor: not-allowed; }
+  #auth-overlay .auth-error { color: var(--accent); font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
+  .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
 </style>
 </head>
 <body>
+
+<div id="auth-overlay">
+  <div class="auth-box">
+    <h2>Bukovar <span>Pokladna</span></h2>
+    <div class="auth-status" id="auth-status">Přihlášení obsluhy</div>
+    <input id="auth-email" type="email" placeholder="email" autocomplete="username" inputmode="email">
+    <input id="auth-password" type="password" placeholder="heslo" autocomplete="current-password">
+    <button id="auth-submit">Přihlásit</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
 
 <div class="tabs" style="justify-content:space-between;">
   <div style="display:flex;">
@@ -505,7 +531,10 @@
     <button class="tab-btn" id="tab-btn-uzavirka" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
     <button class="tab-btn" onclick="switchTab('administrace',this);renderAdminPetConfig()">Administrace</button>
   </div>
-  <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
+  <div style="display:flex;align-items:center;">
+    <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
+    <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
+  </div>
 </div>
 
 <div class="tab-content active" id="tab-kasa">
@@ -3774,6 +3803,92 @@ function updateTabBadges() {
   }
 }
 
+</script>
+
+<!-- Firebase Auth (V7.12) — login gate před spuštěním pokladny -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCVt5sqRuJzFDclyMnwM6D0Pqz5E8449oA",
+    authDomain: "bukobar-pokladna.firebaseapp.com",
+    projectId: "bukobar-pokladna",
+    storageBucket: "bukobar-pokladna.firebasestorage.app",
+    messagingSenderId: "200112245598",
+    appId: "1:200112245598:web:10db15b7bb6dc6248e5dcf"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence).catch(function(e){ console.warn('Persistence:', e); });
+
+  const overlay = document.getElementById('auth-overlay');
+  const emailInput = document.getElementById('auth-email');
+  const passwordInput = document.getElementById('auth-password');
+  const submitBtn = document.getElementById('auth-submit');
+  const errorDiv = document.getElementById('auth-error');
+  const statusDiv = document.getElementById('auth-status');
+  const logoutBtn = document.getElementById('header-logout-btn');
+
+  window.bukovarLogout = async function() {
+    if (!confirm('Opravdu se odhlásit?')) return;
+    try { await signOut(auth); }
+    catch(e) { alert('Chyba odhlášení: ' + e.message); }
+  };
+
+  window.bukovarCurrentUser = function() {
+    return auth.currentUser ? auth.currentUser.email : null;
+  };
+
+  onAuthStateChanged(auth, function(user) {
+    if (user) {
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+      if (logoutBtn) logoutBtn.title = 'Přihlášen: ' + user.email + ' — klikni pro odhlášení';
+    } else {
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      passwordInput.value = '';
+      errorDiv.textContent = '';
+      statusDiv.textContent = 'Přihlášení obsluhy';
+      setTimeout(function(){ emailInput.focus(); }, 100);
+    }
+  });
+
+  async function handleLogin() {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    if (!email || !password) {
+      errorDiv.textContent = 'Vyplň email a heslo.';
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Přihlašuji…';
+    errorDiv.textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      const codeMap = {
+        'auth/invalid-credential': 'Špatný email nebo heslo.',
+        'auth/invalid-email': 'Neplatný formát emailu.',
+        'auth/user-not-found': 'Účet neexistuje.',
+        'auth/wrong-password': 'Špatné heslo.',
+        'auth/network-request-failed': 'Není připojení k internetu.',
+        'auth/too-many-requests': 'Příliš mnoho pokusů. Počkej chvíli a zkus znovu.',
+        'auth/user-disabled': 'Účet je zablokovaný.'
+      };
+      errorDiv.textContent = codeMap[e.code] || ('Chyba: ' + (e.message || e.code));
+      console.error('[auth] login failed:', e);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Přihlásit';
+    }
+  }
+
+  submitBtn.addEventListener('click', handleLogin);
+  passwordInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') handleLogin(); });
+  emailInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') passwordInput.focus(); });
 </script>
 
 <!-- Oblast pro tisk — skrytá, zobrazí se jen při tisku -->
