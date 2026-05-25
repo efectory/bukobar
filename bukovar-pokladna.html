@@ -1067,6 +1067,8 @@
 </div>
 
 <script>
+const APP_VERSION = '7.13';
+
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
   var keys = ['bukovar_sklad','bukovar_uctenky','bukovar_checklist_history',
@@ -2052,6 +2054,9 @@ function nextUctenkaNum() {
   var last = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
   var next = last + 1;
   localStorage.setItem('bukovar_uctenka_num', String(next));
+  if (window.bukovarPushCounter) {
+    window.bukovarPushCounter(next).catch(function(e){ console.warn('[counter] push failed:', e); });
+  }
   return next;
 }
 
@@ -3457,19 +3462,40 @@ function renderAdminPetConfig() {
 }
 
 function zalohaExport() {
-  var keys = ['bukovar_uctenka_num','bukovar_checklist_history','bukovar_otevreni_history','bukovar_pet_history','bukovar_pet_config','bukovar_sklad','bukovar_stamgasti'];
-  var data = {};
-  keys.forEach(function(k) {
-    var v = localStorage.getItem(k);
-    if (v !== null) data[k] = JSON.parse(v);
-  });
+  var now = new Date();
+  var user = (window.bukovarCurrentUser && window.bukovarCurrentUser()) || null;
+  var data = {
+    __meta: {
+      app: 'bukovar-pokladna',
+      version: APP_VERSION,
+      exportedAt: now.toISOString(),
+      exportedBy: user,
+      uctenkyCount: 0
+    }
+  };
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (!k || k.indexOf('bukovar_') !== 0) continue;
+    if (k === 'bukovar_api_key') continue;
+    var raw = localStorage.getItem(k);
+    if (raw === null) continue;
+    try { data[k] = JSON.parse(raw); }
+    catch(e) { data[k] = raw; }
+  }
+  if (Array.isArray(data['bukovar_uctenky'])) data.__meta.uctenkyCount = data['bukovar_uctenky'].length;
+  var stamp = now.getFullYear() + '-'
+    + String(now.getMonth()+1).padStart(2,'0') + '-'
+    + String(now.getDate()).padStart(2,'0') + '_'
+    + String(now.getHours()).padStart(2,'0') + '-'
+    + String(now.getMinutes()).padStart(2,'0');
   var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'bukovar-zaloha-' + new Date().toISOString().slice(0,10) + '.json';
+  a.download = 'bukovar-zaloha-V' + APP_VERSION + '_' + stamp + '.json';
   a.click();
   URL.revokeObjectURL(a.href);
-  document.getElementById('zaloha-msg').innerHTML = '<span style="color:var(--success,green)">Data exportována.</span>';
+  var msg = document.getElementById('zaloha-msg');
+  if (msg) msg.innerHTML = '<span style="color:var(--success-text,green)">Záloha stažena: ' + a.download + ' (' + data.__meta.uctenkyCount + ' účtenek).</span>';
 }
 
 function zalohaImport(event) {
@@ -3805,10 +3831,11 @@ function updateTabBadges() {
 
 </script>
 
-<!-- Firebase Auth (V7.12) — login gate před spuštěním pokladny -->
+<!-- Firebase Auth + Firestore counter (V7.12 + V7.13) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { initializeFirestore, persistentLocalCache, doc, getDoc, setDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCVt5sqRuJzFDclyMnwM6D0Pqz5E8449oA",
@@ -3822,6 +3849,51 @@ function updateTabBadges() {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   setPersistence(auth, browserLocalPersistence).catch(function(e){ console.warn('Persistence:', e); });
+
+  let db;
+  try {
+    db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
+  } catch (e) {
+    console.warn('[firestore] persistent cache failed, fallback to in-memory:', e);
+    db = initializeFirestore(app, {});
+  }
+  const counterRef = doc(db, 'meta', 'counter');
+
+  // Counter sync — bezpečnostní pojistka, localStorage zůstává primárním zdrojem
+  window.bukovarSyncCounter = async function() {
+    try {
+      const snap = await getDoc(counterRef);
+      const remote = snap.exists() ? (snap.data().uctenka_num || 0) : 0;
+      const local = parseInt(localStorage.getItem('bukovar_uctenka_num') || '20260000');
+      if (remote > local) {
+        localStorage.setItem('bukovar_uctenka_num', String(remote));
+        console.log('[counter] synced from Firestore: ' + local + ' → ' + remote);
+        return remote;
+      } else if (local > remote) {
+        await setDoc(counterRef, { uctenka_num: local, updatedAt: serverTimestamp(), updatedBy: auth.currentUser ? auth.currentUser.email : null }, { merge: true });
+        console.log('[counter] pushed local to Firestore: ' + local);
+      }
+      return local;
+    } catch (e) {
+      console.warn('[counter] sync failed (offline?):', e);
+      return null;
+    }
+  };
+
+  window.bukovarPushCounter = async function(num) {
+    try {
+      // Atomic: ulož max(remote, num), nikdy se nesnížit
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(counterRef);
+        const remote = snap.exists() ? (snap.data().uctenka_num || 0) : 0;
+        const winner = Math.max(remote, num);
+        tx.set(counterRef, { uctenka_num: winner, updatedAt: serverTimestamp(), updatedBy: auth.currentUser ? auth.currentUser.email : null }, { merge: true });
+      });
+    } catch (e) {
+      console.warn('[counter] push failed (offline?):', e);
+      throw e;
+    }
+  };
 
   const overlay = document.getElementById('auth-overlay');
   const emailInput = document.getElementById('auth-email');
@@ -3846,6 +3918,7 @@ function updateTabBadges() {
       overlay.style.display = 'none';
       document.body.style.overflow = '';
       if (logoutBtn) logoutBtn.title = 'Přihlášen: ' + user.email + ' — klikni pro odhlášení';
+      window.bukovarSyncCounter();
     } else {
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
