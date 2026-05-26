@@ -36,138 +36,81 @@
     display: flex;
     flex-direction: column;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    min-height: 100vh;
   }
-  header {
-    background: var(--text);
-    color: #f5f1ea;
-    padding: 1rem 1.4rem;
-    text-align: center;
-    flex-shrink: 0;
-  }
-  header .logo { font-family: 'DM Serif Display', serif; font-size: 22px; letter-spacing: .02em; }
-  header .logo span { color: var(--accent); }
 
   .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
   .screen.active { display: flex; }
 
-  /* ========== HOME ========== */
-  #screen-home main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 1.2rem 1.2rem 1.5rem;
-    gap: 1rem;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .stul-label {
-    text-align: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.1rem 1rem;
-    flex-shrink: 0;
-  }
-  .stul-place {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: .12em;
-    color: var(--muted);
-    font-weight: 500;
-    margin-bottom: .25rem;
-  }
-  .stul-name {
-    font-family: 'DM Serif Display', serif;
-    font-size: 36px;
-    line-height: 1.1;
-    color: var(--text);
-  }
-
-  .call-btn, .order-btn, .history-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    border: none;
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    line-height: 1.25;
-    transition: background .15s, transform .1s, opacity .15s;
-    flex-shrink: 0;
-    width: 100%;
-  }
-  .call-btn:active, .order-btn:active, .history-btn:active { transform: scale(.98); }
-  .call-btn:disabled, .order-btn:disabled, .history-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-  .call-btn {
-    font-size: 24px;
-    padding: 1.3rem 1rem;
-    background: var(--accent);
-    color: #fff;
-    min-height: 140px;
-    box-shadow: 0 6px 18px rgba(181,56,26,.22);
-  }
-  .call-btn:disabled { background: var(--success-bg); color: var(--success-text); box-shadow: none; cursor: default; }
-  .call-btn .icon { display: block; font-size: 40px; margin-bottom: .35rem; }
-  .call-btn .sub { display: block; font-size: 13px; font-weight: 400; margin-top: .4rem; opacity: .85; }
-
-  .order-btn {
-    font-size: 22px;
-    padding: 1.3rem 1rem;
+  /* ========== TOP BAR ========== */
+  .top-bar {
     background: var(--text);
     color: #f5f1ea;
-    min-height: 120px;
-    box-shadow: 0 6px 18px rgba(26,22,16,.18);
-  }
-  .order-btn .icon { display: block; font-size: 36px; margin-bottom: .3rem; }
-  .order-btn .sub { display: block; font-size: 13px; font-weight: 400; margin-top: .35rem; opacity: .8; }
-
-  .history-btn {
-    font-size: 17px;
-    padding: 1rem 1rem;
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border-strong);
-    min-height: 64px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
-  .history-btn .h-left { display: flex; align-items: center; gap: 10px; }
-  .history-btn .h-icon { font-size: 20px; }
-  .history-btn .h-badge { background: var(--accent); color: #fff; min-width: 26px; height: 26px; border-radius: 13px; padding: 0 8px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-
-  .status-box {
-    border-radius: var(--radius);
-    padding: .85rem 1.1rem;
-    font-size: 14px;
-    text-align: center;
-    min-height: 48px;
+  .stul-btn {
+    background: rgba(245,241,234,.12);
+    border: 1px solid rgba(245,241,234,.3);
+    color: #f5f1ea;
+    padding: 8px 14px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 40px;
     display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+  }
+  .stul-btn:active { background: rgba(245,241,234,.22); }
+  .stul-btn .stul-arrow { font-size: 11px; opacity: .7; }
+
+  .top-spacer { flex: 1; }
+
+  .top-icon-btn {
+    background: rgba(245,241,234,.12);
+    border: 1px solid rgba(245,241,234,.3);
+    color: #f5f1ea;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+    position: relative;
+  }
+  .top-icon-btn:active { background: rgba(245,241,234,.22); }
+  .top-icon-btn[hidden] { display: none !important; }
+  .top-icon-btn .h-badge {
+    background: var(--accent);
+    color: #fff;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    padding: 0 7px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1.4;
-    flex-shrink: 0;
-  }
-  .status-box.idle { background: var(--surface); border: 1px dashed var(--border-strong); color: var(--muted); }
-  .status-box.ok   { background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(26,107,58,.2); }
-  .status-box.err  { background: var(--error-bg);   color: var(--error-text);   border: 1px solid rgba(164,16,27,.2); }
-  .status-box.work { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
-
-  footer {
-    text-align: center;
-    padding: .7rem 1.4rem .9rem;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: .04em;
-    flex-shrink: 0;
+    margin-left: 2px;
   }
 
-  /* Fatální chyba */
-  .fatal { margin: auto; text-align: center; padding: 2rem 1.5rem; color: var(--error-text); }
-  .fatal h1 { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: .8rem; }
-  .fatal p { font-size: 15px; color: var(--muted); }
-
-  /* ========== MENU + KATEGORIE + KOŠÍK + HISTORY common ========== */
+  /* Sub-header (menu screen) */
   .sub-header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -193,6 +136,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    font-family: inherit;
   }
   .back-btn:active { background: var(--bg); }
   .sub-header h1 { font-family: 'DM Serif Display', serif; font-size: 22px; flex: 1; line-height: 1; }
@@ -218,14 +162,114 @@
 
   .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 110px; }
 
-  /* ========== MENU screen — strukturované sekce (PC style) ========== */
+  /* ========== STUL PICKER ========== */
+  .stul-picker-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .stul-picker-intro {
+    text-align: center;
+    margin-bottom: 0;
+  }
+  .stul-picker-intro h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    margin-bottom: .4rem;
+  }
+  .stul-picker-intro p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .stul-picker-section-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 0 6px .4rem;
+  }
+  .stul-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .stul-pick-btn {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    padding: 18px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    border-radius: var(--radius);
+    cursor: pointer;
+    min-height: 78px;
+    line-height: 1;
+    transition: background .12s, transform .1s, border-color .12s;
+  }
+  .stul-pick-btn:active { background: var(--bg); transform: scale(.95); }
+  .stul-pick-btn.current {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .stul-pick-btn .num-label {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-top: 4px;
+    opacity: .65;
+  }
+  .stul-pick-btn.current .num-label { opacity: .9; }
+
+  /* Fatální chyba */
+  .fatal { margin: auto; text-align: center; padding: 2rem 1.5rem; color: var(--error-text); }
+  .fatal h1 { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: .8rem; }
+  .fatal p { font-size: 15px; color: var(--muted); }
+
+  /* Status box pro chyby auth (overlay nad menu) */
+  .auth-error-banner {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid rgba(164,16,27,.2);
+    padding: .9rem 1rem;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: .8rem .8rem 0;
+    border-radius: var(--radius);
+    display: none;
+    align-items: center;
+    gap: .8rem;
+  }
+  .auth-error-banner[data-show="1"] { display: flex; }
+  .auth-error-banner .msg { flex: 1; }
+  .auth-error-banner button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+
+  /* ========== MENU sekce ========== */
   .menu-section { padding: 1rem 1rem 0; }
   .menu-section:last-child { padding-bottom: 1rem; }
   .menu-section-label { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); margin-bottom: .55rem; padding: 0 4px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .grid-2-tight { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
-  /* Pivo tlačítka (barevná, kopie palety z pokladny) */
   .pivo-btn {
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
@@ -255,7 +299,6 @@
     padding: 0 7px; font-size: 12px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
   }
-  /* Barvy piva (synced s pokladnou PC) */
   .pivo-btn.zelena       { background: #dcfce7; color: #166534; border-color: #16a34a; }
   .pivo-btn.hneda        { background: #f5e6d3; color: #92400e; border-color: #92400e; }
   .pivo-btn.seda         { background: #f1f5f9; color: #475569; border-color: #64748b; }
@@ -265,7 +308,6 @@
   .pivo-btn.modra        { background: #dbeafe; color: #1e40af; border-color: #2563eb; }
   .pivo-btn.tmave-zelena { background: #f0fdf4; color: #14532d; border-color: #166534; }
 
-  /* Kategoriová tlačítka */
   .cat-btn {
     font-family: 'DM Sans', sans-serif;
     font-size: 15px;
@@ -292,7 +334,7 @@
     display: flex; align-items: center; justify-content: center;
   }
 
-  /* ========== CATEGORY screen — list položek v kategorii ========== */
+  /* ========== CATEGORY screen items ========== */
   .menu-item {
     background: var(--surface);
     margin: 0 1rem .55rem;
@@ -343,7 +385,7 @@
     margin-left: 4px;
   }
 
-  /* Sticky CTA na spodek */
+  /* Sticky CTA */
   .sticky-bottom-bar {
     position: fixed;
     bottom: 0;
@@ -437,7 +479,7 @@
   .cart-total-label { font-size: 14px; color: var(--muted); }
   .cart-total-value { font-size: 22px; font-weight: 700; }
 
-  /* ========== HISTORY (Moje objednávky) ========== */
+  /* ========== HISTORY ========== */
   .history-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 15px; }
   .history-item {
     background: var(--surface);
@@ -502,52 +544,26 @@
 </head>
 <body>
 
-<header>
-  <div class="logo">Buko<span>var</span></div>
-</header>
-
-<!-- HOME -->
-<div class="screen active" id="screen-home">
-  <main>
-    <div class="stul-label" id="stul-label" hidden>
-      <div class="stul-place" id="stul-place">—</div>
-      <div class="stul-name" id="stul-name">—</div>
-    </div>
-
-    <button class="call-btn" id="call-btn" disabled>
-      <span class="icon">🔔</span>
-      Přivolat obsluhu
-      <span class="sub" id="call-sub">Načítám…</span>
+<!-- ========== MENU (= home) ========== -->
+<div class="screen active" id="screen-menu">
+  <div class="top-bar">
+    <button class="stul-btn" id="top-stul-btn">
+      <span id="top-stul-label">—</span>
+      <span class="stul-arrow">▼</span>
     </button>
-
-    <button class="order-btn" id="order-btn" disabled>
-      <span class="icon">📋</span>
-      Objednat z menu
-      <span class="sub">Pivo, jídlo, nápoje…</span>
+    <div class="top-spacer"></div>
+    <button class="top-icon-btn" id="top-history-btn" hidden>
+      📜 <span class="h-badge" id="top-history-count">0</span>
     </button>
-
-    <button class="history-btn" id="history-btn" hidden>
-      <span class="h-left"><span class="h-icon">📜</span> Moje objednávky</span>
-      <span class="h-badge" id="history-count">0</span>
-    </button>
-
-    <div class="status-box idle" id="status-box">Připraveno</div>
-
-    <button id="retry-auth-btn" hidden style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;min-height:54px;">
-      🔄 Zkusit znovu
-    </button>
-  </main>
-  <footer>Bukovar pokladna · mobilní číšník</footer>
-</div>
-
-<!-- MENU — strukturované sekce (čepované piva, PET, kategorie) -->
-<div class="screen" id="screen-menu">
-  <div class="sub-header">
-    <button class="back-btn" id="menu-back-btn" aria-label="Zpět">←</button>
-    <h1>Menu</h1>
-    <button class="cart-chip" id="menu-cart-chip" disabled>🛒 <span id="menu-cart-count">0</span></button>
   </div>
+
+  <div class="auth-error-banner" id="auth-error-banner">
+    <div class="msg" id="auth-error-msg">Spojení selhalo.</div>
+    <button id="auth-retry-btn">🔄 Zkusit</button>
+  </div>
+
   <div class="scroll-body" id="menu-body"></div>
+
   <div class="sticky-bottom-bar" id="menu-cta" hidden>
     <button class="sticky-btn" id="menu-cta-btn">
       <span class="left">🛒 <span id="menu-cta-count">0</span> položek</span>
@@ -556,7 +572,31 @@
   </div>
 </div>
 
-<!-- CATEGORY — položky vybrané kategorie -->
+<!-- ========== STUL PICKER ========== -->
+<div class="screen" id="screen-stul">
+  <div class="top-bar">
+    <button class="back-btn" id="stul-back-btn" aria-label="Zpět" hidden style="background:rgba(245,241,234,.12);border:1px solid rgba(245,241,234,.3);color:#f5f1ea;">←</button>
+    <div class="top-spacer"></div>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:18px;flex:none;">Vyberte stůl</h1>
+    <div class="top-spacer"></div>
+  </div>
+  <div class="stul-picker-wrap">
+    <div class="stul-picker-intro">
+      <h2>U kterého stolu sedíte?</h2>
+      <p>Vyberte stůl, ke kterému patří váš QR kód.</p>
+    </div>
+    <div>
+      <div class="stul-picker-section-label">🪟 Venku</div>
+      <div class="stul-grid" id="stul-grid-venku"></div>
+    </div>
+    <div>
+      <div class="stul-picker-section-label">🏠 Uvnitř</div>
+      <div class="stul-grid" id="stul-grid-uvnitr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CATEGORY ========== -->
 <div class="screen" id="screen-category">
   <div class="sub-header">
     <button class="back-btn" id="cat-back-btn" aria-label="Zpět">←</button>
@@ -572,7 +612,7 @@
   </div>
 </div>
 
-<!-- CART -->
+<!-- ========== CART ========== -->
 <div class="screen" id="screen-cart">
   <div class="sub-header">
     <button class="back-btn" id="cart-back-btn" aria-label="Zpět">←</button>
@@ -587,22 +627,22 @@
   </div>
 </div>
 
-<!-- HISTORY — moje objednávky -->
+<!-- ========== HISTORY ========== -->
 <div class="screen" id="screen-history">
   <div class="sub-header">
     <button class="back-btn" id="history-back-btn" aria-label="Zpět">←</button>
-    <h1>Moje objednávky <small>které ještě nevyřízené</small></h1>
+    <h1>Moje objednávky <small id="history-subtitle">k tomuto stolu</small></h1>
   </div>
   <div class="scroll-body" id="history-body"></div>
 </div>
 
-<!-- SENT -->
+<!-- ========== SENT ========== -->
 <div class="screen" id="screen-sent">
   <main>
     <div class="sent-icon">✓</div>
     <div class="sent-title">Objednávka odeslána</div>
     <div class="sent-msg" id="sent-msg">Obsluha vám brzy přinese objednávku.</div>
-    <button class="sent-back-btn" id="sent-back-btn">Zpět na hlavní</button>
+    <button class="sent-back-btn" id="sent-back-btn">Zpět do menu</button>
   </main>
 </div>
 
@@ -623,192 +663,160 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // Firestore — fallback z persistent na memory cache (iOS Safari private/ITP blokuje IndexedDB)
   let db;
-  try {
-    db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
-  } catch (e) {
-    console.warn('[firestore] persistent cache failed, fallback memory:', e);
+  try { db = initializeFirestore(app, { localCache: persistentLocalCache({}) }); }
+  catch (e) {
     try { db = initializeFirestore(app, { localCache: memoryLocalCache() }); }
     catch (e2) { db = initializeFirestore(app, {}); }
   }
 
-  // Auth persistence — fallback chain (local → session → in-memory)
   async function setupPersistence() {
     try { await setPersistence(auth, browserLocalPersistence); return 'local'; }
     catch (e1) {
-      console.warn('[auth] browserLocalPersistence failed:', e1.code || e1.message);
       try { await setPersistence(auth, browserSessionPersistence); return 'session'; }
       catch (e2) {
-        console.warn('[auth] browserSessionPersistence failed:', e2.code || e2.message);
         try { await setPersistence(auth, inMemoryPersistence); return 'memory'; }
-        catch (e3) {
-          console.warn('[auth] inMemoryPersistence failed:', e3.code || e3.message);
-          return 'none';
-        }
+        catch (e3) { return 'none'; }
       }
     }
   }
 
-  // --- Parse stolu ---
-  const params = new URLSearchParams(location.search);
-  const stulRaw = (params.get('stul') || '').toUpperCase().trim();
-  const match = /^([VI])(\d{1,2})$/.exec(stulRaw);
-
-  if (!match) {
-    document.body.innerHTML =
-      '<header><div class="logo">Buko<span style="color:#b5381a;">var</span></div></header>' +
-      '<div class="fatal"><h1>Neplatný kód stolu</h1><p>QR kód není čitelný nebo je poškozen.</p></div>';
-    throw new Error('invalid stul: ' + stulRaw);
+  // ===== Stůl management =====
+  const STORAGE_KEY = 'bukovar_cisnik_stul';
+  function parseStul(raw) {
+    const s = String(raw || '').toUpperCase().trim();
+    const m = /^([VI])(\d{1,2})$/.exec(s);
+    if (!m) return null;
+    const isVenku = m[1] === 'V';
+    const num = parseInt(m[2], 10);
+    if (num < 1 || num > (isVenku ? 9 : 6)) return null;
+    return { id: m[1] + num, prefix: m[1], num: num, isVenku: isVenku };
+  }
+  function stulLabel(stul) {
+    return (stul.isVenku ? '🪟 Venku ' : '🏠 Uvnitř ') + ' – Stůl ' + stul.num;
+  }
+  function stulShort(stul) {
+    return (stul.isVenku ? '🪟' : '🏠') + ' Stůl ' + stul.num;
   }
 
-  const prefix = match[1];
-  const num = parseInt(match[2], 10);
-  const isVenku = prefix === 'V';
-  const maxNum = isVenku ? 9 : 6;
+  let currentStul = null;
+  const urlParams = new URLSearchParams(location.search);
+  const urlStul = parseStul(urlParams.get('stul'));
+  const savedStul = parseStul(localStorage.getItem(STORAGE_KEY));
+  currentStul = urlStul || savedStul; // URL má přednost, pak localStorage
+  if (currentStul) localStorage.setItem(STORAGE_KEY, currentStul.id);
 
-  if (num < 1 || num > maxNum) {
-    document.body.innerHTML =
-      '<header><div class="logo">Buko<span style="color:#b5381a;">var</span></div></header>' +
-      '<div class="fatal"><h1>Neplatný kód stolu</h1><p>Stůl ' + stulRaw + ' neexistuje.</p></div>';
-    throw new Error('stul out of range: ' + stulRaw);
-  }
-
-  const stulId = prefix + num;
-  const stulPlace = isVenku ? '🪟 Venku' : '🏠 Uvnitř';
-  const stulFullName = (isVenku ? 'Venku' : 'Uvnitř') + ' – Stůl ' + num;
-
-  document.getElementById('stul-place').textContent = stulPlace;
-  document.getElementById('stul-name').textContent = 'Stůl ' + num;
-  document.getElementById('stul-label').hidden = false;
-
-  // --- Elements ---
-  const callBtn = document.getElementById('call-btn');
-  const callSub = document.getElementById('call-sub');
-  const orderBtn = document.getElementById('order-btn');
-  const historyBtn = document.getElementById('history-btn');
-  const historyCountEl = document.getElementById('history-count');
-  const status = document.getElementById('status-box');
-
-  function setStatus(text, kind) {
-    status.className = 'status-box ' + (kind || 'idle');
-    status.textContent = text;
-  }
-
+  // ===== Helpers =====
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function(c) {
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
-
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
     document.getElementById('screen-' + name).classList.add('active');
     window.scrollTo(0, 0);
   }
 
-  // --- Anonymous auth s fallback persistence ---
-  let currentUid = null;
-  const retryBtn = document.getElementById('retry-auth-btn');
-
-  async function doSignIn() {
-    setStatus('Připojuji se…', 'work');
-    callSub.textContent = 'Připojuji…';
-    retryBtn.hidden = true;
-
-    const persistMode = await setupPersistence();
-    console.log('[auth] persistence mode:', persistMode);
-
-    try {
-      const cred = await signInAnonymously(auth);
-      console.log('[auth] sign-in OK, uid=' + cred.user.uid + ' persist=' + persistMode);
-    } catch (e) {
-      const code = e.code || '?';
-      const msg = e.message || String(e);
-      console.error('[auth] sign-in FAILED:', code, msg, e);
-      const friendly = {
-        'auth/operation-not-allowed': 'Anonymní přihlášení není povoleno v Firebase Console.',
-        'auth/admin-restricted-operation': 'Anonymní přihlášení musí být zapnuto v Firebase Console → Authentication → Sign-in method → Anonymous → Enable.',
-        'auth/network-request-failed': 'Není připojení k internetu.',
-        'auth/web-storage-unsupported': 'Prohlížeč blokuje úložiště (privátní okno?).',
-        'auth/internal-error': 'Vnitřní chyba Firebase. Zkuste znovu.',
-        'auth/too-many-requests': 'Příliš mnoho pokusů. Počkejte chvíli.'
-      };
-      const niceMsg = friendly[code] || ('Chyba ' + code);
-      setStatus('❌ ' + niceMsg + ' [' + code + ']', 'err');
-      callSub.textContent = 'Bez spojení';
-      retryBtn.hidden = false;
+  // ===== Stůl picker UI =====
+  function renderStulPicker() {
+    const venku = document.getElementById('stul-grid-venku');
+    const uvnitr = document.getElementById('stul-grid-uvnitr');
+    let v = '';
+    for (let i = 1; i <= 9; i++) {
+      const isCur = currentStul && currentStul.id === 'V' + i;
+      v += '<button class="stul-pick-btn' + (isCur ? ' current' : '') + '" data-stul="V' + i + '">' + i + '<span class="num-label">Venku</span></button>';
     }
+    venku.innerHTML = v;
+    let u = '';
+    for (let i = 1; i <= 6; i++) {
+      const isCur = currentStul && currentStul.id === 'I' + i;
+      u += '<button class="stul-pick-btn' + (isCur ? ' current' : '') + '" data-stul="I' + i + '">' + i + '<span class="num-label">Uvnitř</span></button>';
+    }
+    uvnitr.innerHTML = u;
+    // Zobrazit ← zpět jen pokud máme vybraný stůl
+    document.getElementById('stul-back-btn').hidden = !currentStul;
   }
 
+  function openStulPicker() {
+    renderStulPicker();
+    showScreen('stul');
+  }
+
+  function selectStul(stulId) {
+    const s = parseStul(stulId);
+    if (!s) return;
+    currentStul = s;
+    localStorage.setItem(STORAGE_KEY, s.id);
+    updateStulButton();
+    updateHistoryUI(); // re-filter
+    if (document.getElementById('screen-history').classList.contains('active')) renderHistory();
+    showScreen('menu');
+  }
+
+  function updateStulButton() {
+    document.getElementById('top-stul-label').textContent = currentStul ? stulShort(currentStul) : 'Vyberte stůl';
+  }
+
+  document.getElementById('stul-grid-venku').addEventListener('click', function(e) {
+    const b = e.target.closest('.stul-pick-btn');
+    if (b) selectStul(b.dataset.stul);
+  });
+  document.getElementById('stul-grid-uvnitr').addEventListener('click', function(e) {
+    const b = e.target.closest('.stul-pick-btn');
+    if (b) selectStul(b.dataset.stul);
+  });
+  document.getElementById('stul-back-btn').addEventListener('click', function() {
+    if (currentStul) showScreen('menu');
+  });
+  document.getElementById('top-stul-btn').addEventListener('click', openStulPicker);
+
+  // ===== Auth =====
+  let currentUid = null;
+  const errBanner = document.getElementById('auth-error-banner');
+  const errMsg = document.getElementById('auth-error-msg');
+  const retryBtn = document.getElementById('auth-retry-btn');
+
+  async function doSignIn() {
+    errBanner.removeAttribute('data-show');
+    const persistMode = await setupPersistence();
+    console.log('[auth] persistence:', persistMode);
+    try {
+      const cred = await signInAnonymously(auth);
+      console.log('[auth] sign-in OK uid=' + cred.user.uid);
+    } catch (e) {
+      const code = e.code || '?';
+      console.error('[auth] sign-in FAILED:', code, e);
+      const friendly = {
+        'auth/operation-not-allowed': 'Anonymní přihlášení není povoleno.',
+        'auth/admin-restricted-operation': 'Anonymous Auth není zapnut v Firebase Console.',
+        'auth/network-request-failed': 'Není připojení k internetu.',
+        'auth/web-storage-unsupported': 'Prohlížeč blokuje úložiště (privátní okno?).',
+        'auth/internal-error': 'Vnitřní chyba Firebase.',
+        'auth/too-many-requests': 'Příliš mnoho pokusů.'
+      };
+      errMsg.textContent = '❌ ' + (friendly[code] || ('Chyba ' + code)) + ' [' + code + ']';
+      errBanner.setAttribute('data-show', '1');
+    }
+  }
   retryBtn.addEventListener('click', doSignIn);
 
-  // Pokud existuje cached user, onAuthStateChanged se zavolá hned. Jinak spustí doSignIn.
-  let signedInOnce = false;
   onAuthStateChanged(auth, function(user) {
     if (user) {
-      signedInOnce = true;
       currentUid = user.uid;
-      callBtn.disabled = false;
-      orderBtn.disabled = false;
-      callSub.textContent = stulFullName;
-      setStatus('Připraveno', 'idle');
-      retryBtn.hidden = true;
+      errBanner.removeAttribute('data-show');
       attachHistoryListener();
     } else {
       currentUid = null;
-      callBtn.disabled = true;
-      orderBtn.disabled = true;
       detachHistoryListener();
-      historyBtn.hidden = true;
-      if (signedInOnce) {
-        // Někdy se odhlásíme po session — zkus znovu
-        callSub.textContent = 'Bez spojení';
-        setStatus('Spojení se přerušilo. Zkuste obnovit.', 'err');
-        retryBtn.hidden = false;
-      }
     }
   });
 
-  // Start sign-in
-  doSignIn();
-
-  // === Volání obsluhy (Fáze 1) ===
-  let lastCallTs = 0;
-  const COOLDOWN_MS = 30 * 1000;
-
-  callBtn.addEventListener('click', async function() {
-    if (callBtn.disabled) return;
-    const now = Date.now();
-    if (now - lastCallTs < COOLDOWN_MS) {
-      const left = Math.ceil((COOLDOWN_MS - (now - lastCallTs)) / 1000);
-      setStatus('Počkejte ještě ' + left + ' s…', 'work');
-      return;
-    }
-    callBtn.disabled = true;
-    setStatus('Posílám…', 'work');
-    callSub.textContent = 'Posílám volání…';
-    try {
-      await addDoc(collection(db, 'volani'), { stul: stulId, status: 'active', ts: serverTimestamp() });
-      lastCallTs = Date.now();
-      setStatus('✓ Obsluha přijde za chvíli', 'ok');
-      callSub.textContent = 'Volání odesláno';
-      setTimeout(function() {
-        callBtn.disabled = false;
-        callSub.textContent = stulFullName;
-        setStatus('Připraveno', 'idle');
-      }, COOLDOWN_MS);
-    } catch (e) {
-      console.error('[volani] addDoc failed:', e);
-      callBtn.disabled = false;
-      callSub.textContent = stulFullName;
-      setStatus('Nepodařilo se odeslat. Zkuste znovu.', 'err');
-    }
-  });
-
-  // === MENU + KOŠÍK (Fáze 3) ===
+  // ===== Cart =====
   let cart = {};
   let currentCategory = null;
+  let editMode = false;
+  let editOrigId = null;
 
   function cartCount()  { let n = 0; for (const k in cart) n += cart[k].pocet; return n; }
   function cartPrice()  { let p = 0; for (const k in cart) p += cart[k].pocet * cart[k].cena; return p; }
@@ -816,21 +824,16 @@
   function updateCartCounters() {
     const cnt = cartCount();
     const price = cartPrice();
-    // Menu screen
-    document.getElementById('menu-cart-count').textContent = cnt;
-    document.getElementById('menu-cart-chip').disabled = cnt === 0;
     document.getElementById('menu-cta').hidden = cnt === 0;
     document.getElementById('menu-cta-count').textContent = cnt;
     document.getElementById('menu-cta-price').textContent = price;
-    // Category screen
     document.getElementById('cat-cart-count').textContent = cnt;
     document.getElementById('cat-cart-chip').disabled = cnt === 0;
     document.getElementById('cat-cta').hidden = cnt === 0;
     document.getElementById('cat-cta-count').textContent = cnt;
     document.getElementById('cat-cta-price').textContent = price;
-    // Cart screen
     document.getElementById('cart-send-price').textContent = price;
-    // Update badges na pivech/kategoriích (menu screen)
+    // Badges
     document.querySelectorAll('#menu-body .pivo-btn').forEach(function(el) {
       const nazev = el.dataset.nazev;
       const inCart = cart[nazev] ? cart[nazev].pocet : 0;
@@ -842,15 +845,14 @@
     });
     document.querySelectorAll('#menu-body .cat-btn').forEach(function(el) {
       const cat = el.dataset.cat;
-      let cnt2 = 0;
-      MENU.forEach(function(m) { if (m.c === cat && cart[m.n]) cnt2 += cart[m.n].pocet; });
+      let c = 0;
+      MENU.forEach(function(m) { if (m.c === cat && cart[m.n]) c += cart[m.n].pocet; });
       let badge = el.querySelector('.cat-badge');
-      if (cnt2 > 0) {
+      if (c > 0) {
         if (!badge) { badge = document.createElement('span'); badge.className = 'cat-badge'; el.appendChild(badge); }
-        badge.textContent = cnt2;
+        badge.textContent = c;
       } else if (badge) { badge.remove(); }
     });
-    // Update badges na položkách kategorie (category screen)
     document.querySelectorAll('#cat-body .menu-item').forEach(function(el) {
       const nazev = el.dataset.nazev;
       const inCart = cart[nazev] ? cart[nazev].pocet : 0;
@@ -859,8 +861,7 @@
       if (inCart > 0) {
         addBtn.classList.add('in-cart');
         if (!badge) {
-          badge = document.createElement('span');
-          badge.className = 'menu-item-badge';
+          badge = document.createElement('span'); badge.className = 'menu-item-badge';
           addBtn.parentNode.insertBefore(badge, addBtn);
         }
         badge.textContent = inCart;
@@ -872,9 +873,8 @@
   }
 
   function addToCart(item) {
-    const key = item.nazev;
-    if (!cart[key]) cart[key] = { nazev: item.nazev, cena: item.cena, pocet: 0 };
-    cart[key].pocet++;
+    if (!cart[item.nazev]) cart[item.nazev] = { nazev: item.nazev, cena: item.cena, pocet: 0 };
+    cart[item.nazev].pocet++;
     updateCartCounters();
   }
   function changeCartQty(nazev, delta) {
@@ -890,15 +890,12 @@
     renderCart();
   }
 
-  // --- Render MENU (3 sekce: čepované, PET, kategorie) ---
+  // ===== Render MENU =====
   function renderMenu() {
     const body = document.getElementById('menu-body');
     let html = '';
 
-    // 1) Čepovaná piva — barevný grid 2×4
-    html += '<div class="menu-section">';
-    html += '<div class="menu-section-label">Čepovaná piva</div>';
-    html += '<div class="grid-2-tight">';
+    html += '<div class="menu-section"><div class="menu-section-label">Čepovaná piva</div><div class="grid-2-tight">';
     BEERS_CEP.forEach(function(b) {
       const nazev = b.n;
       html += '<button class="pivo-btn ' + b.barva + '" data-nazev="' + escapeHtml(nazev) + '" data-cena="' + CEP_PRICE + '">' +
@@ -908,10 +905,7 @@
     });
     html += '</div></div>';
 
-    // 2) Pivo v PET — barevný grid 2×4
-    html += '<div class="menu-section">';
-    html += '<div class="menu-section-label">Pivo v PET</div>';
-    html += '<div class="grid-2-tight">';
+    html += '<div class="menu-section"><div class="menu-section-label">Pivo v PET</div><div class="grid-2-tight">';
     BEERS_CEP.forEach(function(b) {
       const nazev = b.n + ' v PET';
       html += '<button class="pivo-btn ' + b.barva + '" data-nazev="' + escapeHtml(nazev) + '" data-cena="' + PET_PRICE + '">' +
@@ -921,16 +915,12 @@
     });
     html += '</div></div>';
 
-    // 3) Kategorie — grid 2 sloupce
-    html += '<div class="menu-section">';
-    html += '<div class="menu-section-label">Kategorie</div>';
-    html += '<div class="grid-2">';
+    html += '<div class="menu-section"><div class="menu-section-label">Kategorie</div><div class="grid-2">';
     CAT_ORDER.forEach(function(cat) {
       const items = MENU.filter(function(m) { return m.c === cat; });
       if (items.length === 0) return;
       html += '<button class="cat-btn" data-cat="' + escapeHtml(cat) + '">' +
-        escapeHtml(cat) +
-        '<span class="cat-count">' + items.length + ' položek</span>' +
+        escapeHtml(cat) + '<span class="cat-count">' + items.length + ' položek</span>' +
       '</button>';
     });
     html += '</div></div>';
@@ -939,7 +929,6 @@
     updateCartCounters();
   }
 
-  // --- Render CATEGORY (položky vybrané kategorie) ---
   function renderCategory(cat) {
     currentCategory = cat;
     document.getElementById('cat-title').textContent = cat;
@@ -960,7 +949,6 @@
     updateCartCounters();
   }
 
-  // --- Render CART ---
   function renderCart() {
     const body = document.getElementById('cart-body');
     const sendBar = document.getElementById('cart-send-bar');
@@ -988,22 +976,18 @@
         '</div>' +
       '</div>';
     });
-    html += '<div class="cart-total">' +
-      '<div class="cart-total-label">Celkem</div>' +
-      '<div class="cart-total-value">' + cartPrice() + ' Kč</div>' +
-    '</div>';
+    html += '<div class="cart-total"><div class="cart-total-label">Celkem</div><div class="cart-total-value">' + cartPrice() + ' Kč</div></div>';
     body.innerHTML = html;
   }
 
-  // === HISTORY — moje objednávky (real-time listener) ===
+  // ===== History =====
   let historyUnsub = null;
-  let historyItems = [];
-  let editMode = false; // pokud true, po odeslání smaž starou objednávku
-  let editOrigId = null;
+  let historyItems = [];   // všechny moje aktivní napříč stoly
+  const topHistoryBtn = document.getElementById('top-history-btn');
+  const topHistoryCount = document.getElementById('top-history-count');
 
   function attachHistoryListener() {
     if (historyUnsub || !currentUid) return;
-    // Query: createdBy == uid (filtrace status v JS, abychom se vyhli composite indexu)
     const q = query(collection(db, 'objednavky'), where('createdBy', '==', currentUid));
     historyUnsub = onSnapshot(q, function(snap) {
       const items = [];
@@ -1020,35 +1004,38 @@
       items.sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
       historyItems = items;
       updateHistoryUI();
-    }, function(err) {
-      console.warn('[history] listener error:', err);
-    });
+    }, function(err) { console.warn('[history] listener error:', err); });
   }
   function detachHistoryListener() {
     if (historyUnsub) { historyUnsub(); historyUnsub = null; }
     historyItems = [];
+    updateHistoryUI();
+  }
+  function historyForCurrentStul() {
+    if (!currentStul) return [];
+    return historyItems.filter(function(o) { return o.stul === currentStul.id; });
   }
   function updateHistoryUI() {
-    const n = historyItems.length;
-    if (n > 0) {
-      historyBtn.hidden = false;
-      historyCountEl.textContent = String(n);
+    const items = historyForCurrentStul();
+    const n = items.length;
+    if (n > 0 && currentStul) {
+      topHistoryBtn.hidden = false;
+      topHistoryCount.textContent = String(n);
     } else {
-      historyBtn.hidden = true;
+      topHistoryBtn.hidden = true;
     }
-    // Pokud jsem na history screen, re-renderuj
-    if (document.getElementById('screen-history').classList.contains('active')) {
-      renderHistory();
-    }
+    if (document.getElementById('screen-history').classList.contains('active')) renderHistory();
   }
   function renderHistory() {
     const body = document.getElementById('history-body');
-    if (historyItems.length === 0) {
+    const items = historyForCurrentStul();
+    document.getElementById('history-subtitle').textContent = currentStul ? ('k ' + stulShort(currentStul)) : '';
+    if (items.length === 0) {
       body.innerHTML = '<div class="history-empty">Žádné nevyřízené objednávky.</div>';
       return;
     }
     let html = '';
-    historyItems.forEach(function(o) {
+    items.forEach(function(o) {
       const cas = o.ts ? new Date(o.ts).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }) : '?';
       const total = o.polozky.reduce(function(s, p) { return s + (p.cena || 0) * (p.pocet || 0); }, 0);
       const lines = o.polozky.map(function(p) {
@@ -1056,10 +1043,8 @@
       }).join('');
       html += '<div class="history-item" data-id="' + o.id + '">' +
         '<div class="history-item-head">' +
-          '<div>' +
-            '<div style="font-size:15px;font-weight:600;">Stůl ' + escapeHtml(o.stul) + '</div>' +
-            '<div class="history-item-meta">odeslána v ' + cas + '</div>' +
-          '</div>' +
+          '<div><div style="font-size:15px;font-weight:600;">Stůl ' + escapeHtml(o.stul) + '</div>' +
+          '<div class="history-item-meta">odeslána v ' + cas + '</div></div>' +
           '<div class="history-item-status">Čeká</div>' +
         '</div>' +
         '<div class="history-item-lines">' + lines + '</div>' +
@@ -1067,8 +1052,7 @@
         '<div class="history-item-actions">' +
           '<button class="history-item-btn edit">✏ Upravit</button>' +
           '<button class="history-item-btn delete">🗑 Smazat</button>' +
-        '</div>' +
-      '</div>';
+        '</div></div>';
     });
     body.innerHTML = html;
   }
@@ -1076,53 +1060,40 @@
   async function editOrder(id) {
     const o = historyItems.find(function(x) { return x.id === id; });
     if (!o) return;
-    if (!confirm('Načíst tuto objednávku do košíku k úpravě?\n\nPo odeslání bude původní objednávka nahrazena.')) return;
-    // Načíst do košíku
+    if (!confirm('Načíst tuto objednávku do košíku k úpravě?\nPo odeslání bude původní objednávka nahrazena.')) return;
     cart = {};
     o.polozky.forEach(function(p) {
-      const key = p.nazev;
-      cart[key] = { nazev: p.nazev, cena: p.cena || 0, pocet: p.pocet || 1 };
+      cart[p.nazev] = { nazev: p.nazev, cena: p.cena || 0, pocet: p.pocet || 1 };
     });
     editMode = true;
     editOrigId = id;
     updateCartCounters();
     renderCart();
     showScreen('cart');
-    // Update label
     document.getElementById('cart-send-label').innerHTML = '📤 Odeslat upravenou objednávku';
   }
 
   async function deleteOrder(id) {
-    if (!confirm('Opravdu smazat tuto objednávku?\nObsluhu se k vám pošle, jen pokud ji odešlete znovu.')) return;
-    try {
-      await deleteDoc(doc(db, 'objednavky', id));
-      // Listener automaticky update history
-    } catch (e) {
+    if (!confirm('Opravdu smazat tuto objednávku?')) return;
+    try { await deleteDoc(doc(db, 'objednavky', id)); }
+    catch (e) {
       console.error('[history] delete failed:', e);
       alert('Smazání selhalo: ' + (e.message || e.code));
     }
   }
 
-  // --- Event listeners ---
-  orderBtn.addEventListener('click', function() {
-    if (orderBtn.disabled) return;
-    renderMenu();
-    showScreen('menu');
-  });
-  historyBtn.addEventListener('click', function() {
+  // ===== Event listeners =====
+  topHistoryBtn.addEventListener('click', function() {
     renderHistory();
     showScreen('history');
   });
-
-  document.getElementById('menu-back-btn').addEventListener('click', function() { showScreen('home'); });
   document.getElementById('cat-back-btn').addEventListener('click', function() { showScreen('menu'); });
   document.getElementById('cart-back-btn').addEventListener('click', function() {
     showScreen(currentCategory ? 'category' : 'menu');
   });
-  document.getElementById('history-back-btn').addEventListener('click', function() { showScreen('home'); });
+  document.getElementById('history-back-btn').addEventListener('click', function() { showScreen('menu'); });
 
-  // Cart chip / CTA → cart
-  ['menu-cart-chip', 'menu-cta-btn', 'cat-cart-chip', 'cat-cta-btn'].forEach(function(id) {
+  ['cat-cart-chip', 'cat-cta-btn', 'menu-cta-btn'].forEach(function(id) {
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', function() {
       if (el.disabled) return;
@@ -1131,7 +1102,6 @@
     });
   });
 
-  // Menu body: klik na pivo / kategorii
   document.getElementById('menu-body').addEventListener('click', function(e) {
     const pivoBtn = e.target.closest('.pivo-btn');
     if (pivoBtn) {
@@ -1146,24 +1116,19 @@
     if (catBtn) {
       renderCategory(catBtn.dataset.cat);
       showScreen('category');
-      return;
     }
   });
 
-  // Category body: klik na položku +
   document.getElementById('cat-body').addEventListener('click', function(e) {
     const addBtn = e.target.closest('.menu-add-btn');
     if (!addBtn) return;
     const itemEl = addBtn.closest('.menu-item');
     if (!itemEl) return;
-    const nazev = itemEl.dataset.nazev;
-    const cena = parseInt(itemEl.dataset.cena, 10) || 0;
-    addToCart({ nazev: nazev, cena: cena });
+    addToCart({ nazev: itemEl.dataset.nazev, cena: parseInt(itemEl.dataset.cena, 10) || 0 });
     addBtn.style.transform = 'scale(.85)';
     setTimeout(function() { addBtn.style.transform = ''; }, 120);
   });
 
-  // Cart body: -, +, odebrat
   document.getElementById('cart-body').addEventListener('click', function(e) {
     const itemEl = e.target.closest('.cart-item');
     if (!itemEl) return;
@@ -1173,7 +1138,6 @@
     else if (e.target.closest('.remove-btn')) removeFromCart(nazev);
   });
 
-  // History body: edit / delete (delegated)
   document.getElementById('history-body').addEventListener('click', function(e) {
     const itemEl = e.target.closest('.history-item');
     if (!itemEl) return;
@@ -1182,14 +1146,15 @@
     else if (e.target.closest('.delete')) deleteOrder(id);
   });
 
-  // --- Odeslání objednávky ---
+  // ===== Send objednávku =====
   const sendBtn = document.getElementById('cart-send-btn');
   const sendLabel = document.getElementById('cart-send-label');
   sendBtn.addEventListener('click', async function() {
     if (sendBtn.disabled) return;
+    if (!currentUid) { alert('Nepřipojeno k serveru.'); return; }
+    if (!currentStul) { alert('Nejdříve vyberte stůl.'); openStulPicker(); return; }
     const keys = Object.keys(cart);
     if (keys.length === 0) return;
-    if (!currentUid) { alert('Nepřipojeno. Obnov stránku.'); return; }
 
     sendBtn.disabled = true;
     sendLabel.textContent = '⏳ Odesílám…';
@@ -1200,13 +1165,12 @@
 
     try {
       await addDoc(collection(db, 'objednavky'), {
-        stul: stulId,
+        stul: currentStul.id,
         polozky: polozky,
         status: 'active',
         ts: serverTimestamp(),
         createdBy: currentUid
       });
-      // Pokud byla edit, smaž původní
       if (editMode && editOrigId) {
         try { await deleteDoc(doc(db, 'objednavky', editOrigId)); }
         catch(e) { console.warn('[edit] delete orig failed:', e); }
@@ -1218,24 +1182,36 @@
       document.getElementById('sent-msg').textContent =
         polozky.length === 1
           ? 'Obsluha vám brzy přinese ' + polozky[0].nazev + '.'
-          : 'Obsluha vám brzy přinese ' + polozky.length + ' položek z menu.';
+          : 'Obsluha vám brzy přinese ' + polozky.length + ' položek.';
       sendLabel.innerHTML = '📤 Odeslat objednávku';
       showScreen('sent');
     } catch (e) {
       console.error('[objednavky] addDoc failed:', e);
-      sendBtn.disabled = false;
       sendLabel.innerHTML = editMode ? '📤 Odeslat upravenou objednávku' : '📤 Odeslat objednávku';
-      alert('Odeslání selhalo: ' + (e.message || e.code) + '\n\nZkuste prosím znovu.');
+      alert('Odeslání selhalo: ' + (e.message || e.code));
     } finally {
       sendBtn.disabled = false;
     }
   });
 
   document.getElementById('sent-back-btn').addEventListener('click', function() {
-    showScreen('home');
     sendBtn.disabled = false;
     sendLabel.innerHTML = '📤 Odeslat objednávku';
+    showScreen('menu');
   });
+
+  // ===== INIT =====
+  updateStulButton();
+  renderMenu();
+
+  if (!currentStul) {
+    openStulPicker();
+  } else {
+    showScreen('menu');
+  }
+
+  // Start sign-in
+  doSignIn();
 </script>
 
 </body>
