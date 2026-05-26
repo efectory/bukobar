@@ -508,6 +508,27 @@
   #auth-overlay .auth-error { color: var(--accent); font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
   .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
+
+  /* Volání hostů (V7.20) */
+  .header-volani[hidden], .volani-panel[hidden] { display: none !important; }
+  .header-volani { background: #dc2626; color: #fff; border: 1px solid #dc2626; font-size: 14px; font-weight: 600; padding: 4px 14px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; animation: volani-pulse 1.4s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(220,38,38,.7); }
+  .header-volani:hover { background: #b91c1c; border-color: #b91c1c; }
+  .header-volani .volani-count { background: #fff; color: #dc2626; min-width: 22px; height: 22px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; padding: 0 7px; }
+  @keyframes volani-pulse { 0% { box-shadow: 0 0 0 0 rgba(220,38,38,.55); } 70% { box-shadow: 0 0 0 10px rgba(220,38,38,0); } 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); } }
+  .volani-panel { position: fixed; top: 0; right: 0; width: 380px; max-width: calc(100vw - 20px); max-height: 80vh; background: var(--surface); border: 1px solid var(--border); border-radius: 0 0 var(--radius-lg) var(--radius-lg); box-shadow: 0 12px 32px rgba(0,0,0,.18); z-index: 9000; overflow-y: auto; }
+  .volani-panel-head { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg); border-radius: 0 0 0 0; }
+  .volani-panel-head h3 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: normal; }
+  .volani-panel-close { background: transparent; border: 1px solid var(--border-strong); color: var(--muted); font-size: 14px; padding: 4px 12px; border-radius: 6px; cursor: pointer; min-height: unset; }
+  .volani-panel-close:hover { background: var(--bg); }
+  .volani-panel-body { padding: .8rem 1rem 1.1rem; }
+  .volani-panel-empty { padding: 2rem 1rem; text-align: center; color: var(--muted); font-size: 14px; }
+  .volani-item { display: flex; align-items: center; gap: 10px; padding: .9rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: .55rem; background: #fdf0ec; }
+  .volani-item:last-child { margin-bottom: 0; }
+  .volani-item-info { flex: 1; line-height: 1.25; }
+  .volani-item-stul { font-size: 16px; font-weight: 600; color: var(--text); }
+  .volani-item-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .volani-item-btn { background: var(--success-text); color: #fff; border: 1px solid var(--success-text); font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--radius); cursor: pointer; min-height: unset; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .volani-item-btn:hover { background: #155a2d; border-color: #155a2d; }
 </style>
 </head>
 <body>
@@ -523,6 +544,16 @@
   </div>
 </div>
 
+<div class="volani-panel" id="volani-panel" hidden>
+  <div class="volani-panel-head">
+    <h3>🔔 Volání hostů</h3>
+    <button class="volani-panel-close" onclick="toggleVolaniPanel()">Zavřít</button>
+  </div>
+  <div class="volani-panel-body" id="volani-panel-body">
+    <div class="volani-panel-empty">Žádná aktivní volání</div>
+  </div>
+</div>
+
 <div class="tabs" style="justify-content:space-between;">
   <div style="display:flex;">
     <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
@@ -532,6 +563,7 @@
     <button class="tab-btn" onclick="switchTab('administrace',this);renderAdminPetConfig()">Administrace</button>
   </div>
   <div style="display:flex;align-items:center;">
+    <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
     <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
   </div>
@@ -1079,7 +1111,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.19';
+const APP_VERSION = '7.20';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1222,6 +1254,105 @@ function toggleApiKey() {
     document.getElementById('api-key-input').focus();
   } else {
     el.classList.add('hidden');
+  }
+}
+
+// --- Volání hostů (V7.20) ---
+let _volaniTitleOrig = null;
+let _volaniTitleTimer = null;
+let _volaniLastIds = new Set();
+
+function toggleVolaniPanel() {
+  const panel = document.getElementById('volani-panel');
+  if (!panel) return;
+  if (panel.hasAttribute('hidden')) panel.removeAttribute('hidden');
+  else panel.setAttribute('hidden', '');
+}
+
+function stulLabel(stulId) {
+  // "V3" → "🪟 Venku – Stůl 3"
+  if (typeof stulId !== 'string') return stulId || '?';
+  const m = /^([VI])(\d+)$/.exec(stulId);
+  if (!m) return stulId;
+  return (m[1] === 'V' ? '🪟 Venku' : '🏠 Uvnitř') + ' – Stůl ' + m[2];
+}
+
+function _formatVolaniAgo(ts) {
+  if (!ts) return '';
+  const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (sec < 60) return 'před ' + sec + ' s';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return 'před ' + min + ' min';
+  return 'před ' + Math.floor(min / 60) + ' h ' + (min % 60) + ' min';
+}
+
+function _startVolaniTitleFlash() {
+  if (_volaniTitleTimer) return;
+  if (_volaniTitleOrig === null) _volaniTitleOrig = document.title;
+  let alt = false;
+  _volaniTitleTimer = setInterval(function() {
+    document.title = alt ? '🔔 VOLÁNÍ HOSTŮ' : (_volaniTitleOrig || 'Bukovar — pokladna');
+    alt = !alt;
+  }, 900);
+}
+
+function _stopVolaniTitleFlash() {
+  if (_volaniTitleTimer) { clearInterval(_volaniTitleTimer); _volaniTitleTimer = null; }
+  if (_volaniTitleOrig !== null) { document.title = _volaniTitleOrig; }
+}
+
+window.bukovarOnRemoteVolani = function(items) {
+  const btn = document.getElementById('header-volani-btn');
+  const countEl = document.getElementById('volani-count');
+  const body = document.getElementById('volani-panel-body');
+  if (!btn || !countEl || !body) return;
+
+  const n = items.length;
+
+  // Tlačítko v hlavičce
+  if (n > 0) {
+    btn.removeAttribute('hidden');
+    countEl.textContent = String(n);
+  } else {
+    btn.setAttribute('hidden', '');
+    // Pokud panel zůstal otevřený, zavři ho automaticky
+    const panel = document.getElementById('volani-panel');
+    if (panel) panel.setAttribute('hidden', '');
+  }
+
+  // Title flash — jen pokud přibylo nové volání oproti minulému snapshotu
+  const newIds = new Set(items.map(function(x) { return x.id; }));
+  let hasNew = false;
+  newIds.forEach(function(id) { if (!_volaniLastIds.has(id)) hasNew = true; });
+  if (n > 0 && hasNew) _startVolaniTitleFlash();
+  if (n === 0) _stopVolaniTitleFlash();
+  _volaniLastIds = newIds;
+
+  // Renderovat seznam v panelu
+  if (n === 0) {
+    body.innerHTML = '<div class="volani-panel-empty">Žádná aktivní volání</div>';
+    return;
+  }
+  body.innerHTML = items.map(function(it) {
+    const label = stulLabel(it.stul);
+    const ago = _formatVolaniAgo(it.ts);
+    return ''
+      + '<div class="volani-item">'
+      +   '<div class="volani-item-info">'
+      +     '<div class="volani-item-stul">' + label.replace(/[<>&"]/g, function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}) + '</div>'
+      +     '<div class="volani-item-meta">' + ago + '</div>'
+      +   '</div>'
+      +   '<button class="volani-item-btn" onclick="vyriditVolani(\'' + it.id.replace(/[\\\']/g,'') + '\', this)">✓ Vyřízeno</button>'
+      + '</div>';
+  }).join('');
+};
+
+function vyriditVolani(id, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  if (window.bukovarVolaniVyridit) {
+    window.bukovarVolaniVyridit(id).catch(function() {
+      if (btn) { btn.disabled = false; btn.textContent = '✓ Vyřízeno'; }
+    });
   }
 }
 
@@ -3930,7 +4061,7 @@ function updateTabBadges() {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-  import { initializeFirestore, persistentLocalCache, doc, getDoc, setDoc, runTransaction, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, doc, getDoc, setDoc, updateDoc, runTransaction, serverTimestamp, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-functions.js";
 
   const firebaseConfig = {
@@ -4167,6 +4298,49 @@ function updateTabBadges() {
     console.log('[cloud] all listeners detached');
   };
 
+  // --- Volání obsluhy (V7.20, mobilní číšník Fáze 1) ---
+  // Listener na kolekci `volani` s status='active', nezávislý na cloud sync.
+  // Připojuje se po loginu, odpojuje při logoutu.
+  let volaniUnsub = null;
+  const volaniQuery = query(collection(db, 'volani'), where('status', '==', 'active'));
+
+  function attachVolaniListener() {
+    if (volaniUnsub) return;
+    volaniUnsub = onSnapshot(volaniQuery, function(snap) {
+      const items = [];
+      snap.forEach(function(d) {
+        const data = d.data();
+        items.push({
+          id: d.id,
+          stul: data.stul,
+          ts: data.ts ? data.ts.toMillis() : null
+        });
+      });
+      items.sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
+      if (window.bukovarOnRemoteVolani) window.bukovarOnRemoteVolani(items);
+    }, function(err) {
+      console.warn('[volani] listener error:', err);
+    });
+    console.log('[volani] listener attached');
+  }
+
+  function detachVolaniListener() {
+    if (volaniUnsub) { volaniUnsub(); volaniUnsub = null; console.log('[volani] listener detached'); }
+  }
+
+  window.bukovarVolaniVyridit = async function(id) {
+    try {
+      await updateDoc(doc(db, 'volani', id), {
+        status: 'handled',
+        handledAt: serverTimestamp(),
+        handledBy: auth.currentUser ? auth.currentUser.email : null
+      });
+    } catch (e) {
+      console.error('[volani] vyridit failed:', e);
+      alert('Chyba při vyřízení volání: ' + (e.message || e.code));
+    }
+  };
+
   // Auto-detect: pokud aspoň 1 dokument existuje, zapni sync
   async function autoEnableCloudSync() {
     try {
@@ -4207,9 +4381,12 @@ function updateTabBadges() {
       if (logoutBtn) logoutBtn.title = 'Přihlášen: ' + user.email + ' — klikni pro odhlášení';
       window.bukovarSyncCounter();
       autoEnableCloudSync();
+      attachVolaniListener();
     } else {
       if (window.bukovarDetachAllListeners) window.bukovarDetachAllListeners();
       if (window.bukovarSetCloudSyncActive) window.bukovarSetCloudSyncActive(false);
+      detachVolaniListener();
+      if (window.bukovarOnRemoteVolani) window.bukovarOnRemoteVolani([]);
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       passwordInput.value = '';
