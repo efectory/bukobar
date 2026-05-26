@@ -7,8 +7,9 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#1a1610">
-<title>Bukovar — přivolat obsluhu</title>
+<title>Bukovar — mobilní číšník</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="menu.js"></script>
 <style>
   :root {
     --bg: #f5f1ea;
@@ -40,23 +41,23 @@
     color: #f5f1ea;
     padding: 1.1rem 1.4rem;
     text-align: center;
+    flex-shrink: 0;
   }
-  header .logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 24px;
-    letter-spacing: .02em;
-  }
+  header .logo { font-family: 'DM Serif Display', serif; font-size: 24px; letter-spacing: .02em; }
   header .logo span { color: var(--accent); }
 
-  main {
+  .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .screen.active { display: flex; }
+
+  /* === HOME screen === */
+  #screen-home main {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: 1.5rem 1.4rem 2rem;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
-
   .stul-label {
     text-align: center;
     background: var(--surface);
@@ -83,13 +84,13 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 26px;
     font-weight: 600;
-    padding: 2rem 1rem;
+    padding: 1.6rem 1rem;
     background: var(--accent);
     color: #fff;
     border: none;
     border-radius: var(--radius-lg);
     cursor: pointer;
-    min-height: 200px;
+    min-height: 160px;
     line-height: 1.25;
     transition: background .15s, transform .1s;
     box-shadow: 0 8px 24px rgba(181,56,26,.25);
@@ -101,15 +102,35 @@
     box-shadow: none;
     cursor: default;
   }
-  .call-btn .icon { display: block; font-size: 56px; margin-bottom: .4rem; }
-  .call-btn .sub { display: block; font-size: 14px; font-weight: 400; margin-top: .6rem; opacity: .85; letter-spacing: .04em; }
+  .call-btn .icon { display: block; font-size: 48px; margin-bottom: .4rem; }
+  .call-btn .sub { display: block; font-size: 14px; font-weight: 400; margin-top: .5rem; opacity: .85; letter-spacing: .04em; }
+
+  .order-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    padding: 1.4rem 1rem;
+    background: var(--text);
+    color: #f5f1ea;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    min-height: 130px;
+    line-height: 1.25;
+    transition: opacity .15s, transform .1s;
+    box-shadow: 0 6px 18px rgba(26,22,16,.18);
+  }
+  .order-btn:active { transform: scale(.98); }
+  .order-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .order-btn .icon { display: block; font-size: 40px; margin-bottom: .35rem; }
+  .order-btn .sub { display: block; font-size: 13px; font-weight: 400; margin-top: .4rem; opacity: .8; }
 
   .status-box {
     border-radius: var(--radius);
-    padding: 1rem 1.2rem;
-    font-size: 15px;
+    padding: .9rem 1.1rem;
+    font-size: 14px;
     text-align: center;
-    min-height: 56px;
+    min-height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -122,21 +143,245 @@
 
   footer {
     text-align: center;
-    padding: 1rem 1.4rem 1.4rem;
+    padding: .8rem 1.4rem 1rem;
     font-size: 11px;
     color: var(--muted);
     letter-spacing: .04em;
+    flex-shrink: 0;
   }
 
-  /* Fatální chyba (neplatný stůl) */
-  .fatal {
-    margin: auto;
-    text-align: center;
-    padding: 2rem 1.5rem;
-    color: var(--error-text);
-  }
+  /* Fatální chyba */
+  .fatal { margin: auto; text-align: center; padding: 2rem 1.5rem; color: var(--error-text); }
   .fatal h1 { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: .8rem; }
   .fatal p { font-size: 15px; color: var(--muted); }
+
+  /* === MENU / CART common === */
+  .sub-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: .8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .back-btn {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .back-btn:active { background: var(--bg); }
+  .sub-header h1 { font-family: 'DM Serif Display', serif; font-size: 22px; flex: 1; }
+
+  .cart-chip {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  .cart-chip:disabled { opacity: .3; background: var(--muted); }
+
+  .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; }
+
+  /* === MENU screen === */
+  .menu-cat-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    padding: 1.2rem 1.2rem .5rem;
+    color: var(--text);
+  }
+  .menu-cat-title:first-child { padding-top: .8rem; }
+
+  .menu-item {
+    background: var(--surface);
+    margin: 0 1rem .55rem;
+    padding: .85rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  }
+  .menu-item-info { flex: 1; min-width: 0; }
+  .menu-item-name { font-size: 15px; font-weight: 500; line-height: 1.25; word-break: break-word; }
+  .menu-item-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .menu-item-price { font-size: 15px; font-weight: 600; white-space: nowrap; }
+  .menu-add-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 22px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    font-family: inherit;
+  }
+  .menu-add-btn:active { background: #9c2e14; transform: scale(.95); }
+  .menu-add-btn.in-cart { background: var(--success-text); }
+  .menu-item-badge {
+    background: var(--accent);
+    color: #fff;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    padding: 0 7px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+  }
+
+  .sticky-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: .8rem 1rem calc(env(safe-area-inset-bottom) + .8rem);
+    box-shadow: 0 -4px 12px rgba(0,0,0,.06);
+    z-index: 100;
+  }
+  .sticky-bottom-bar[hidden] { display: none !important; }
+  .sticky-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 1rem;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    min-height: 60px;
+  }
+  .sticky-btn:active { background: #9c2e14; }
+  .sticky-btn:disabled { background: var(--muted); cursor: not-allowed; }
+  .sticky-btn .left { display: flex; align-items: center; gap: 8px; }
+  .sticky-btn .right { font-weight: 700; }
+
+  /* === CART screen === */
+  .cart-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 15px; }
+  .cart-item {
+    background: var(--surface);
+    margin: 0 1rem .6rem;
+    padding: .9rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .cart-item:first-child { margin-top: 1rem; }
+  .cart-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; margin-bottom: .6rem; }
+  .cart-item-name { font-size: 15px; font-weight: 500; flex: 1; line-height: 1.25; }
+  .cart-item-price { font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .cart-item-controls { display: flex; align-items: center; gap: .6rem; }
+  .qty-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qty-btn:active { background: var(--bg); }
+  .qty-value { font-size: 17px; font-weight: 600; min-width: 26px; text-align: center; }
+  .qty-spacer { flex: 1; }
+  .remove-btn {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--accent);
+    font-size: 16px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .remove-btn:active { background: var(--error-bg); }
+
+  .cart-total {
+    margin: 1.2rem 1rem .8rem;
+    padding: 1rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-total-label { font-size: 14px; color: var(--muted); }
+  .cart-total-value { font-size: 22px; font-weight: 700; }
+
+  /* === SENT screen === */
+  #screen-sent main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 1.4rem;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  .sent-icon { font-size: 72px; }
+  .sent-title { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--success-text); }
+  .sent-msg { font-size: 16px; color: var(--muted); line-height: 1.5; max-width: 320px; margin: 0 auto; }
+  .sent-back-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 1rem 2rem;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 1rem;
+    align-self: center;
+    min-height: 56px;
+  }
 </style>
 </head>
 <body>
@@ -145,22 +390,71 @@
   <div class="logo">Buko<span>var</span></div>
 </header>
 
-<main id="app-main">
-  <div class="stul-label" id="stul-label" hidden>
-    <div class="stul-place" id="stul-place">—</div>
-    <div class="stul-name" id="stul-name">—</div>
+<!-- HOME screen — call button + objednat button -->
+<div class="screen active" id="screen-home">
+  <main>
+    <div class="stul-label" id="stul-label" hidden>
+      <div class="stul-place" id="stul-place">—</div>
+      <div class="stul-name" id="stul-name">—</div>
+    </div>
+
+    <button class="call-btn" id="call-btn" disabled>
+      <span class="icon">🔔</span>
+      Přivolat obsluhu
+      <span class="sub" id="call-sub">Načítám…</span>
+    </button>
+
+    <button class="order-btn" id="order-btn" disabled>
+      <span class="icon">📋</span>
+      Objednat z menu
+      <span class="sub">Pivo, jídlo, nápoje…</span>
+    </button>
+
+    <div class="status-box idle" id="status-box">Připraveno</div>
+  </main>
+  <footer>Bukovar pokladna · mobilní číšník</footer>
+</div>
+
+<!-- MENU screen -->
+<div class="screen" id="screen-menu">
+  <div class="sub-header">
+    <button class="back-btn" id="menu-back-btn" aria-label="Zpět">←</button>
+    <h1>Menu</h1>
+    <button class="cart-chip" id="menu-cart-chip" disabled>🛒 <span id="menu-cart-count">0</span></button>
   </div>
+  <div class="scroll-body" id="menu-body"></div>
+  <div class="sticky-bottom-bar" id="menu-cta" hidden>
+    <button class="sticky-btn" id="menu-cta-btn">
+      <span class="left">🛒 <span id="menu-cta-count">0</span> položek</span>
+      <span class="right"><span id="menu-cta-price">0</span> Kč →</span>
+    </button>
+  </div>
+</div>
 
-  <button class="call-btn" id="call-btn" disabled>
-    <span class="icon">🔔</span>
-    Přivolat obsluhu
-    <span class="sub" id="call-sub">Načítám…</span>
-  </button>
+<!-- CART screen -->
+<div class="screen" id="screen-cart">
+  <div class="sub-header">
+    <button class="back-btn" id="cart-back-btn" aria-label="Zpět">←</button>
+    <h1>Košík</h1>
+  </div>
+  <div class="scroll-body" id="cart-body"></div>
+  <div class="sticky-bottom-bar" id="cart-send-bar" hidden>
+    <button class="sticky-btn" id="cart-send-btn">
+      <span class="left">📤 Odeslat objednávku</span>
+      <span class="right"><span id="cart-send-price">0</span> Kč</span>
+    </button>
+  </div>
+</div>
 
-  <div class="status-box idle" id="status-box">Připraveno k přivolání</div>
-</main>
-
-<footer>Bukovar pokladna · mobilní číšník</footer>
+<!-- SENT screen — confirmation -->
+<div class="screen" id="screen-sent">
+  <main>
+    <div class="sent-icon">✓</div>
+    <div class="sent-title">Objednávka odeslána</div>
+    <div class="sent-msg" id="sent-msg">Obsluha vám brzy přinese objednávku.</div>
+    <button class="sent-back-btn" id="sent-back-btn">Zpět na hlavní</button>
+  </main>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -188,10 +482,11 @@
   const match = /^([VI])(\d{1,2})$/.exec(stulRaw);
 
   if (!match) {
-    document.getElementById('app-main').innerHTML =
+    document.body.innerHTML =
+      '<header><div class="logo">Buko<span style="color:#b5381a;">var</span></div></header>' +
       '<div class="fatal">' +
       '<h1>Neplatný kód stolu</h1>' +
-      '<p>QR kód není čitelný nebo je poškozen. Zkuste prosím jiný kód nebo přivolejte obsluhu osobně.</p>' +
+      '<p>QR kód není čitelný nebo je poškozen.</p>' +
       '</div>';
     throw new Error('invalid stul: ' + stulRaw);
   }
@@ -202,7 +497,8 @@
   const maxNum = isVenku ? 9 : 6;
 
   if (num < 1 || num > maxNum) {
-    document.getElementById('app-main').innerHTML =
+    document.body.innerHTML =
+      '<header><div class="logo">Buko<span style="color:#b5381a;">var</span></div></header>' +
       '<div class="fatal">' +
       '<h1>Neplatný kód stolu</h1>' +
       '<p>Stůl ' + stulRaw + ' neexistuje.</p>' +
@@ -210,7 +506,7 @@
     throw new Error('stul out of range: ' + stulRaw);
   }
 
-  const stulId = prefix + num;                  // např. "V3"
+  const stulId = prefix + num;
   const stulPlace = isVenku ? '🪟 Venku' : '🏠 Uvnitř';
   const stulFullName = (isVenku ? 'Venku' : 'Uvnitř') + ' – Stůl ' + num;
 
@@ -218,8 +514,10 @@
   document.getElementById('stul-name').textContent = 'Stůl ' + num;
   document.getElementById('stul-label').hidden = false;
 
-  const btn = document.getElementById('call-btn');
-  const sub = document.getElementById('call-sub');
+  // --- Elements ---
+  const callBtn = document.getElementById('call-btn');
+  const callSub = document.getElementById('call-sub');
+  const orderBtn = document.getElementById('order-btn');
   const status = document.getElementById('status-box');
 
   function setStatus(text, kind) {
@@ -227,66 +525,303 @@
     status.textContent = text;
   }
 
-  // --- Anonymous sign-in na pozadí ---
+  // --- Screen switcher ---
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('screen-' + name).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // --- Anonymous sign-in ---
   setStatus('Připojuji se…', 'work');
-  sub.textContent = 'Připojuji…';
+  callSub.textContent = 'Připojuji…';
 
   signInAnonymously(auth).catch(function(e) {
     console.error('[auth] anonymous sign-in failed:', e);
     setStatus('Chyba spojení. Zkuste obnovit stránku.', 'err');
-    sub.textContent = 'Bez spojení';
+    callSub.textContent = 'Bez spojení';
   });
 
   onAuthStateChanged(auth, function(user) {
     if (user) {
-      btn.disabled = false;
-      sub.textContent = stulFullName;
-      setStatus('Připraveno k přivolání', 'idle');
+      callBtn.disabled = false;
+      orderBtn.disabled = false;
+      callSub.textContent = stulFullName;
+      setStatus('Připraveno', 'idle');
     } else {
-      btn.disabled = true;
-      sub.textContent = 'Bez spojení';
+      callBtn.disabled = true;
+      orderBtn.disabled = true;
+      callSub.textContent = 'Bez spojení';
     }
   });
 
-  // --- Klik na tlačítko ---
+  // === Přivolání obsluhy (Fáze 1) ===
   let lastCallTs = 0;
   const COOLDOWN_MS = 30 * 1000;
 
-  btn.addEventListener('click', async function() {
-    if (btn.disabled) return;
+  callBtn.addEventListener('click', async function() {
+    if (callBtn.disabled) return;
     const now = Date.now();
     if (now - lastCallTs < COOLDOWN_MS) {
       const left = Math.ceil((COOLDOWN_MS - (now - lastCallTs)) / 1000);
       setStatus('Počkejte ještě ' + left + ' s…', 'work');
       return;
     }
-
-    btn.disabled = true;
+    callBtn.disabled = true;
     setStatus('Posílám…', 'work');
-    sub.textContent = 'Posílám volání…';
-
+    callSub.textContent = 'Posílám volání…';
     try {
-      await addDoc(collection(db, 'volani'), {
-        stul: stulId,
-        status: 'active',
-        ts: serverTimestamp()
-      });
+      await addDoc(collection(db, 'volani'), { stul: stulId, status: 'active', ts: serverTimestamp() });
       lastCallTs = Date.now();
       setStatus('✓ Obsluha přijde za chvíli', 'ok');
-      sub.textContent = 'Volání odesláno';
-
-      // Re-enable po cooldownu
+      callSub.textContent = 'Volání odesláno';
       setTimeout(function() {
-        btn.disabled = false;
-        sub.textContent = stulFullName;
-        setStatus('Připraveno k přivolání', 'idle');
+        callBtn.disabled = false;
+        callSub.textContent = stulFullName;
+        setStatus('Připraveno', 'idle');
       }, COOLDOWN_MS);
     } catch (e) {
       console.error('[volani] addDoc failed:', e);
-      btn.disabled = false;
-      sub.textContent = stulFullName;
+      callBtn.disabled = false;
+      callSub.textContent = stulFullName;
       setStatus('Nepodařilo se odeslat. Zkuste znovu.', 'err');
     }
+  });
+
+  // === MENU + KOŠÍK (Fáze 3) ===
+  // cart: { 'nazev': { nazev, cena, pocet } }
+  let cart = {};
+
+  function cartCount() {
+    let n = 0; for (const k in cart) n += cart[k].pocet;
+    return n;
+  }
+  function cartPrice() {
+    let p = 0; for (const k in cart) p += cart[k].pocet * cart[k].cena;
+    return p;
+  }
+
+  function updateCartUI() {
+    const cnt = cartCount();
+    const price = cartPrice();
+    document.getElementById('menu-cart-count').textContent = cnt;
+    document.getElementById('menu-cta-count').textContent = cnt;
+    document.getElementById('menu-cta-price').textContent = price;
+    document.getElementById('cart-send-price').textContent = price;
+    document.getElementById('menu-cart-chip').disabled = cnt === 0;
+    document.getElementById('menu-cta').hidden = cnt === 0;
+    // Aktualizovat badge u položek v menu
+    document.querySelectorAll('.menu-item').forEach(function(el) {
+      const nazev = el.dataset.nazev;
+      const inCart = cart[nazev] ? cart[nazev].pocet : 0;
+      const addBtn = el.querySelector('.menu-add-btn');
+      let badge = el.querySelector('.menu-item-badge');
+      if (inCart > 0) {
+        addBtn.classList.add('in-cart');
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'menu-item-badge';
+          addBtn.parentNode.insertBefore(badge, addBtn);
+        }
+        badge.textContent = inCart;
+      } else {
+        addBtn.classList.remove('in-cart');
+        if (badge) badge.remove();
+      }
+    });
+  }
+
+  function addToCart(item) {
+    const key = item.nazev;
+    if (!cart[key]) cart[key] = { nazev: item.nazev, cena: item.cena, pocet: 0 };
+    cart[key].pocet++;
+    updateCartUI();
+  }
+
+  function changeCartQty(nazev, delta) {
+    if (!cart[nazev]) return;
+    cart[nazev].pocet += delta;
+    if (cart[nazev].pocet <= 0) delete cart[nazev];
+    updateCartUI();
+    renderCart();
+  }
+
+  function removeFromCart(nazev) {
+    delete cart[nazev];
+    updateCartUI();
+    renderCart();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function renderMenu() {
+    const body = document.getElementById('menu-body');
+    if (!body) return;
+
+    // Sestavit kategorie ve správném pořadí. Čepovaná piva první (před MENU.Piva).
+    let html = '';
+
+    // 1) Čepovaná piva (sdílené z menu.js)
+    html += '<div class="menu-cat-title">Čepovaná piva</div>';
+    BEERS_CEP.forEach(function(b) {
+      const item = { nazev: b.n, cena: CEP_PRICE, u: CEP_VOLUME };
+      html += renderMenuItem(item);
+    });
+
+    // 2) Čepovaná piva v PET
+    html += '<div class="menu-cat-title">Pivo v PET</div>';
+    BEERS_CEP.forEach(function(b) {
+      const item = { nazev: b.n + ' v PET', cena: PET_PRICE, u: PET_VOLUME };
+      html += renderMenuItem(item);
+    });
+
+    // 3) Standardní MENU po kategoriích
+    CAT_ORDER.forEach(function(cat) {
+      const items = MENU.filter(function(m) { return m.c === cat; });
+      if (items.length === 0) return;
+      html += '<div class="menu-cat-title">' + escapeHtml(cat) + '</div>';
+      items.forEach(function(m) {
+        const item = { nazev: m.n, cena: m.p, u: m.u };
+        html += renderMenuItem(item);
+      });
+    });
+
+    body.innerHTML = html;
+    updateCartUI();
+  }
+
+  function renderMenuItem(item) {
+    return '<div class="menu-item" data-nazev="' + escapeHtml(item.nazev) + '" data-cena="' + item.cena + '">' +
+      '<div class="menu-item-info">' +
+        '<div class="menu-item-name">' + escapeHtml(item.nazev) + '</div>' +
+        (item.u ? '<div class="menu-item-detail">' + escapeHtml(item.u) + '</div>' : '') +
+      '</div>' +
+      '<div class="menu-item-price">' + item.cena + ' Kč</div>' +
+      '<button class="menu-add-btn" aria-label="Přidat">+</button>' +
+    '</div>';
+  }
+
+  function renderCart() {
+    const body = document.getElementById('cart-body');
+    const sendBar = document.getElementById('cart-send-bar');
+    const keys = Object.keys(cart);
+    if (keys.length === 0) {
+      body.innerHTML = '<div class="cart-empty">Košík je prázdný.<br>Vrať se do menu a vyber si.</div>';
+      sendBar.hidden = true;
+      return;
+    }
+    sendBar.hidden = false;
+    let html = '';
+    keys.forEach(function(k) {
+      const it = cart[k];
+      html += '<div class="cart-item" data-nazev="' + escapeHtml(k) + '">' +
+        '<div class="cart-item-top">' +
+          '<div class="cart-item-name">' + escapeHtml(it.nazev) + '</div>' +
+          '<div class="cart-item-price">' + (it.cena * it.pocet) + ' Kč</div>' +
+        '</div>' +
+        '<div class="cart-item-controls">' +
+          '<button class="qty-btn qty-minus">−</button>' +
+          '<div class="qty-value">' + it.pocet + '</div>' +
+          '<button class="qty-btn qty-plus">+</button>' +
+          '<div class="qty-spacer"></div>' +
+          '<button class="remove-btn">Odebrat</button>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '<div class="cart-total">' +
+      '<div class="cart-total-label">Celkem</div>' +
+      '<div class="cart-total-value">' + cartPrice() + ' Kč</div>' +
+    '</div>';
+    body.innerHTML = html;
+  }
+
+  // --- Event listeners ---
+  orderBtn.addEventListener('click', function() {
+    if (orderBtn.disabled) return;
+    renderMenu();
+    showScreen('menu');
+  });
+
+  document.getElementById('menu-back-btn').addEventListener('click', function() { showScreen('home'); });
+  document.getElementById('cart-back-btn').addEventListener('click', function() { showScreen('menu'); });
+  document.getElementById('menu-cart-chip').addEventListener('click', function() {
+    if (this.disabled) return;
+    renderCart();
+    showScreen('cart');
+  });
+  document.getElementById('menu-cta-btn').addEventListener('click', function() {
+    renderCart();
+    showScreen('cart');
+  });
+
+  // Delegated klik na menu items (+, item)
+  document.getElementById('menu-body').addEventListener('click', function(e) {
+    const addBtn = e.target.closest('.menu-add-btn');
+    if (!addBtn) return;
+    const itemEl = addBtn.closest('.menu-item');
+    if (!itemEl) return;
+    const nazev = itemEl.dataset.nazev;
+    const cena = parseInt(itemEl.dataset.cena, 10) || 0;
+    addToCart({ nazev: nazev, cena: cena });
+    addBtn.style.transform = 'scale(.85)';
+    setTimeout(function() { addBtn.style.transform = ''; }, 120);
+  });
+
+  // Delegated klik na cart items (-, +, odebrat)
+  document.getElementById('cart-body').addEventListener('click', function(e) {
+    const itemEl = e.target.closest('.cart-item');
+    if (!itemEl) return;
+    const nazev = itemEl.dataset.nazev;
+    if (e.target.closest('.qty-minus')) changeCartQty(nazev, -1);
+    else if (e.target.closest('.qty-plus')) changeCartQty(nazev, 1);
+    else if (e.target.closest('.remove-btn')) removeFromCart(nazev);
+  });
+
+  // --- Odeslání objednávky ---
+  const sendBtn = document.getElementById('cart-send-btn');
+  sendBtn.addEventListener('click', async function() {
+    if (sendBtn.disabled) return;
+    const keys = Object.keys(cart);
+    if (keys.length === 0) return;
+
+    sendBtn.disabled = true;
+    sendBtn.querySelector('.left').textContent = '⏳ Odesílám…';
+
+    const polozky = keys.map(function(k) {
+      return { nazev: cart[k].nazev, pocet: cart[k].pocet, cena: cart[k].cena };
+    });
+
+    try {
+      await addDoc(collection(db, 'objednavky'), {
+        stul: stulId,
+        polozky: polozky,
+        status: 'active',
+        ts: serverTimestamp()
+      });
+      cart = {};
+      updateCartUI();
+      document.getElementById('sent-msg').textContent =
+        polozky.length === 1
+          ? 'Obsluha vám brzy přinese ' + polozky[0].nazev + '.'
+          : 'Obsluha vám brzy přinese ' + polozky.length + ' položek z menu.';
+      showScreen('sent');
+    } catch (e) {
+      console.error('[objednavky] addDoc failed:', e);
+      sendBtn.disabled = false;
+      sendBtn.querySelector('.left').innerHTML = '📤 Odeslat objednávku';
+      alert('Odeslání selhalo: ' + (e.message || e.code) + '\n\nZkuste prosím znovu.');
+    }
+  });
+
+  document.getElementById('sent-back-btn').addEventListener('click', function() {
+    showScreen('home');
+    // reset send button text
+    sendBtn.disabled = false;
+    sendBtn.querySelector('.left').textContent = '📤 Odeslat objednávku';
   });
 </script>
 

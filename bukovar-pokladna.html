@@ -6,6 +6,7 @@
 <title>Bukovar — pokladna</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="menu.js"></script>
 <style>
   :root {
     --bg: #f5f1ea;
@@ -247,10 +248,34 @@
   .vicka-table td.center { text-align: center; }
   .vicka-color-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; border: 1px solid; display: inline-block; }
 
-  /* Dvousloupcový layout */
+  /* Třísloupcový layout: workflow / objednávky / menu+účtenka */
   .kasa-layout { display: flex; gap: 1.25rem; align-items: flex-start; }
   .kasa-left { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: .75rem; }
+  .kasa-orders { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: .6rem; }
+  .kasa-orders[hidden] { display: none !important; }
   .kasa-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  /* Objednávky čtverce (V7.27) */
+  .orders-head { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 4px 6px 6px; display: flex; align-items: center; gap: 8px; }
+  .orders-head-count { background: var(--accent); color: #fff; min-width: 22px; height: 22px; border-radius: 11px; padding: 0 7px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .orders-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 1rem .8rem; border: 1px dashed var(--border-strong); border-radius: var(--radius); background: var(--surface); }
+  .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .7rem .85rem; display: flex; flex-direction: column; gap: .5rem; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+  .order-card.fresh { border-color: var(--accent); box-shadow: 0 2px 8px rgba(181,56,26,.18); }
+  .order-card-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .order-card-stul { font-size: 14px; font-weight: 600; color: var(--text); }
+  .order-card-time { font-size: 11px; color: var(--muted); }
+  .order-card-items { font-size: 13px; line-height: 1.4; color: var(--text); }
+  .order-card-items div { padding: 1px 0; }
+  .order-card-actions { display: flex; gap: 6px; margin-top: 2px; }
+  .order-card-btn { flex: 1; font-size: 13px; padding: 8px 8px; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; min-height: unset; white-space: nowrap; }
+  .order-card-btn:hover { background: var(--bg); }
+  .order-card-btn.vydat { background: var(--success-text); color: #fff; border-color: var(--success-text); }
+  .order-card-btn.vydat:hover { background: #155a2d; }
+
+  /* Tichý badge 🛎 v hlavičce (bez pulse, bez title flash) */
+  .header-objednavky[hidden] { display: none !important; }
+  .header-objednavky { background: rgba(245,241,234,.15); color: #f5f1ea; border: 1px solid rgba(245,241,234,.3); font-size: 13px; font-weight: 500; padding: 4px 12px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: default; font-family: 'DM Sans', sans-serif; display: inline-flex; align-items: center; gap: 6px; }
+  .header-objednavky .obj-count { background: var(--accent); color: #fff; min-width: 20px; height: 20px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; padding: 0 6px; }
   .quick-add { height: 160px; overflow: hidden; flex-shrink: 0; }
 
   /* VIP piva — rychlé markování */
@@ -572,6 +597,7 @@
       <div class="ltb-label">teplota piva</div>
     </div>
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
+    <span class="header-objednavky" id="header-objednavky-badge" title="Objednávky z mobilního číšníka" hidden>🛎 <span class="obj-count" id="obj-count">0</span></span>
     <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
   </div>
@@ -602,6 +628,12 @@
           <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Uzavřít</div></div>
           <button class="primary" onclick="uzavrit()">Uzavřít</button>
         </div>
+      </div>
+
+      <!-- Prostřední sloupec: objednávky z mobilního číšníka -->
+      <div class="kasa-orders" id="kasa-orders" hidden>
+        <div class="orders-head">🛎 Objednávky <span class="orders-head-count" id="orders-head-count">0</span></div>
+        <div id="orders-list"></div>
       </div>
 
       <!-- Pravý sloupec: účtenka -->
@@ -1134,7 +1166,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.26';
+const APP_VERSION = '7.27';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1148,70 +1180,7 @@ const APP_VERSION = '7.26';
   });
 })();
 
-const MENU = [
-  {n:"Radler",c:"Piva",p:49,u:"0,4l"},
-  {n:"Birel nealko neochucený",c:"Piva",p:49,u:"0,5l"},
-  {n:"Birel nealko ochucený",c:"Piva",p:49,u:"0,5l"},
-  {n:"Maisel's Weisse Alkoholfrei",c:"Piva",p:65,u:"0,5l"},
-  {n:"Pivo s sebou do džbánku 2l",c:"Piva",p:196,u:"2l"},
-  {n:"Pivo s sebou do džbánku 5l",c:"Piva",p:490,u:"5l"},
-  {n:"Espresso",c:"Horké nápoje",p:49},
-  {n:"Espresso Lungo",c:"Horké nápoje",p:49},
-  {n:"Doppio",c:"Horké nápoje",p:55},
-  {n:"Cappuccino",c:"Horké nápoje",p:65},
-  {n:"Latté Macchiato",c:"Horké nápoje",p:65},
-  {n:"Flat white",c:"Horké nápoje",p:65},
-  {n:"Čaj Ahmad Tea",c:"Horké nápoje",p:39},
-  {n:"Turecká káva",c:"Horké nápoje",p:39},
-  {n:"Ledová káva",c:"Horké nápoje",p:75},
-  {n:"Kofola 0,3l",c:"Nealkoholické nápoje",p:39},
-  {n:"Kofola 0,5l",c:"Nealkoholické nápoje",p:49},
-  {n:"Frizzante 0,3l",c:"Nealkoholické nápoje",p:39},
-  {n:"Frizzante 0,5l",c:"Nealkoholické nápoje",p:49},
-  {n:"Domácí limonáda 0,4l",c:"Nealkoholické nápoje",p:49,u:"0,4l"},
-  {n:"Domácí limonáda 1l",c:"Nealkoholické nápoje",p:90,u:"1l"},
-  {n:"Domácí limonáda 2l",c:"Nealkoholické nápoje",p:160,u:"2l"},
-  {n:"Royal crown cola",c:"Nealkoholické nápoje",p:39},
-  {n:"Targa Tonic",c:"Nealkoholické nápoje",p:39},
-  {n:"Džus pomeranč",c:"Nealkoholické nápoje",p:39},
-  {n:"Perlivá voda",c:"Nealkoholické nápoje",p:39},
-  {n:"Bukovská voda",c:"Nealkoholické nápoje",p:0},
-  {n:"Rozlévané víno",c:"Víno",p:69,u:"0,2l"},
-  {n:"Vinný střik",c:"Víno",p:79,u:"0,3l"},
-  {n:"Lahvové víno bílé",c:"Víno",p:299,u:"0,7l"},
-  {n:"Lahvové víno bílé premium",c:"Víno",p:349,u:"0,7l"},
-  {n:"Lahvové víno červené",c:"Víno",p:499,u:"0,7l"},
-  {n:"Prosecco Mionetto",c:"Víno",p:299,u:"0,7l"},
-  {n:"Prosecco Treviso",c:"Víno",p:199,u:"0,7l"},
-  {n:"Prosecco rozlévané",c:"Víno",p:59,u:"0,15l"},
-  {n:"Gin s tonikem",c:"Míchané nápoje",p:99,u:"0,3l"},
-  {n:"Hugo Spritz",c:"Míchané nápoje",p:99,u:"0,3l"},
-  {n:"Cuba libre",c:"Míchané nápoje",p:109,u:"0,3l"},
-  {n:"Aperol Spritz",c:"Míchané nápoje",p:159,u:"0,3l"},
-  {n:"Mojito",c:"Míchané nápoje",p:159,u:"0,3l"},
-  {n:"Mimosa malá",c:"Míchané nápoje",p:59,u:"0,2l"},
-  {n:"Mimosa velká",c:"Míchané nápoje",p:109,u:"0,4l"},
-  {n:"Utopenec",c:"Občerstvení",p:85},
-  {n:"Tlačenka ve skle",c:"Občerstvení",p:85},
-  {n:"Pizza Della Casa",c:"Občerstvení",p:155},
-  {n:"Nakládaný hermelín",c:"Občerstvení",p:85},
-  {n:"Chipsy",c:"Občerstvení",p:59},
-  {n:"Slané tyčinky",c:"Občerstvení",p:29},
-  {n:"Křupky",c:"Občerstvení",p:29},
-  {n:"Arašídy",c:"Občerstvení",p:39},
-  {n:"Paštiky Čongrády",c:"Občerstvení",p:99},
-  {n:"Paštika ve skle Čongrády",c:"Občerstvení",p:109},
-  {n:"Škvarky v sádle Čongrády",c:"Občerstvení",p:139},
-  {n:"Zákusek",c:"Občerstvení",p:65},
-  {n:"Zákusek",c:"Občerstvení",p:85},
-  {n:"Rum standard (Republica, Heffron...)",c:"Destiláty",p:79,u:"0,05l"},
-  {n:"Rum premium (Kraken, Espero...)",c:"Destiláty",p:99,u:"0,05l"},
-  {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"},
-  {n:"Dárkové trojbalení",c:"Merch",p:320},
-  {n:"Sklenice",c:"Merch",p:105}
-];
-
-const CAT_ORDER = ["Piva","Nealkoholické nápoje","Horké nápoje","Víno","Míchané nápoje","Občerstvení","Destiláty","Merch"];
+// MENU + CAT_ORDER načteno z menu.js (sdílené s cisnik.html)
 
 let receiptItems = [];
 let isStamgastActive = false;
@@ -1347,6 +1316,116 @@ function vyriditVolani(id, btn) {
       if (btn) { btn.disabled = false; btn.textContent = '✓ Vyřízeno'; }
     });
   }
+}
+
+// --- Objednávky z mobilního číšníka (V7.27, Fáze 3) ---
+let _objednavkyLastIds = new Set();
+
+function _escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+window.bukovarOnRemoteObjednavky = function(items) {
+  const col = document.getElementById('kasa-orders');
+  const badge = document.getElementById('header-objednavky-badge');
+  const countEl = document.getElementById('obj-count');
+  const listEl = document.getElementById('orders-list');
+  const headCountEl = document.getElementById('orders-head-count');
+  if (!col || !listEl) return;
+
+  const n = items.length;
+  if (badge && countEl) {
+    if (n > 0) { badge.removeAttribute('hidden'); countEl.textContent = String(n); }
+    else { badge.setAttribute('hidden', ''); }
+  }
+  if (headCountEl) headCountEl.textContent = String(n);
+
+  // Detekce nových objednávek (kvůli "fresh" zvýraznění)
+  const newIds = new Set(items.map(function(x) { return x.id; }));
+  const freshIds = new Set();
+  newIds.forEach(function(id) { if (!_objednavkyLastIds.has(id)) freshIds.add(id); });
+  _objednavkyLastIds = newIds;
+
+  if (n === 0) {
+    col.setAttribute('hidden', '');
+    listEl.innerHTML = '';
+    return;
+  }
+  col.removeAttribute('hidden');
+
+  listEl.innerHTML = items.map(function(o) {
+    const label = stulLabel(o.stul);
+    const ago = _formatVolaniAgo(o.ts);
+    const fresh = freshIds.has(o.id) ? ' fresh' : '';
+    const polozkyHtml = (o.polozky || []).map(function(p) {
+      return '<div>' + p.pocet + '× ' + _escapeHtml(p.nazev) + '</div>';
+    }).join('');
+    const safeId = o.id.replace(/[\\\']/g, '');
+    return ''
+      + '<div class="order-card' + fresh + '" data-id="' + safeId + '">'
+      +   '<div class="order-card-top">'
+      +     '<div class="order-card-stul">' + _escapeHtml(label) + '</div>'
+      +     '<div class="order-card-time">' + ago + '</div>'
+      +   '</div>'
+      +   '<div class="order-card-items">' + polozkyHtml + '</div>'
+      +   '<div class="order-card-actions">'
+      +     '<button class="order-card-btn vydat" onclick="objednavkaVydat(\'' + safeId + '\', this)">✓ Vydat</button>'
+      +     '<button class="order-card-btn" onclick="objednavkaTisk(\'' + safeId + '\')">🖨 Tisk</button>'
+      +   '</div>'
+      + '</div>';
+  }).join('');
+};
+
+function objednavkaVydat(id, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  if (window.bukovarObjednavkaVydat) {
+    window.bukovarObjednavkaVydat(id).catch(function() {
+      if (btn) { btn.disabled = false; btn.textContent = '✓ Vydat'; }
+    });
+  }
+}
+
+function objednavkaTisk(id) {
+  // Najít data v aktuálně renderovaném seznamu (data-id atribut)
+  const card = document.querySelector('.order-card[data-id="' + id + '"]');
+  if (!card) return;
+  const stul = card.querySelector('.order-card-stul').textContent;
+  const cas = new Date().toLocaleString('cs-CZ', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const polozky = Array.from(card.querySelectorAll('.order-card-items div')).map(function(d) {
+    return d.textContent;
+  });
+
+  const printArea = document.getElementById('print-area') || (function() {
+    const el = document.createElement('div');
+    el.id = 'print-area';
+    el.style.display = 'none';
+    document.body.appendChild(el);
+    return el;
+  })();
+  printArea.innerHTML =
+    '<div style="font-family:monospace;font-size:14px;padding:1rem;max-width:280px;">' +
+    '<div style="text-align:center;font-size:18px;font-weight:700;border-bottom:2px dashed #000;padding-bottom:6px;margin-bottom:8px;">🛎 OBJEDNÁVKA</div>' +
+    '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">' + _escapeHtml(stul) + '</div>' +
+    '<div style="font-size:12px;color:#444;margin-bottom:10px;">' + _escapeHtml(cas) + '</div>' +
+    '<div style="border-top:1px dashed #000;padding-top:6px;font-size:15px;line-height:1.6;">' +
+      polozky.map(function(p) { return _escapeHtml(p); }).join('<br>') +
+    '</div>' +
+    '<div style="margin-top:14px;border-top:2px dashed #000;padding-top:6px;text-align:center;font-size:11px;color:#666;">Bukovar pokladna</div>' +
+    '</div>';
+
+  // Tisk + obnovit display
+  const origDisplay = printArea.style.display;
+  printArea.style.display = 'block';
+  document.body.classList.add('printing-order');
+  setTimeout(function() {
+    window.print();
+    setTimeout(function() {
+      printArea.style.display = origDisplay;
+      document.body.classList.remove('printing-order');
+    }, 100);
+  }, 50);
 }
 
 // --- Kategorie ---
@@ -4284,6 +4363,49 @@ function updateTabBadges() {
     }
   };
 
+  // --- Objednávky z mobilního číšníka (V7.27, Fáze 3) ---
+  // Listener na kolekci `objednavky` s status='active'. Tichý — bez zvuku, bez title flash.
+  let objednavkyUnsub = null;
+  const objednavkyQuery = query(collection(db, 'objednavky'), where('status', '==', 'active'));
+
+  function attachObjednavkyListener() {
+    if (objednavkyUnsub) return;
+    objednavkyUnsub = onSnapshot(objednavkyQuery, function(snap) {
+      const items = [];
+      snap.forEach(function(d) {
+        const data = d.data();
+        items.push({
+          id: d.id,
+          stul: data.stul,
+          polozky: Array.isArray(data.polozky) ? data.polozky : [],
+          ts: data.ts ? data.ts.toMillis() : null
+        });
+      });
+      items.sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
+      if (window.bukovarOnRemoteObjednavky) window.bukovarOnRemoteObjednavky(items);
+    }, function(err) {
+      console.warn('[objednavky] listener error:', err);
+    });
+    console.log('[objednavky] listener attached');
+  }
+
+  function detachObjednavkyListener() {
+    if (objednavkyUnsub) { objednavkyUnsub(); objednavkyUnsub = null; console.log('[objednavky] listener detached'); }
+  }
+
+  window.bukovarObjednavkaVydat = async function(id) {
+    try {
+      await updateDoc(doc(db, 'objednavky', id), {
+        status: 'handled',
+        handledAt: serverTimestamp(),
+        handledBy: auth.currentUser ? auth.currentUser.email : null
+      });
+    } catch (e) {
+      console.error('[objednavky] vydat failed:', e);
+      alert('Chyba při vyřízení objednávky: ' + (e.message || e.code));
+    }
+  };
+
   // Auto-detect: pokud aspoň 1 dokument existuje, zapni sync
   async function autoEnableCloudSync() {
     try {
@@ -4325,6 +4447,7 @@ function updateTabBadges() {
       window.bukovarSyncCounter();
       autoEnableCloudSync();
       attachVolaniListener();
+      attachObjednavkyListener();
       window.bukovarEwelinkRefresh();
       ewelinkStartPolling();
       loxoneStartPolling();
@@ -4332,7 +4455,9 @@ function updateTabBadges() {
       if (window.bukovarDetachAllListeners) window.bukovarDetachAllListeners();
       if (window.bukovarSetCloudSyncActive) window.bukovarSetCloudSyncActive(false);
       detachVolaniListener();
+      detachObjednavkyListener();
       if (window.bukovarOnRemoteVolani) window.bukovarOnRemoteVolani([]);
+      if (window.bukovarOnRemoteObjednavky) window.bukovarOnRemoteObjednavky([]);
       ewelinkStopPolling();
       loxoneStopPolling();
       overlay.style.display = 'flex';
