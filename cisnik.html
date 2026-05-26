@@ -532,6 +532,10 @@
     </button>
 
     <div class="status-box idle" id="status-box">Připraveno</div>
+
+    <button id="retry-auth-btn" hidden style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;min-height:54px;">
+      🔄 Zkusit znovu
+    </button>
   </main>
   <footer>Bukovar pokladna · mobilní číšník</footer>
 </div>
@@ -604,8 +608,8 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-  import { initializeFirestore, persistentLocalCache, collection, addDoc, deleteDoc, doc, serverTimestamp, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { initializeFirestore, persistentLocalCache, memoryLocalCache, collection, addDoc, deleteDoc, doc, serverTimestamp, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCVt5sqRuJzFDclyMnwM6D0Pqz5E8449oA",
@@ -618,10 +622,33 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  setPersistence(auth, browserLocalPersistence).catch(function(e){ console.warn('persistence:', e); });
+
+  // Firestore — fallback z persistent na memory cache (iOS Safari private/ITP blokuje IndexedDB)
   let db;
-  try { db = initializeFirestore(app, { localCache: persistentLocalCache({}) }); }
-  catch (e) { db = initializeFirestore(app, {}); }
+  try {
+    db = initializeFirestore(app, { localCache: persistentLocalCache({}) });
+  } catch (e) {
+    console.warn('[firestore] persistent cache failed, fallback memory:', e);
+    try { db = initializeFirestore(app, { localCache: memoryLocalCache() }); }
+    catch (e2) { db = initializeFirestore(app, {}); }
+  }
+
+  // Auth persistence — fallback chain (local → session → in-memory)
+  async function setupPersistence() {
+    try { await setPersistence(auth, browserLocalPersistence); return 'local'; }
+    catch (e1) {
+      console.warn('[auth] browserLocalPersistence failed:', e1.code || e1.message);
+      try { await setPersistence(auth, browserSessionPersistence); return 'session'; }
+      catch (e2) {
+        console.warn('[auth] browserSessionPersistence failed:', e2.code || e2.message);
+        try { await setPersistence(auth, inMemoryPersistence); return 'memory'; }
+        catch (e3) {
+          console.warn('[auth] inMemoryPersistence failed:', e3.code || e3.message);
+          return 'none';
+        }
+      }
+    }
+  }
 
   // --- Parse stolu ---
   const params = new URLSearchParams(location.search);
@@ -680,34 +707,70 @@
     window.scrollTo(0, 0);
   }
 
-  // --- Anonymous auth ---
-  setStatus('Připojuji se…', 'work');
-  callSub.textContent = 'Připojuji…';
-
+  // --- Anonymous auth s fallback persistence ---
   let currentUid = null;
-  signInAnonymously(auth).catch(function(e) {
-    console.error('[auth] anonymous sign-in failed:', e);
-    setStatus('Chyba spojení. Zkuste obnovit stránku.', 'err');
-    callSub.textContent = 'Bez spojení';
-  });
+  const retryBtn = document.getElementById('retry-auth-btn');
 
+  async function doSignIn() {
+    setStatus('Připojuji se…', 'work');
+    callSub.textContent = 'Připojuji…';
+    retryBtn.hidden = true;
+
+    const persistMode = await setupPersistence();
+    console.log('[auth] persistence mode:', persistMode);
+
+    try {
+      const cred = await signInAnonymously(auth);
+      console.log('[auth] sign-in OK, uid=' + cred.user.uid + ' persist=' + persistMode);
+    } catch (e) {
+      const code = e.code || '?';
+      const msg = e.message || String(e);
+      console.error('[auth] sign-in FAILED:', code, msg, e);
+      const friendly = {
+        'auth/operation-not-allowed': 'Anonymní přihlášení není povoleno v Firebase Console.',
+        'auth/network-request-failed': 'Není připojení k internetu.',
+        'auth/web-storage-unsupported': 'Prohlížeč blokuje úložiště (privátní okno?).',
+        'auth/internal-error': 'Vnitřní chyba Firebase. Zkuste znovu.',
+        'auth/too-many-requests': 'Příliš mnoho pokusů. Počkejte chvíli.'
+      };
+      const niceMsg = friendly[code] || ('Chyba ' + code);
+      setStatus('❌ ' + niceMsg + ' [' + code + ']', 'err');
+      callSub.textContent = 'Bez spojení';
+      retryBtn.hidden = false;
+    }
+  }
+
+  retryBtn.addEventListener('click', doSignIn);
+
+  // Pokud existuje cached user, onAuthStateChanged se zavolá hned. Jinak spustí doSignIn.
+  let signedInOnce = false;
   onAuthStateChanged(auth, function(user) {
     if (user) {
+      signedInOnce = true;
       currentUid = user.uid;
       callBtn.disabled = false;
       orderBtn.disabled = false;
       callSub.textContent = stulFullName;
       setStatus('Připraveno', 'idle');
+      retryBtn.hidden = true;
       attachHistoryListener();
     } else {
       currentUid = null;
       callBtn.disabled = true;
       orderBtn.disabled = true;
-      callSub.textContent = 'Bez spojení';
       detachHistoryListener();
       historyBtn.hidden = true;
+      if (signedInOnce) {
+        // Někdy se odhlásíme po session — zkus znovu
+        callSub.textContent = 'Bez spojení';
+        setStatus('Spojení se přerušilo. Zkuste obnovit.', 'err');
+        retryBtn.hidden = false;
+      }
     }
   });
+
+  // Start sign-in
+  doSignIn();
 
   // === Volání obsluhy (Fáze 1) ===
   let lastCallTs = 0;
