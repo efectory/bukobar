@@ -509,18 +509,27 @@
   .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
 
-  /* eWeLink tlačítko v hlavičce (V7.22) */
+  /* eWeLink tlačítko v hlavičce (V7.24) — vertikální páčka + barva dle stavu */
   .header-ewelink[hidden] { display: none !important; }
-  .header-ewelink { display: flex; align-items: center; gap: 6px; background: #475569; color: #fff; border: 1px solid #475569; font-size: 14px; font-weight: 600; padding: 4px 14px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s, border-color .15s; }
-  .header-ewelink:hover { background: #334155; border-color: #334155; }
-  .header-ewelink.on { background: #16a34a; border-color: #16a34a; }
-  .header-ewelink.on:hover { background: #15803d; border-color: #15803d; }
-  .header-ewelink.off { background: #475569; border-color: #475569; }
-  .header-ewelink.pending { background: #ea580c; border-color: #ea580c; cursor: wait; }
-  .header-ewelink.error { background: #a4101b; border-color: #a4101b; }
-  .header-ewelink:disabled { cursor: wait; opacity: .75; }
-  .header-ewelink .header-ewelink-icon { font-size: 15px; }
+  .header-ewelink { display: flex; align-items: center; gap: 8px; background: #475569; color: #fff; border: 1px solid #475569; font-size: 14px; font-weight: 600; padding: 3px 12px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .18s, border-color .18s; }
+  .header-ewelink:hover { filter: brightness(.92); }
+  .header-ewelink.on { background: #16a34a; border-color: #15803d; }
+  .header-ewelink.off { background: #475569; border-color: #334155; }
+  .header-ewelink.off.alarm-off { background: #dc2626; border-color: #b91c1c; }
+  .header-ewelink.pending { background: #ea580c; border-color: #c2410c; cursor: wait; }
+  .header-ewelink.error { background: #7f1d1d; border-color: #450a0a; }
+  .header-ewelink:disabled { cursor: wait; opacity: .85; }
+  .header-ewelink .header-ewelink-icon { font-size: 15px; line-height: 1; }
   .header-ewelink .header-ewelink-label { font-size: 13px; }
+  .header-ewelink .header-ewelink-state { font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 1px 7px; border-radius: 3px; background: rgba(255,255,255,.22); color: #fff; margin-left: 2px; }
+
+  /* Vertikální toggle páčka — nahoře = ZAP, dole = VYP */
+  .header-ewelink .ew-toggle { display: inline-block; width: 16px; height: 28px; border-radius: 8px; background: rgba(0,0,0,.32); border: 1px solid rgba(255,255,255,.5); position: relative; flex-shrink: 0; box-shadow: inset 0 1px 2px rgba(0,0,0,.3); }
+  .header-ewelink .ew-toggle::after { content: ''; position: absolute; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.4); transition: top .2s cubic-bezier(.4,1.6,.5,1); }
+  .header-ewelink.on .ew-toggle::after      { top: 2px; }
+  .header-ewelink.off .ew-toggle::after     { top: 14px; }
+  .header-ewelink.pending .ew-toggle::after { top: 8px; opacity: .6; }
+  .header-ewelink.error .ew-toggle::after   { top: 8px; opacity: .6; }
 
   /* Volání hostů (V7.20) */
   .header-volani[hidden], .volani-panel[hidden] { display: none !important; }
@@ -594,7 +603,7 @@
       <div class="ltb-label">teplota piva</div>
     </div>
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
-    <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span></button>
+    <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
     <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
   </div>
@@ -1040,6 +1049,8 @@
             </select>
             <label for="ewelink-cfg-enabled">Povolit:</label>
             <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" id="ewelink-cfg-enabled" style="width:18px;height:18px;cursor:pointer;" /> Zobrazit tlačítko v hlavičce pokladny</label>
+            <label for="ewelink-cfg-alarm">Alarm při vypnutí:</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" id="ewelink-cfg-alarm" style="width:18px;height:18px;cursor:pointer;" /> Když VYP, tlačítko červené (vhodné pro chlazení/topení — alarm). Když nezaškrtnuto, VYP je šedé.</label>
           </div>
           <div style="display:flex;gap:.6rem;margin-top:1rem;">
             <button class="primary" onclick="bukovarEwelinkSaveConfig()" style="font-size:14px;padding:9px 20px;min-height:unset;">💾 Uložit konfiguraci</button>
@@ -1197,7 +1208,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.23';
+const APP_VERSION = '7.24';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -4238,7 +4249,7 @@ function updateTabBadges() {
     _loxoneUpdateBadge({ online: false, error: 'Odhlášen' });
   }
 
-  // --- eWeLink Cloud Functions (V7.22) ---
+  // --- eWeLink Cloud Functions (V7.24) ---
   const callEwelinkStatus     = httpsCallable(fns, 'ewelinkStatus');
   const callEwelinkToggle     = httpsCallable(fns, 'ewelinkToggle');
   const callEwelinkAuthState  = httpsCallable(fns, 'ewelinkAuthState');
@@ -4254,7 +4265,11 @@ function updateTabBadges() {
     btn.classList.add(state);
     btn.querySelector('.header-ewelink-icon').textContent = icon || '💡';
     btn.querySelector('.header-ewelink-label').textContent = label || 'eWeLink';
-    btn.title = (label || 'eWeLink') + ' — ' + state.toUpperCase();
+    const stateLabel = state === 'on' ? 'ZAP' : (state === 'off' ? 'VYP' : (state === 'pending' ? '…' : 'ERR'));
+    const stateEl = btn.querySelector('.header-ewelink-state');
+    if (stateEl) stateEl.textContent = stateLabel;
+    const longState = state === 'on' ? 'ZAPNUTO' : (state === 'off' ? 'VYPNUTO' : state.toUpperCase());
+    btn.title = (label || 'eWeLink') + ' — ' + longState + ' (klikni pro přepnutí)';
   }
 
   window.bukovarEwelinkRefresh = async function() {
@@ -4268,6 +4283,7 @@ function updateTabBadges() {
         return;
       }
       btn.hidden = false;
+      btn.classList.toggle('alarm-off', !!d.alarmWhenOff);
       if (d.error) {
         _ewelinkSetBtn('error', d.label, d.icon);
       } else {
@@ -4332,6 +4348,7 @@ function updateTabBadges() {
       document.getElementById('ewelink-cfg-label').value = dev.label || '';
       document.getElementById('ewelink-cfg-icon').value = dev.icon || '💡';
       document.getElementById('ewelink-cfg-enabled').checked = !!dev.enabled;
+      document.getElementById('ewelink-cfg-alarm').checked = !!dev.alarmWhenOff;
     } catch (e) {
       console.error('[ewelink/admin] init failed:', e);
       statusEl.textContent = '⚠ Chyba: ' + (e.message || e.code || e);
@@ -4364,10 +4381,11 @@ function updateTabBadges() {
 
   window.bukovarEwelinkSaveConfig = async function() {
     const payload = {
-      deviceId: document.getElementById('ewelink-cfg-deviceid').value.trim(),
-      label:    document.getElementById('ewelink-cfg-label').value.trim(),
-      icon:     document.getElementById('ewelink-cfg-icon').value,
-      enabled:  document.getElementById('ewelink-cfg-enabled').checked
+      deviceId:     document.getElementById('ewelink-cfg-deviceid').value.trim(),
+      label:        document.getElementById('ewelink-cfg-label').value.trim(),
+      icon:         document.getElementById('ewelink-cfg-icon').value,
+      enabled:      document.getElementById('ewelink-cfg-enabled').checked,
+      alarmWhenOff: document.getElementById('ewelink-cfg-alarm').checked
     };
     const out = document.getElementById('ewelink-output');
     try {
