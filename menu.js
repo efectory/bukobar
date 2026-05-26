@@ -82,3 +82,7 @@ const CEP_PRICE = 49;
 const CEP_VOLUME = '0,4l';
 const PET_PRICE = 105;
 const PET_VOLUME = '1,0l';
+
+// Top 4 produkty pro mobilního číšníka — rychlá nabídka na home screen.
+// Pokud bys chtěl změnit, uprav názvy (musí přesně sedět s MENU.n).
+const TOP_4 = ['Radler', 'Birel nealko neochucený', 'Espresso', 'Targa Tonic'];

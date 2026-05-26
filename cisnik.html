@@ -408,56 +408,42 @@
   }
   .cart-inline-total .val { font-size: 17px; font-weight: 700; }
 
-  /* ========== CATEGORY screen items ========== */
-  .menu-item {
+  /* ========== Generická dlaždice pro produkty (TOP 4 + kategorie sub-screen) ========== */
+  .item-tile {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 8px 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border-strong);
     background: var(--surface);
-    margin: 0 1rem .55rem;
-    padding: .85rem 1rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: .7rem;
-  }
-  .menu-item:first-child { margin-top: 1rem; }
-  .menu-item-info { flex: 1; min-width: 0; }
-  .menu-item-name { font-size: 15px; font-weight: 500; line-height: 1.25; word-break: break-word; }
-  .menu-item-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .menu-item-price { font-size: 15px; font-weight: 600; white-space: nowrap; }
-  .menu-add-btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    font-size: 22px;
-    font-weight: 600;
+    color: var(--text);
     cursor: pointer;
-    flex-shrink: 0;
+    min-height: 62px;
+    line-height: 1.15;
+    text-align: center;
+    transition: background .1s, transform .1s;
+    position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    line-height: 1;
-    font-family: inherit;
+    gap: 2px;
+    word-break: break-word;
   }
-  .menu-add-btn:active { background: #9c2e14; transform: scale(.92); }
-  .menu-add-btn.in-cart { background: var(--success-text); }
-  .menu-item-badge {
-    background: var(--accent);
-    color: #fff;
-    min-width: 22px;
-    height: 22px;
-    border-radius: 11px;
-    padding: 0 7px;
-    font-size: 12px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 4px;
+  .item-tile:active { transform: scale(.96); background: var(--bg); }
+  .item-tile .item-name { font-weight: 600; line-height: 1.1; }
+  .item-tile .item-price { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .item-tile .item-badge {
+    position: absolute; top: 3px; right: 3px;
+    background: var(--accent); color: #fff;
+    min-width: 20px; height: 20px; border-radius: 10px;
+    padding: 0 6px; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
   }
+  /* TOP 4 výraznější — žlutý akcent */
+  .item-tile.top { background: #fef9c3; border-color: #ca8a04; color: #713f12; }
+  .item-tile.top .item-price { color: #92400e; }
 
   /* Sticky CTA */
   .sticky-bottom-bar {
@@ -934,22 +920,15 @@
         badge.textContent = c;
       } else if (badge) { badge.remove(); }
     });
-    document.querySelectorAll('#cat-body .menu-item').forEach(function(el) {
+    // Item-tile dlaždice (TOP 4 na home + položky v kategorii sub-screen)
+    document.querySelectorAll('.item-tile').forEach(function(el) {
       const nazev = el.dataset.nazev;
       const inCart = cart[nazev] ? cart[nazev].pocet : 0;
-      const addBtn = el.querySelector('.menu-add-btn');
-      let badge = el.querySelector('.menu-item-badge');
+      let badge = el.querySelector('.item-badge');
       if (inCart > 0) {
-        addBtn.classList.add('in-cart');
-        if (!badge) {
-          badge = document.createElement('span'); badge.className = 'menu-item-badge';
-          addBtn.parentNode.insertBefore(badge, addBtn);
-        }
+        if (!badge) { badge = document.createElement('span'); badge.className = 'item-badge'; el.appendChild(badge); }
         badge.textContent = inCart;
-      } else {
-        addBtn.classList.remove('in-cart');
-        if (badge) badge.remove();
-      }
+      } else if (badge) { badge.remove(); }
     });
     // Inline cart na home — vidíš co máš v košíku rovnou
     renderInlineCart();
@@ -990,7 +969,7 @@
     const body = document.getElementById('menu-body');
     let html = '';
 
-    // Čepovaná piva — 4×2 grid, jen název, bez labelu (PET je v kategorii Piva)
+    // Čepovaná piva — 4×2 grid (8 piv), jen název
     html += '<div class="menu-section"><div class="grid-4">';
     BEERS_CEP.forEach(function(b) {
       html += '<button class="pivo-btn ' + b.barva + '" data-nazev="' + escapeHtml(b.n) + '" data-cena="' + CEP_PRICE + '">' +
@@ -999,7 +978,21 @@
     });
     html += '</div></div>';
 
-    // Kategorie — 4×2 grid, kompaktní, bez labelu
+    // TOP 4 produkty — řada 4×1 dlaždic se žlutým akcentem
+    if (Array.isArray(window.TOP_4) && TOP_4.length > 0) {
+      html += '<div class="menu-section"><div class="grid-4">';
+      TOP_4.forEach(function(nazev) {
+        const m = MENU.find(function(x) { return x.n === nazev; });
+        if (!m) return;
+        html += '<button class="item-tile top" data-nazev="' + escapeHtml(m.n) + '" data-cena="' + m.p + '">' +
+          '<span class="item-name">' + escapeHtml(m.n) + '</span>' +
+          '<span class="item-price">' + m.p + ' Kč</span>' +
+        '</button>';
+      });
+      html += '</div></div>';
+    }
+
+    // Kategorie — 4×2 grid
     html += '<div class="menu-section"><div class="grid-4">';
     CAT_ORDER.forEach(function(cat) {
       const items = MENU.filter(function(m) { return m.c === cat; });
@@ -1051,7 +1044,7 @@
 
   function renderCategory(cat) {
     currentCategory = cat;
-    document.getElementById('cat-title').textContent = cat;
+    document.getElementById('cat-title').textContent = CAT_LABEL_MOBILE[cat] || cat;
     const body = document.getElementById('cat-body');
     const items = MENU.filter(function(m) { return m.c === cat; }).slice();
     // V kategorii Piva přidat i PET piva (na konec)
@@ -1060,17 +1053,14 @@
         items.push({ n: b.n + ' v PET', c: 'Piva', p: PET_PRICE, u: PET_VOLUME });
       });
     }
-    let html = '';
+    let html = '<div class="menu-section"><div class="grid-4">';
     items.forEach(function(m) {
-      html += '<div class="menu-item" data-nazev="' + escapeHtml(m.n) + '" data-cena="' + m.p + '">' +
-        '<div class="menu-item-info">' +
-          '<div class="menu-item-name">' + escapeHtml(m.n) + '</div>' +
-          (m.u ? '<div class="menu-item-detail">' + escapeHtml(m.u) + '</div>' : '') +
-        '</div>' +
-        '<div class="menu-item-price">' + m.p + ' Kč</div>' +
-        '<button class="menu-add-btn" aria-label="Přidat">+</button>' +
-      '</div>';
+      html += '<button class="item-tile" data-nazev="' + escapeHtml(m.n) + '" data-cena="' + m.p + '">' +
+        '<span class="item-name">' + escapeHtml(m.n) + '</span>' +
+        '<span class="item-price">' + m.p + ' Kč</span>' +
+      '</button>';
     });
+    html += '</div></div>';
     body.innerHTML = html;
     updateCartCounters();
   }
@@ -1237,11 +1227,16 @@
   document.getElementById('menu-body').addEventListener('click', function(e) {
     const pivoBtn = e.target.closest('.pivo-btn');
     if (pivoBtn) {
-      const nazev = pivoBtn.dataset.nazev;
-      const cena = parseInt(pivoBtn.dataset.cena, 10) || 0;
-      addToCart({ nazev: nazev, cena: cena });
+      addToCart({ nazev: pivoBtn.dataset.nazev, cena: parseInt(pivoBtn.dataset.cena, 10) || 0 });
       pivoBtn.style.transform = 'scale(.92)';
       setTimeout(function() { pivoBtn.style.transform = ''; }, 120);
+      return;
+    }
+    const topTile = e.target.closest('.item-tile');
+    if (topTile) {
+      addToCart({ nazev: topTile.dataset.nazev, cena: parseInt(topTile.dataset.cena, 10) || 0 });
+      topTile.style.transform = 'scale(.92)';
+      setTimeout(function() { topTile.style.transform = ''; }, 120);
       return;
     }
     const catBtn = e.target.closest('.cat-btn');
@@ -1252,13 +1247,11 @@
   });
 
   document.getElementById('cat-body').addEventListener('click', function(e) {
-    const addBtn = e.target.closest('.menu-add-btn');
-    if (!addBtn) return;
-    const itemEl = addBtn.closest('.menu-item');
-    if (!itemEl) return;
-    addToCart({ nazev: itemEl.dataset.nazev, cena: parseInt(itemEl.dataset.cena, 10) || 0 });
-    addBtn.style.transform = 'scale(.85)';
-    setTimeout(function() { addBtn.style.transform = ''; }, 120);
+    const tile = e.target.closest('.item-tile');
+    if (!tile) return;
+    addToCart({ nazev: tile.dataset.nazev, cena: parseInt(tile.dataset.cena, 10) || 0 });
+    tile.style.transform = 'scale(.92)';
+    setTimeout(function() { tile.style.transform = ''; }, 120);
   });
 
   document.getElementById('cart-body').addEventListener('click', function(e) {
