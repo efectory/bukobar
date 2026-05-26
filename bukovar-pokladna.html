@@ -865,7 +865,7 @@
       <button class="subtab-btn" onclick="switchSubtab('admin','skladhospoda',this);renderSkladHospoda()">Sklad — hospoda</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladpivovar',this);renderSkladPivovar()">Sklad — pivovar</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
-      <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this);cloudSyncRefresh()">Záloha dat</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','impl',this);renderImpl()">Implementace</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','loxone',this);bukovarLoxoneTest()">🌡 Loxone</button>
     </div>
@@ -918,17 +918,6 @@
           </label>
         </div>
         <div id="zaloha-msg" style="margin-top:1rem;font-size:13px;"></div>
-      </div>
-
-      <div class="card" style="max-width:600px;margin-top:1rem;">
-        <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;">☁ Cloud sync (Firestore)</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Po aktivaci se VŠECHNA data (sklad, účtenky, checklisty, otevření, PET historie, konfigurace) synchronizují v reálném čase mezi všemi přihlášenými počítači. Vždy nahrávej z toho PC, kde jsou <strong>aktuální skutečná data</strong> — ostatní PC pak budou jen číst.</p>
-        <div id="cloud-sync-status" style="font-size:13px;padding:.6rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.8rem;">Načítám stav…</div>
-        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-          <button onclick="cloudSyncRefresh()" style="font-size:13px;padding:8px 16px;min-height:unset;">↻ Aktualizovat stav</button>
-          <button class="primary" onclick="cloudSyncMigrate()" style="font-size:14px;padding:10px 22px;min-height:unset;">⬆ Nahrát všechna data do cloudu</button>
-        </div>
-        <div id="cloud-sync-msg" style="margin-top:.8rem;font-size:13px;"></div>
       </div>
     </div>
 
@@ -1090,7 +1079,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.17';
+const APP_VERSION = '7.18';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -2715,64 +2704,6 @@ window.bukovarOnRemoteImpl = function(items) {
   if (!window.bukovarApplyRemote('bukovar_impl', items)) return;
   if (typeof renderImpl === 'function') renderImpl();
 };
-
-function cloudSyncRefresh() {
-  var el = document.getElementById('cloud-sync-status');
-  if (!el) return;
-  el.textContent = 'Načítám stav…';
-  if (!window.bukovarCloudStatus) { el.textContent = 'Firebase modul nepřipraven.'; return; }
-  window.bukovarCloudStatus().then(function(st) {
-    if (st.error) { el.innerHTML = '<span style="color:var(--accent)">Chyba: ' + st.error + '</span>'; return; }
-    if (!st.active) {
-      el.innerHTML = '<strong>Cloud sync: neaktivován</strong><br><span style="color:var(--muted)">Pokladna funguje jen lokálně. Klikni na „Nahrát všechna data do cloudu" pro aktivaci synchronizace mezi PC.</span>';
-      cloudSyncActive = false;
-      return;
-    }
-    var lines = ['<strong style="color:var(--success-text)">☁ Cloud sync aktivní</strong>'];
-    if (st.types) {
-      Object.keys(st.types).forEach(function(t){
-        var info = st.types[t];
-        if (info.exists) lines.push('• ' + t + ': ' + (info.count != null ? info.count + ' položek' : 'ano'));
-      });
-    }
-    el.innerHTML = lines.join('<br>');
-    cloudSyncActive = true;
-  });
-}
-
-function cloudSyncMigrate() {
-  var msg = document.getElementById('cloud-sync-msg');
-  if (!window.bukovarMigrateAll) { msg.innerHTML = '<span style="color:var(--accent)">Firebase modul nepřipraven.</span>'; return; }
-  var allData = {
-    sklad: getSklad(),
-    uctenky: JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]'),
-    checklist_history: JSON.parse(localStorage.getItem('bukovar_checklist_history') || '[]'),
-    otevreni_history: JSON.parse(localStorage.getItem('bukovar_otevreni_history') || '[]'),
-    pet_history: JSON.parse(localStorage.getItem('bukovar_pet_history') || '[]'),
-    pet_config: JSON.parse(localStorage.getItem('bukovar_pet_config') || '{}'),
-    pet_priority_times: JSON.parse(localStorage.getItem('bukovar_pet_priority_times') || '{}'),
-    impl: JSON.parse(localStorage.getItem('bukovar_impl') || '[]')
-  };
-  var skladN = Object.keys(allData.sklad).length;
-  var uctN = allData.uctenky.length;
-  if (skladN === 0 && uctN === 0) {
-    msg.innerHTML = '<span style="color:var(--accent)">Lokální data jsou prázdná. Naplň pokladnu nejdřív.</span>';
-    return;
-  }
-  var summary = 'sklad: ' + skladN + ' položek, účtenek: ' + uctN + ', checklist: ' + allData.checklist_history.length + ', otevření: ' + allData.otevreni_history.length + ', PET hist.: ' + allData.pet_history.length + ', impl. úkolů: ' + allData.impl.length;
-  if (!confirm('Nahrát všechna data do cloudu?\n\n' + summary + '\n\nTímto SE PŘEPÍŠE jakýkoli existující obsah v cloudu. Po dokončení se data začnou synchronizovat se všemi přihlášenými počítači v reálném čase.\n\nPokračovat?')) return;
-  msg.innerHTML = 'Nahrávám…';
-  window.bukovarMigrateAll(allData).then(function(res) {
-    if (res.success) {
-      msg.innerHTML = '<span style="color:var(--success-text)">✓ Data nahrána do cloudu. Sync je aktivní.</span>';
-      cloudSyncActive = true;
-      cloudSyncRefresh();
-      if (window.bukovarAttachAllListeners) window.bukovarAttachAllListeners();
-    } else {
-      msg.innerHTML = '<span style="color:var(--accent)">Chyba: ' + (res.error || 'neznámá') + '</span>';
-    }
-  });
-}
 
 const BEER_STATUS_CEP = [
   'Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°',
