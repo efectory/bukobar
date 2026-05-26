@@ -728,6 +728,7 @@
       console.error('[auth] sign-in FAILED:', code, msg, e);
       const friendly = {
         'auth/operation-not-allowed': 'Anonymní přihlášení není povoleno v Firebase Console.',
+        'auth/admin-restricted-operation': 'Anonymní přihlášení musí být zapnuto v Firebase Console → Authentication → Sign-in method → Anonymous → Enable.',
         'auth/network-request-failed': 'Není připojení k internetu.',
         'auth/web-storage-unsupported': 'Prohlížeč blokuje úložiště (privátní okno?).',
         'auth/internal-error': 'Vnitřní chyba Firebase. Zkuste znovu.',
