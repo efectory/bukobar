@@ -865,7 +865,7 @@
       <button class="subtab-btn" onclick="switchSubtab('admin','skladhospoda',this);renderSkladHospoda()">Sklad — hospoda</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladpivovar',this);renderSkladPivovar()">Sklad — pivovar</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
-      <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this);cloudSkladRefresh()">Záloha dat</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','impl',this);renderImpl()">Implementace</button>
     </div>
 
@@ -917,6 +917,17 @@
           </label>
         </div>
         <div id="zaloha-msg" style="margin-top:1rem;font-size:13px;"></div>
+      </div>
+
+      <div class="card" style="max-width:600px;margin-top:1rem;">
+        <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;">☁ Cloud sklad (Firestore)</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Po aktivaci se stav skladu synchronizuje v reálném čase mezi všemi přihlášenými počítači. Vždy nahrávej z toho PC, kde je <strong>aktuální skutečný sklad</strong> — ostatní PC pak budou jen číst.</p>
+        <div id="cloud-sklad-status" style="font-size:13px;padding:.6rem .8rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.8rem;">Načítám stav…</div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+          <button onclick="cloudSkladRefresh()" style="font-size:13px;padding:8px 16px;min-height:unset;">↻ Aktualizovat stav</button>
+          <button class="primary" onclick="cloudSkladMigrate()" style="font-size:14px;padding:10px 22px;min-height:unset;">⬆ Nahrát aktuální sklad do cloudu</button>
+        </div>
+        <div id="cloud-sklad-msg" style="margin-top:.8rem;font-size:13px;"></div>
       </div>
     </div>
 
@@ -1067,7 +1078,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.13';
+const APP_VERSION = '7.14';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -2605,9 +2616,76 @@ function getSklad() {
   return JSON.parse(localStorage.getItem('bukovar_sklad') || '{}');
 }
 
+let skladSyncEnabled = false; // nastaveno true po aktivaci cloud skladu (auto-detect po loginu)
+let skladRemoteSuppressNextPush = false; // zabrání push smyčce když přijde update z Firestore
+
 function saveSklad(data) {
   localStorage.setItem('bukovar_sklad', JSON.stringify(data));
   updateBeerStatus();
+  if (skladSyncEnabled && !skladRemoteSuppressNextPush && window.bukovarPushSklad) {
+    window.bukovarPushSklad(data).catch(function(e){ console.warn('[sklad] push failed:', e); });
+  }
+  skladRemoteSuppressNextPush = false;
+}
+
+// Volá Firebase modul po přijetí remote změny skladu
+window.bukovarOnSkladRemote = function(items) {
+  if (!items || typeof items !== 'object') return;
+  var local = JSON.parse(localStorage.getItem('bukovar_sklad') || '{}');
+  if (JSON.stringify(local) === JSON.stringify(items)) return; // bez změny
+  skladRemoteSuppressNextPush = true;
+  localStorage.setItem('bukovar_sklad', JSON.stringify(items));
+  updateBeerStatus();
+  if (typeof renderSkladNastaveni === 'function') {
+    var nastEl = document.getElementById('sklad-nastaveni-content');
+    if (nastEl && nastEl.offsetParent !== null) renderSkladNastaveni();
+  }
+};
+
+window.bukovarSetSkladSyncEnabled = function(enabled) {
+  skladSyncEnabled = !!enabled;
+  console.log('[sklad] sync ' + (enabled ? 'ENABLED' : 'DISABLED'));
+};
+
+function cloudSkladRefresh() {
+  var el = document.getElementById('cloud-sklad-status');
+  if (!el) return;
+  el.textContent = 'Načítám stav…';
+  if (!window.bukovarSkladStatus) { el.textContent = 'Firebase modul nepřipraven.'; return; }
+  window.bukovarSkladStatus().then(function(st) {
+    if (st.error) { el.innerHTML = '<span style="color:var(--accent)">Chyba: ' + st.error + '</span>'; return; }
+    if (!st.exists) {
+      el.innerHTML = '<strong>Cloud sklad: neaktivován</strong><br><span style="color:var(--muted)">Pokladna funguje jen lokálně. Klikni na „Nahrát aktuální sklad do cloudu" pro aktivaci.</span>';
+      skladSyncEnabled = false;
+      return;
+    }
+    var dt = st.updatedAt ? new Date(st.updatedAt) : null;
+    var dtStr = dt ? (dt.getDate()+'.'+(dt.getMonth()+1)+'.'+dt.getFullYear()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0')) : 'neznámé';
+    el.innerHTML = '<strong style="color:var(--success-text)">☁ Cloud sklad aktivní</strong><br>'
+      + 'Položek: ' + st.itemCount + '<br>'
+      + 'Poslední změna: ' + dtStr + (st.updatedBy ? ' (' + st.updatedBy + ')' : '');
+    skladSyncEnabled = true;
+  });
+}
+
+function cloudSkladMigrate() {
+  var msg = document.getElementById('cloud-sklad-msg');
+  if (!window.bukovarMigrateSklad) { msg.innerHTML = '<span style="color:var(--accent)">Firebase modul nepřipraven.</span>'; return; }
+  var sklad = getSklad();
+  var n = Object.keys(sklad).length;
+  if (n === 0) { msg.innerHTML = '<span style="color:var(--accent)">Lokální sklad je prázdný. Nejdřív naplň sklad.</span>'; return; }
+  if (!confirm('Nahrát aktuální stav skladu (' + n + ' položek) do cloudu?\n\nTímto SE PŘEPÍŠE jakýkoli existující cloud sklad. Po aktivaci se sklad začne synchronizovat se všemi přihlášenými počítači v reálném čase.\n\nPokračovat?')) return;
+  msg.innerHTML = 'Nahrávám…';
+  window.bukovarMigrateSklad(sklad).then(function(res) {
+    if (res.success) {
+      msg.innerHTML = '<span style="color:var(--success-text)">✓ Sklad nahrán do cloudu. Sync je aktivní.</span>';
+      skladSyncEnabled = true;
+      cloudSkladRefresh();
+      if (window.bukovarAttachSkladListener) window.bukovarAttachSkladListener();
+    } else {
+      msg.innerHTML = '<span style="color:var(--accent)">Chyba: ' + (res.error || 'neznámá') + '</span>';
+    }
+  });
 }
 
 const BEER_STATUS_CEP = [
@@ -3835,7 +3913,7 @@ function updateTabBadges() {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-  import { initializeFirestore, persistentLocalCache, doc, getDoc, setDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { initializeFirestore, persistentLocalCache, doc, getDoc, setDoc, runTransaction, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCVt5sqRuJzFDclyMnwM6D0Pqz5E8449oA",
@@ -3895,6 +3973,85 @@ function updateTabBadges() {
     }
   };
 
+  // --- Sklad sync (V7.14, Fáze 2.2) ---
+  const skladRef = doc(db, 'sklad', 'stav');
+  let skladUnsubscribe = null;
+
+  window.bukovarSkladStatus = async function() {
+    try {
+      const snap = await getDoc(skladRef);
+      if (!snap.exists()) return { exists: false };
+      const data = snap.data();
+      const items = data.items || {};
+      const updatedAt = data.updatedAt && data.updatedAt.toDate ? data.updatedAt.toDate().toISOString() : null;
+      return { exists: true, itemCount: Object.keys(items).length, updatedAt: updatedAt, updatedBy: data.updatedBy || null };
+    } catch (e) {
+      console.warn('[sklad] status failed:', e);
+      return { exists: false, error: e.message || String(e) };
+    }
+  };
+
+  window.bukovarMigrateSklad = async function(localSklad) {
+    try {
+      await setDoc(skladRef, {
+        items: localSklad,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser ? auth.currentUser.email : null
+      });
+      console.log('[sklad] migrated to Firestore: ' + Object.keys(localSklad).length + ' items');
+      return { success: true };
+    } catch (e) {
+      console.error('[sklad] migrate failed:', e);
+      return { success: false, error: e.message || String(e) };
+    }
+  };
+
+  window.bukovarPushSklad = async function(sklad) {
+    try {
+      await setDoc(skladRef, {
+        items: sklad,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser ? auth.currentUser.email : null
+      });
+    } catch (e) {
+      console.warn('[sklad] push failed (offline?):', e);
+      throw e;
+    }
+  };
+
+  window.bukovarAttachSkladListener = function() {
+    if (skladUnsubscribe) return;
+    skladUnsubscribe = onSnapshot(skladRef, function(snap) {
+      if (!snap.exists()) return;
+      if (snap.metadata.hasPendingWrites) return; // vlastní zápis se vrací zpět — přeskočit
+      const data = snap.data();
+      if (!data.items) return;
+      if (window.bukovarOnSkladRemote) window.bukovarOnSkladRemote(data.items);
+    }, function(err) {
+      console.warn('[sklad] listener error:', err);
+    });
+    console.log('[sklad] listener attached');
+  };
+
+  window.bukovarDetachSkladListener = function() {
+    if (skladUnsubscribe) { skladUnsubscribe(); skladUnsubscribe = null; console.log('[sklad] listener detached'); }
+  };
+
+  // Auto-detect: pokud cloud sklad existuje, zapni sync
+  async function autoEnableSkladSync() {
+    try {
+      const st = await window.bukovarSkladStatus();
+      if (st.exists) {
+        if (window.bukovarSetSkladSyncEnabled) window.bukovarSetSkladSyncEnabled(true);
+        window.bukovarAttachSkladListener();
+      } else {
+        if (window.bukovarSetSkladSyncEnabled) window.bukovarSetSkladSyncEnabled(false);
+      }
+    } catch (e) {
+      console.warn('[sklad] auto-enable check failed:', e);
+    }
+  }
+
   const overlay = document.getElementById('auth-overlay');
   const emailInput = document.getElementById('auth-email');
   const passwordInput = document.getElementById('auth-password');
@@ -3919,7 +4076,10 @@ function updateTabBadges() {
       document.body.style.overflow = '';
       if (logoutBtn) logoutBtn.title = 'Přihlášen: ' + user.email + ' — klikni pro odhlášení';
       window.bukovarSyncCounter();
+      autoEnableSkladSync();
     } else {
+      window.bukovarDetachSkladListener();
+      if (window.bukovarSetSkladSyncEnabled) window.bukovarSetSkladSyncEnabled(false);
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       passwordInput.value = '';
