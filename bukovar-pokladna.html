@@ -31,9 +31,6 @@
   main { max-width: 1760px; margin: 0 auto; padding: 2.1rem 2rem 3.6rem; }
   .card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.8rem; margin-bottom: 1.2rem; }
   .section-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 1rem; }
-  #video { width: 100%; border-radius: var(--radius); background: #1a1610; display: block; max-height: 380px; object-fit: cover; }
-  #snap-canvas { display: none; width: 100%; border-radius: var(--radius); }
-  .btn-row { display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; }
   button { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; padding: 14px 22px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-strong); background: transparent; color: var(--text); transition: background .15s, opacity .15s; min-height: 58px; }
   button:hover { background: var(--bg); }
   button:active { opacity: .75; }
@@ -43,15 +40,8 @@
   button.dark { background: var(--text); color: #f5f1ea; border-color: var(--text); }
   button.dark:hover { opacity: .85; }
   .hidden { display: none !important; }
-  #status { font-size: 13px; color: var(--muted); margin-top: .625rem; min-height: 20px; display: flex; align-items: center; gap: 6px; }
   .spinner { width: 14px; height: 14px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* API key */
-  .api-notice { background: var(--accent-light); border: 1px solid rgba(181,56,26,.2); border-radius: var(--radius); padding: .875rem 1rem; font-size: 13px; color: #7a2e10; margin-bottom: 1rem; line-height: 1.5; }
-  .api-notice strong { font-weight: 500; }
-  #api-key-input { font-family: 'DM Sans', monospace; font-size: 13px; width: 100%; margin-top: .5rem; padding: 8px 10px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); outline: none; }
-  #api-key-input:focus { border-color: var(--accent); }
   .api-ok { display: flex; align-items: center; gap: 8px; background: var(--success-bg); border: 1px solid rgba(26,107,58,.2); border-radius: var(--radius); padding: .625rem 1rem; font-size: 13px; color: var(--success-text); margin-bottom: 1rem; }
   .api-ok-icon { font-size: 16px; }
   .api-ok button { padding: 4px 10px; font-size: 12px; margin-left: auto; }
@@ -94,18 +84,6 @@
   .custom-form input { padding: 7px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
   .custom-form input:focus { border-color: var(--accent); }
 
-  /* Confirm uncertain items */
-  .confirm-intro { font-size: 13px; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; }
-  .confirm-item { background: var(--warn-bg); border: 1px solid rgba(138,90,10,.2); border-radius: var(--radius); padding: .75rem; margin-bottom: .625rem; }
-  .ci-original { font-size: 12px; color: var(--warn-text); margin-bottom: .5rem; }
-  .ci-fields { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .ci-fields input { padding: 6px 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; }
-  .ci-fields input:focus { border-color: var(--accent); }
-  .ci-name-btn { flex: 1; min-width: 120px; padding: 6px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; text-align: left; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .1s; }
-  .ci-name-btn:hover { border-color: var(--accent); background: var(--accent-light); }
-  .btn-approve { padding: 7px 14px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500; background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(26,107,58,.3); border-radius: var(--radius); cursor: pointer; white-space: nowrap; transition: background .1s; }
-  .btn-approve:hover { background: #d4edda; }
-  .confirm-actions { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
 
   /* Modals */
   .modal-overlay { position: fixed; inset: 0; background: rgba(26,22,16,.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -276,16 +254,6 @@
   .quick-add { height: 160px; overflow: hidden; flex-shrink: 0; }
 
   /* VIP piva — rychlé markování */
-  .mini-history { display: flex; align-items: center; gap: 4px; padding: 5px 2px; border-bottom: 1px solid var(--border); margin-bottom: 8px; overflow: hidden; flex-shrink: 0; }
-  .mini-hist-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background .1s; line-height: 1.5; min-width: 52px; }
-  .mini-hist-item:hover { background: var(--accent-light); border-color: var(--accent); }
-  .mini-hist-item.nezaplaceno { background: #fff7ed; border-color: #fdba74; }
-  .mini-hist-item.storno { opacity: .45; background: #ffeaea; border-color: rgba(181,56,26,.25); }
-  .mini-hist-item.dluh-ok { background: #f0fdf4; border-color: #86efac; }
-  .mini-hist-num { font-weight: 600; color: var(--muted); font-size: 10px; }
-  .mini-hist-czk { font-weight: 600; font-size: 12px; }
-  .mini-hist-icon { font-size: 10px; line-height: 1; }
-  .mini-hist-more { font-size: 12px; color: var(--accent); cursor: pointer; white-space: nowrap; flex-shrink: 0; margin-left: 4px; text-decoration: underline; }
   .vip-piva { border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0; }
   .vip-piva-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 5px; }
   .vip-row { display: flex; gap: 5px; flex-wrap: wrap; }
@@ -592,6 +560,7 @@
 <div class="tabs" style="justify-content:space-between;">
   <div style="display:flex;">
     <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
+    <button class="tab-btn" id="tab-btn-uctenky" onclick="switchTab('uctenky',this);renderUctenky()">Historie účtenek</button>
     <button class="tab-btn" id="tab-btn-otevreni" onclick="switchTab('otevreni',this);resetOtevreni()">Otevření hospody</button>
     <button class="tab-btn" id="tab-btn-pet" onclick="switchTab('pet',this);renderPetPlan()">Petkovací plán</button>
     <button class="tab-btn" id="tab-btn-uzavirka" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
@@ -605,49 +574,11 @@
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
-    <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
   </div>
 </div>
 
 <div class="tab-content active" id="tab-kasa">
-  <div class="subtab-bar">
-    <button class="subtab-btn active" onclick="switchSubtab('kasa','pokladna',this)">Pokladna</button>
-    <button class="subtab-btn" onclick="switchSubtab('kasa','uctenky',this);renderUctenky()">Historie účtenek</button>
-  </div>
-  <div class="subtab-content active" id="subtab-kasa-pokladna">
 <main>
-
-  <div class="api-notice hidden" id="api-notice">
-    <strong>API klíč Anthropic</strong> — potřebný pro AI rozpoznávání objednávek.<br>
-    Klíč se ukládá pouze v paměti prohlížeče a nikam se neodesílá.
-    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" onchange="saveApiKey()" />
-  </div>
-
-
-  <div class="card" id="cam-card">
-    <div class="section-label">Kamera</div>
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="snap-canvas"></canvas>
-    <div id="status"></div>
-    <div class="btn-row">
-      <button id="btnStart" class="hidden" onclick="startCam()">Spustit kameru</button>
-      <button id="btnSnap" class="primary hidden" onclick="takeSnap()">Vyfotit</button>
-      <button id="btnRetake" class="hidden" onclick="retake()">Znovu vyfotit</button>
-      <button id="btnAnalyze" class="dark hidden" onclick="analyze()">Rozpoznat objednávku</button>
-      <button id="btnManual" onclick="startManual()">Zpět</button>
-    </div>
-  </div>
-
-  <!-- Potvrzení nejistých položek -->
-  <div class="card hidden" id="confirm-card">
-    <div class="section-label">Potvrďte nejisté položky</div>
-    <p class="confirm-intro">AI si není jistá u následujících položek. Klikněte na název pro výběr ze seznamu.</p>
-    <div id="confirm-lines"></div>
-    <div class="confirm-actions">
-      <button class="primary" onclick="confirmAll()">Potvrdit vše a zobrazit účet</button>
-      <button onclick="skipAll()">Přeskočit vše</button>
-    </div>
-  </div>
 
   <!-- Účtenka -->
   <div class="hidden" id="receipt-card">
@@ -656,30 +587,25 @@
       <!-- Levý sloupec: workflow -->
       <div class="kasa-left">
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Zadej položky</div></div>
-          <button onclick="retakeFromReceipt()">📷 Načti účtenku</button>
-        </div>
-        <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Sleva štamgasta</div></div>
+          <div class="wf-head"><div class="wf-n">1</div><div class="wf-lbl">Sleva štamgasta</div></div>
           <button id="btn-stamgast-ano" class="payment-btn" onclick="setStamgast(true)">Ano</button>
           <button id="btn-stamgast-ne" class="payment-btn" onclick="setStamgast(false)">Ne</button>
         </div>
         <div class="wf-col" id="wf-platba">
-          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Způsob platby</div></div>
+          <div class="wf-head"><div class="wf-n">2</div><div class="wf-lbl">Způsob platby</div></div>
           <button id="btn-qr" class="payment-btn" onclick="setPayment('QR')">QR Platba</button>
           <button id="btn-karta" class="payment-btn" onclick="setPayment('Karta')">Karta</button>
           <button id="btn-hotovost" class="payment-btn" onclick="setPayment('Hotovost')">Hotovost</button>
           <button id="btn-dluh" class="payment-btn" onclick="setPayment('Dluh')" style="line-height:1.5;font-size:13px;">Na dluh<br><span style="font-size:10px;opacity:.65;font-weight:400;">zákazník / Bukovar<br>Pozornost / Obsluha</span></button>
         </div>
         <div class="wf-col">
-          <div class="wf-head"><div class="wf-n">4</div><div class="wf-lbl">Uzavřít</div></div>
+          <div class="wf-head"><div class="wf-n">3</div><div class="wf-lbl">Uzavřít</div></div>
           <button class="primary" onclick="uzavrit()">Uzavřít</button>
         </div>
       </div>
 
       <!-- Pravý sloupec: účtenka -->
       <div class="kasa-right card">
-        <div class="mini-history" id="mini-history"></div>
         <!-- VIP piva — rychlé markování -->
         <div class="vip-piva">
           <div class="vip-piva-label">Čepovaná piva</div>
@@ -731,17 +657,17 @@
   </div>
 
 </main>
-  </div><!-- /subtab-kasa-pokladna -->
-  <div class="subtab-content" id="subtab-kasa-uctenky">
-    <main>
-      <div class="card" id="uctenky-summary" style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:var(--muted)">Celkem dnes</span>
-        <span style="font-size:18px;font-weight:500;" id="uctenky-total-day">0 Kč</span>
-      </div>
-      <div id="uctenky-list"></div>
-    </main>
-  </div><!-- /subtab-kasa-uctenky -->
 </div><!-- /tab-kasa -->
+
+<div class="tab-content" id="tab-uctenky">
+<main>
+  <div class="card" id="uctenky-summary" style="display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:13px;color:var(--muted)">Celkem dnes</span>
+    <span style="font-size:18px;font-weight:500;" id="uctenky-total-day">0 Kč</span>
+  </div>
+  <div id="uctenky-list"></div>
+</main>
+</div><!-- /tab-uctenky -->
 
 <div class="tab-content" id="tab-otevreni">
 <main>
@@ -1208,7 +1134,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.24';
+const APP_VERSION = '7.26';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1287,11 +1213,9 @@ const MENU = [
 
 const CAT_ORDER = ["Piva","Nealkoholické nápoje","Horké nápoje","Víno","Míchané nápoje","Občerstvení","Destiláty","Merch"];
 
-let stream, snapB64, receiptItems = [];
+let receiptItems = [];
 let isStamgastActive = false;
 let openCategory = null;
-let pendingData = null, uncertainItems = [];
-let analyzeController = null;
 let pickerCallback = null;
 let pickerModalCat = null;
 
@@ -1315,9 +1239,9 @@ function switchSubtab(parent, name, btn) {
 // --- Init ---
 
 document.addEventListener('DOMContentLoaded', function() {
-  initApiKey();
+  localStorage.removeItem('bukovar_api_key');
   buildCategoryBtns();
-  startManual();
+  showReceipt();
   renderUctenky();
   renderClHistory();
   updateBeerStatus();
@@ -1325,34 +1249,6 @@ document.addEventListener('DOMContentLoaded', function() {
   renderPetPlan();
   updateTabBadges();
 });
-
-function initApiKey() {
-  const saved = localStorage.getItem('bukovar_api_key');
-  if (saved && saved.startsWith('sk-ant-')) {
-    document.getElementById('api-key-input').value = saved;
-    document.getElementById('api-notice').classList.add('hidden');
-  } else {
-    document.getElementById('api-notice').classList.remove('hidden');
-  }
-}
-
-function saveApiKey() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (key && key.startsWith('sk-ant-')) {
-    localStorage.setItem('bukovar_api_key', key);
-    document.getElementById('api-notice').classList.add('hidden');
-  }
-}
-
-function toggleApiKey() {
-  const el = document.getElementById('api-notice');
-  if (el.classList.contains('hidden')) {
-    el.classList.remove('hidden');
-    document.getElementById('api-key-input').focus();
-  } else {
-    el.classList.add('hidden');
-  }
-}
 
 // --- Volání hostů (V7.20) ---
 let _volaniTitleOrig = null;
@@ -1451,24 +1347,6 @@ function vyriditVolani(id, btn) {
       if (btn) { btn.disabled = false; btn.textContent = '✓ Vyřízeno'; }
     });
   }
-}
-
-function getApiKey() {
-  return document.getElementById('api-key-input').value.trim();
-}
-
-// --- Zvuk ---
-
-function beep() {
-  try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = ctx.createOscillator(); var gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine'; osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
-  } catch(e) {}
 }
 
 // --- Kategorie ---
@@ -1746,235 +1624,10 @@ function closeRadlerModal() {
   pendingRadlerItem = null;
 }
 
-// --- Status ---
-
-function setStatus(msg, spin) {
-  const el = document.getElementById('status');
-  if (spin) {
-    el.innerHTML = '';
-    const s = document.createElement('div'); s.className = 'spinner';
-    el.appendChild(s); el.appendChild(document.createTextNode(msg));
-  } else { el.textContent = msg; }
-}
-
-// --- Kamera ---
-
-async function startCam() {
-  setStatus('Spouštím kameru…');
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
-    document.getElementById('video').srcObject = stream;
-    document.getElementById('btnSnap').classList.remove('hidden');
-    setStatus('Namiřte kameru na papír s objednávkou.');
-  } catch(e) {
-    setStatus('Kamera nedostupná: ' + e.message);
-    document.getElementById('btnStart').classList.remove('hidden');
-  }
-}
-
-function takeSnap() {
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('snap-canvas');
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  snapB64 = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  document.getElementById('video').style.display = 'none';
-  canvas.style.display = 'block';
-  document.getElementById('btnSnap').classList.add('hidden');
-  document.getElementById('btnRetake').classList.remove('hidden');
-  const apiKey = getApiKey();
-  if (apiKey && apiKey.startsWith('sk-ant-')) {
-    setStatus('Fotka pořízena, rozpoznávám…', true);
-    analyze();
-  } else {
-    setStatus('Fotka pořízena. Zadejte API klíč výše.');
-    document.getElementById('btnAnalyze').classList.remove('hidden');
-  }
-}
-
-function retake() {
-  if (analyzeController) { analyzeController.abort(); analyzeController = null; }
-  document.getElementById('snap-canvas').style.display = 'none';
-  document.getElementById('video').style.display = 'block';
-  document.getElementById('btnRetake').classList.add('hidden');
-  document.getElementById('btnAnalyze').classList.add('hidden');
-  snapB64 = null; startCam();
-}
-
-function retakeFromReceipt() {
-  receiptItems = [];
-  isStamgastActive = false;
-  document.getElementById('receipt-card').classList.add('hidden');
-  document.getElementById('confirm-card').classList.add('hidden');
-  document.getElementById('cam-card').classList.remove('hidden');
-  document.getElementById('snap-canvas').style.display = 'none';
-  document.getElementById('video').style.display = 'block';
-  document.getElementById('btnRetake').classList.add('hidden');
-  document.getElementById('btnAnalyze').classList.add('hidden');
-  document.getElementById('btnAnalyze').disabled = false;
-  document.getElementById('btnRetake').disabled = false;
-  snapB64 = null; startCam();
-}
-
-function startManual() {
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  showReceipt();
-}
-
-// --- AI ---
-
-async function analyze() {
-  const apiKey = getApiKey();
-  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-    setStatus('Zadejte platný Anthropic API klíč (sk-ant-...) výše.'); return;
-  }
-  document.getElementById('btnAnalyze').disabled = true;
-  document.getElementById('btnRetake').disabled = true;
-  setStatus('Rozpoznávám objednávku…', true);
-
-  const menuStr = MENU.map(m => '"' + m.n + '" (' + m.c + ', ' + m.p + ' Kč' + (m.u ? ', ' + m.u : '') + ')').join('\n');
-  analyzeController = new AbortController();
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', signal: analyzeController.signal,
-      headers: {
-        'Content-Type': 'application/json', 'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6', max_tokens: 1200,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: snapB64 } },
-            { type: 'text', text: 'Na obrazku je rucne psana objednavka cisnika pivovaru Bukovar.\n\nDULEZITE PRAVIDLO: Jakekoli pivo (vcetne generickych jako "pivo", "2x pivo", i konkretnich nazvu jako Kohoutí, Mezulánka, Hraďák, vlčice, Dublin atd.) VZDY mapuj jako polozku "Bukovar" (Piva, 49 Kc, 0,4l). Nikdy nepouzivej jine pivo nez "Bukovar".\n\nDatabaze polozek menu:\n' + menuStr + '\n\nRozpoznej z obrazku objednane polozky a roztrid je do tri skupin:\n1. "polozky" — jista shoda s menu\n2. "nejiste" — existuje v menu ale neni si jist; pridej "original" (text z obrazku)\n3. "nerozpoznano" — nelze priradit\n\nOdpovez POUZE jako JSON (bez markdown backticks):\n{"polozky": [{"menu_nazev": "...", "pocet": 1, "cena_kus": 49, "kategorie": "..."}], "nejiste": [{"original": "...", "menu_nazev": "...", "pocet": 1, "cena_kus": 49, "kategorie": "..."}], "nerozpoznano": ["..."]}' }
-          ]
-        }]
-      })
-    });
-
-    if (!resp.ok) { const err = await resp.json(); throw new Error(err.error?.message || resp.statusText); }
-    const data = await resp.json();
-    const text = data.content.map(c => c.text || '').join('');
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-    beep();
-    if (parsed.nejiste && parsed.nejiste.length > 0) { showConfirmCard(parsed); }
-    else { renderReceipt(parsed); }
-
-  } catch(e) {
-    if (e.name === 'AbortError') return;
-    setStatus('Chyba: ' + e.message);
-    document.getElementById('btnAnalyze').disabled = false;
-    document.getElementById('btnRetake').disabled = false;
-  } finally { analyzeController = null; }
-}
-
-// --- Potvrzení nejistých položek ---
-
-function showConfirmCard(data) {
-  pendingData = { polozky: data.polozky || [], nerozpoznano: data.nerozpoznano || [] };
-  uncertainItems = (data.nejiste || []).map(function(item) {
-    return { original: item.original, menu_nazev: item.menu_nazev, pocet: item.pocet || 1, cena_kus: item.cena_kus || 0, rejected: false };
-  });
-  renderConfirmItems();
-  document.getElementById('confirm-card').classList.remove('hidden');
-  document.getElementById('cam-card').classList.add('hidden');
-}
-
-function renderConfirmItems() {
-  var lines = document.getElementById('confirm-lines');
-  lines.innerHTML = '';
-  var active = uncertainItems.filter(function(item) { return !item.rejected; });
-  if (active.length === 0) { finishConfirm(); return; }
-  active.forEach(function(item) {
-    var realIdx = uncertainItems.indexOf(item);
-    var div = document.createElement('div');
-    div.className = 'confirm-item'; div.id = 'ci-' + realIdx;
-    div.innerHTML =
-      '<div class="ci-original">Na lístku: <strong>"' + item.original + '"</strong></div>' +
-      '<div class="ci-fields">' +
-        '<input type="number" class="ci-qty" value="' + item.pocet + '" min="1" style="width:52px;" />' +
-        '<button class="ci-name-btn" onclick="openConfirmItemPicker(' + realIdx + ')">' + item.menu_nazev + '</button>' +
-        '<input type="number" class="ci-price" value="' + item.cena_kus + '" style="width:64px;" placeholder="Kč" />' +
-        '<button class="btn-approve" onclick="approveItem(' + realIdx + ')">✓ Přidat</button>' +
-        '<button class="item-del" onclick="rejectItem(' + realIdx + ')">×</button>' +
-      '</div>';
-    lines.appendChild(div);
-  });
-}
-
-function openConfirmItemPicker(realIdx) {
-  openItemPickerModal(function(item) {
-    uncertainItems[realIdx].menu_nazev = item.n;
-    uncertainItems[realIdx].cena_kus = item.p;
-    renderConfirmItems();
-  });
-}
-
-function approveItem(realIdx) {
-  var el = document.getElementById('ci-' + realIdx);
-  if (!el) return;
-  var qty = parseInt(el.querySelector('.ci-qty').value) || 1;
-  var price = parseInt(el.querySelector('.ci-price').value) || uncertainItems[realIdx].cena_kus;
-  var name = uncertainItems[realIdx].menu_nazev;
-  if (name) pendingData.polozky.push({ menu_nazev: name, pocet: qty, cena_kus: price, kategorie: '' });
-  uncertainItems[realIdx].rejected = true;
-  renderConfirmItems();
-}
-
-function rejectItem(realIdx) { uncertainItems[realIdx].rejected = true; renderConfirmItems(); }
-
-function confirmAll() {
-  uncertainItems.forEach(function(item, idx) {
-    if (item.rejected) return;
-    var el = document.getElementById('ci-' + idx);
-    var qty = el ? parseInt(el.querySelector('.ci-qty').value) || 1 : 1;
-    var price = el ? parseInt(el.querySelector('.ci-price').value) || item.cena_kus : item.cena_kus;
-    if (item.menu_nazev) pendingData.polozky.push({ menu_nazev: item.menu_nazev, pocet: qty, cena_kus: price, kategorie: '' });
-    item.rejected = true;
-  });
-  finishConfirm();
-}
-
-function skipAll() { finishConfirm(); }
-
-function finishConfirm() {
-  document.getElementById('confirm-card').classList.add('hidden');
-  renderReceipt(pendingData);
-}
-
 // --- Účtenka ---
 
 function showReceipt() {
   document.getElementById('receipt-card').classList.remove('hidden');
-  document.getElementById('cam-card').classList.add('hidden');
-}
-
-function renderReceipt(data) {
-  receiptItems = [];
-  (data.polozky || []).forEach(function(p) {
-    var entry = { nazev: p.menu_nazev, pocet: p.pocet, cena: p.cena_kus, warn: false, stamgast: false };
-    applyStamgastToItem(entry);
-    receiptItems.push(entry);
-  });
-  if (data.nerozpoznano && data.nerozpoznano.length) {
-    data.nerozpoznano.forEach(function(n) {
-      receiptItems.push({ nazev: n, pocet: 1, cena: 0, warn: true, stamgast: false });
-    });
-  }
-  showReceipt();
-  setStatus('');
-  renderItems();
-  // Zobrazit štamgast dotaz pokud jsou v účtence piva
-  var hasPivo = receiptItems.some(function(item) {
-    var m = MENU.find(function(m) { return m.n === item.nazev; });
-    return m && m.c === 'Piva';
-  });
-  if (hasPivo) showStamgastModal();
 }
 
 function renderItems() {
@@ -2404,44 +2057,6 @@ function zpetNaPlaceni(id, e) {
   renderUctenky();
 }
 
-function renderMiniHistory() {
-  var el = document.getElementById('mini-history');
-  if (!el) return;
-  var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
-  var html = '';
-  var shown = 0;
-  for (var i = 0; i < data.length && shown < 10; i++) {
-    var r = data[i];
-    var cls = r.storno ? ' storno' : r.nezaplaceno ? ' nezaplaceno' : (r.vraceno && r.zaplaceno_cislo ? ' dluh-ok' : '');
-    var statusLabel = r.storno
-      ? '<span class="mini-hist-icon" style="color:#b5381a;">✕ storno</span>'
-      : r.nezaplaceno
-        ? '<span class="mini-hist-icon" style="color:#c2410c;">! dluh</span>'
-        : (r.vraceno && r.zaplaceno_cislo)
-          ? '<span class="mini-hist-icon" style="color:#15803d;">✓ dluh OK</span>'
-          : '<span class="mini-hist-icon" style="color:#15803d;">✓ OK</span>';
-    html += '<div class="mini-hist-item' + cls + '" onclick="miniHistClick(' + r.id + ')">'
-      + '<span class="mini-hist-num">#' + (r.num != null ? r.num : '?') + '</span>'
-      + '<span class="mini-hist-czk">' + r.celkem + ' Kč</span>'
-      + statusLabel
-      + '</div>';
-    shown++;
-  }
-  if (data.length > 0) {
-    html += '<span class="mini-hist-more" onclick="document.querySelector(\'.subtab-btn[onclick*=\\\'kasa\\\'][onclick*=\\\'uctenky\\\']\').click()">více →</span>';
-  }
-  el.innerHTML = html;
-}
-
-function miniHistClick(id) {
-  var btn = document.querySelector('.subtab-btn[onclick*="kasa\',\'uctenky"]');
-  if (btn) btn.click();
-  setTimeout(function() {
-    var el = document.getElementById('ud-' + id);
-    if (el) { el.classList.add('open'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  }, 50);
-}
-
 function renderUctenky() {
   var data = JSON.parse(localStorage.getItem('bukovar_uctenky') || '[]');
   var list = document.getElementById('uctenky-list');
@@ -2487,7 +2102,6 @@ function renderUctenky() {
     list.appendChild(div);
   });
   document.getElementById('uctenky-total-day').textContent = totalDay + ' Kč';
-  renderMiniHistory();
 }
 
 
@@ -2496,15 +2110,12 @@ function renderUctenky() {
 function resetApp() {
   closePrintModal(); closeItemPickerModal();
   document.getElementById('stamgast-modal').classList.add('hidden');
-  document.getElementById('confirm-card').classList.add('hidden');
-  document.getElementById('cam-card').classList.add('hidden');
   document.getElementById('cat-items').classList.add('hidden');
   document.getElementById('custom-form').classList.add('hidden');
   document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  snapB64 = null; receiptItems = [];
+  receiptItems = [];
   isStamgastActive = false;
-  openCategory = null; pendingData = null; uncertainItems = [];
+  openCategory = null;
   pickerCallback = null;
   paymentMethod = '';
   lastUctenkaNum = null;
@@ -2512,7 +2123,6 @@ function resetApp() {
   document.getElementById('payment-method-line').textContent = '';
   ['ano','ne'].forEach(function(o) { document.getElementById('btn-stamgast-' + o).classList.remove('active'); });
   ['qr','karta','hotovost'].forEach(function(m) { document.getElementById('btn-' + m).classList.remove('active'); });
-  setStatus('');
   showReceipt();
   renderItems();
 }
@@ -2903,7 +2513,6 @@ window.bukovarOnRemoteSklad = function(items) {
 window.bukovarOnRemoteUctenky = function(items) {
   if (!window.bukovarApplyRemote('bukovar_uctenky', items)) return;
   if (typeof renderUctenky === 'function') renderUctenky();
-  if (typeof renderMiniHistory === 'function') renderMiniHistory();
 };
 window.bukovarOnRemoteChecklistHistory = function(items) {
   if (!window.bukovarApplyRemote('bukovar_checklist_history', items)) return;
@@ -3799,7 +3408,6 @@ function zalohaExport() {
   for (var i = 0; i < localStorage.length; i++) {
     var k = localStorage.key(i);
     if (!k || k.indexOf('bukovar_') !== 0) continue;
-    if (k === 'bukovar_api_key') continue;
     var raw = localStorage.getItem(k);
     if (raw === null) continue;
     try { data[k] = JSON.parse(raw); }
