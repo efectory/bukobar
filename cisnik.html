@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="theme-color" content="#1a1610">
+<title>Bukovar — přivolat obsluhu</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f1ea;
+    --surface: #ffffff;
+    --text: #1a1610;
+    --muted: #7a7167;
+    --border: rgba(26,22,16,0.12);
+    --border-strong: rgba(26,22,16,0.25);
+    --accent: #b5381a;
+    --success-bg: #edf7f0;
+    --success-text: #1a6b3a;
+    --error-bg: #fdecea;
+    --error-text: #a4101b;
+    --radius: 12px;
+    --radius-lg: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  header {
+    background: var(--text);
+    color: #f5f1ea;
+    padding: 1.1rem 1.4rem;
+    text-align: center;
+  }
+  header .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    letter-spacing: .02em;
+  }
+  header .logo span { color: var(--accent); }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem 1.4rem 2rem;
+    gap: 1.5rem;
+  }
+
+  .stul-label {
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.4rem 1rem;
+  }
+  .stul-place {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: .3rem;
+  }
+  .stul-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .call-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    padding: 2rem 1rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    min-height: 200px;
+    line-height: 1.25;
+    transition: background .15s, transform .1s;
+    box-shadow: 0 8px 24px rgba(181,56,26,.25);
+  }
+  .call-btn:active { transform: scale(.98); }
+  .call-btn:disabled {
+    background: var(--success-bg);
+    color: var(--success-text);
+    box-shadow: none;
+    cursor: default;
+  }
+  .call-btn .icon { display: block; font-size: 56px; margin-bottom: .4rem; }
+  .call-btn .sub { display: block; font-size: 14px; font-weight: 400; margin-top: .6rem; opacity: .85; letter-spacing: .04em; }
+
+  .status-box {
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    font-size: 15px;
+    text-align: center;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.4;
+  }
+  .status-box.idle { background: var(--surface); border: 1px dashed var(--border-strong); color: var(--muted); }
+  .status-box.ok   { background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(26,107,58,.2); }
+  .status-box.err  { background: var(--error-bg);   color: var(--error-text);   border: 1px solid rgba(164,16,27,.2); }
+  .status-box.work { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+
+  footer {
+    text-align: center;
+    padding: 1rem 1.4rem 1.4rem;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+
+  /* Fatální chyba (neplatný stůl) */
+  .fatal {
+    margin: auto;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: var(--error-text);
+  }
+  .fatal h1 { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: .8rem; }
+  .fatal p { font-size: 15px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Buko<span>var</span></div>
+</header>
+
+<main id="app-main">
+  <div class="stul-label" id="stul-label" hidden>
+    <div class="stul-place" id="stul-place">—</div>
+    <div class="stul-name" id="stul-name">—</div>
+  </div>
+
+  <button class="call-btn" id="call-btn" disabled>
+    <span class="icon">🔔</span>
+    Přivolat obsluhu
+    <span class="sub" id="call-sub">Načítám…</span>
+  </button>
+
+  <div class="status-box idle" id="status-box">Připraveno k přivolání</div>
+</main>
+
+<footer>Bukovar pokladna · mobilní číšník</footer>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { initializeFirestore, persistentLocalCache, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCVt5sqRuJzFDclyMnwM6D0Pqz5E8449oA",
+    authDomain: "bukobar-pokladna.firebaseapp.com",
+    projectId: "bukobar-pokladna",
+    storageBucket: "bukobar-pokladna.firebasestorage.app",
+    messagingSenderId: "200112245598",
+    appId: "1:200112245598:web:10db15b7bb6dc6248e5dcf"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  let db;
+  try { db = initializeFirestore(app, { localCache: persistentLocalCache({}) }); }
+  catch (e) { db = initializeFirestore(app, {}); }
+
+  // --- Parse stolu z URL ---
+  const params = new URLSearchParams(location.search);
+  const stulRaw = (params.get('stul') || '').toUpperCase().trim();
+  const match = /^([VI])(\d{1,2})$/.exec(stulRaw);
+
+  if (!match) {
+    document.getElementById('app-main').innerHTML =
+      '<div class="fatal">' +
+      '<h1>Neplatný kód stolu</h1>' +
+      '<p>QR kód není čitelný nebo je poškozen. Zkuste prosím jiný kód nebo přivolejte obsluhu osobně.</p>' +
+      '</div>';
+    throw new Error('invalid stul: ' + stulRaw);
+  }
+
+  const prefix = match[1];
+  const num = parseInt(match[2], 10);
+  const isVenku = prefix === 'V';
+  const maxNum = isVenku ? 9 : 6;
+
+  if (num < 1 || num > maxNum) {
+    document.getElementById('app-main').innerHTML =
+      '<div class="fatal">' +
+      '<h1>Neplatný kód stolu</h1>' +
+      '<p>Stůl ' + stulRaw + ' neexistuje.</p>' +
+      '</div>';
+    throw new Error('stul out of range: ' + stulRaw);
+  }
+
+  const stulId = prefix + num;                  // např. "V3"
+  const stulPlace = isVenku ? '🪟 Venku' : '🏠 Uvnitř';
+  const stulFullName = (isVenku ? 'Venku' : 'Uvnitř') + ' – Stůl ' + num;
+
+  document.getElementById('stul-place').textContent = stulPlace;
+  document.getElementById('stul-name').textContent = 'Stůl ' + num;
+  document.getElementById('stul-label').hidden = false;
+
+  const btn = document.getElementById('call-btn');
+  const sub = document.getElementById('call-sub');
+  const status = document.getElementById('status-box');
+
+  function setStatus(text, kind) {
+    status.className = 'status-box ' + (kind || 'idle');
+    status.textContent = text;
+  }
+
+  // --- Anonymous sign-in na pozadí ---
+  setStatus('Připojuji se…', 'work');
+  sub.textContent = 'Připojuji…';
+
+  signInAnonymously(auth).catch(function(e) {
+    console.error('[auth] anonymous sign-in failed:', e);
+    setStatus('Chyba spojení. Zkuste obnovit stránku.', 'err');
+    sub.textContent = 'Bez spojení';
+  });
+
+  onAuthStateChanged(auth, function(user) {
+    if (user) {
+      btn.disabled = false;
+      sub.textContent = stulFullName;
+      setStatus('Připraveno k přivolání', 'idle');
+    } else {
+      btn.disabled = true;
+      sub.textContent = 'Bez spojení';
+    }
+  });
+
+  // --- Klik na tlačítko ---
+  let lastCallTs = 0;
+  const COOLDOWN_MS = 30 * 1000;
+
+  btn.addEventListener('click', async function() {
+    if (btn.disabled) return;
+    const now = Date.now();
+    if (now - lastCallTs < COOLDOWN_MS) {
+      const left = Math.ceil((COOLDOWN_MS - (now - lastCallTs)) / 1000);
+      setStatus('Počkejte ještě ' + left + ' s…', 'work');
+      return;
+    }
+
+    btn.disabled = true;
+    setStatus('Posílám…', 'work');
+    sub.textContent = 'Posílám volání…';
+
+    try {
+      await addDoc(collection(db, 'volani'), {
+        stul: stulId,
+        status: 'active',
+        ts: serverTimestamp()
+      });
+      lastCallTs = Date.now();
+      setStatus('✓ Obsluha přijde za chvíli', 'ok');
+      sub.textContent = 'Volání odesláno';
+
+      // Re-enable po cooldownu
+      setTimeout(function() {
+        btn.disabled = false;
+        sub.textContent = stulFullName;
+        setStatus('Připraveno k přivolání', 'idle');
+      }, COOLDOWN_MS);
+    } catch (e) {
+      console.error('[volani] addDoc failed:', e);
+      btn.disabled = false;
+      sub.textContent = stulFullName;
+      setStatus('Nepodařilo se odeslat. Zkuste znovu.', 'err');
+    }
+  });
+</script>
+
+</body>
+</html>
