@@ -509,6 +509,19 @@
   .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
 
+  /* eWeLink tlačítko v hlavičce (V7.22) */
+  .header-ewelink[hidden] { display: none !important; }
+  .header-ewelink { display: flex; align-items: center; gap: 6px; background: #475569; color: #fff; border: 1px solid #475569; font-size: 14px; font-weight: 600; padding: 4px 14px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s, border-color .15s; }
+  .header-ewelink:hover { background: #334155; border-color: #334155; }
+  .header-ewelink.on { background: #16a34a; border-color: #16a34a; }
+  .header-ewelink.on:hover { background: #15803d; border-color: #15803d; }
+  .header-ewelink.off { background: #475569; border-color: #475569; }
+  .header-ewelink.pending { background: #ea580c; border-color: #ea580c; cursor: wait; }
+  .header-ewelink.error { background: #a4101b; border-color: #a4101b; }
+  .header-ewelink:disabled { cursor: wait; opacity: .75; }
+  .header-ewelink .header-ewelink-icon { font-size: 15px; }
+  .header-ewelink .header-ewelink-label { font-size: 13px; }
+
   /* Volání hostů (V7.20) */
   .header-volani[hidden], .volani-panel[hidden] { display: none !important; }
   .header-volani { background: #dc2626; color: #fff; border: 1px solid #dc2626; font-size: 14px; font-weight: 600; padding: 4px 14px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px; animation: volani-pulse 1.4s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(220,38,38,.7); }
@@ -529,6 +542,19 @@
   .volani-item-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .volani-item-btn { background: var(--success-text); color: #fff; border: 1px solid var(--success-text); font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--radius); cursor: pointer; min-height: unset; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
   .volani-item-btn:hover { background: #155a2d; border-color: #155a2d; }
+
+  /* Loxone teplotní badge (V7.22) — vlevo od ⎋ Odhlásit */
+  .loxone-temp-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 96px; padding: 4px 14px; margin: auto 10px auto 0; border-radius: 8px; border: 1px solid transparent; line-height: 1.05; font-family: 'DM Sans', sans-serif; cursor: default; user-select: none; }
+  .loxone-temp-badge .ltb-value { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+  .loxone-temp-badge .ltb-value .ltb-unit { font-size: 16px; font-weight: 600; margin-left: 2px; opacity: .85; }
+  .loxone-temp-badge .ltb-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; opacity: .85; margin-top: 2px; }
+  .loxone-temp-badge .ltb-alert { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+  .loxone-temp-badge.cold    { background: #dcfce7; color: #166534; border-color: #16a34a; }
+  .loxone-temp-badge.ok      { background: #fef3c7; color: #92400e; border-color: #ea580c; }
+  .loxone-temp-badge.warn    { background: #dc2626; color: #fff;    border-color: #b91c1c; animation: volani-pulse 1.4s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(220,38,38,.7); }
+  .loxone-temp-badge.offline { background: var(--bg); color: var(--muted); border-color: var(--border); }
+  .loxone-temp-badge.offline .ltb-value { font-size: 22px; opacity: .65; }
+  .loxone-temp-badge[hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -563,7 +589,12 @@
     <button class="tab-btn" onclick="switchTab('administrace',this);renderAdminPetConfig()">Administrace</button>
   </div>
   <div style="display:flex;align-items:center;">
+    <div class="loxone-temp-badge offline" id="loxone-temp-badge" title="Teplota chlazení piva (Loxone Tank 2). Aktualizuje se každé 2 min.">
+      <div class="ltb-value">—</div>
+      <div class="ltb-label">teplota piva</div>
+    </div>
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
+    <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span></button>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
     <button onclick="toggleApiKey()" style="background:transparent;border:1px solid rgba(245,241,234,.25);color:rgba(245,241,234,.7);font-size:13px;padding:4px 12px;border-radius:6px;margin:auto 1rem auto 0;min-height:unset;">⚙ API</button>
   </div>
@@ -900,6 +931,7 @@
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this)">Záloha dat</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','impl',this);renderImpl()">Implementace</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','loxone',this);bukovarLoxoneTest()">🌡 Loxone</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','ewelink',this);bukovarEwelinkAdminInit()">💡 eWeLink</button>
     </div>
 
     <div class="subtab-content active" id="subtab-admin-pet">
@@ -972,6 +1004,60 @@
           <button class="primary" id="loxone-test-btn" onclick="bukovarLoxoneTest()" style="font-size:14px;padding:10px 22px;min-height:unset;">🌡 Otestovat připojení</button>
         </div>
         <pre id="loxone-output" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;font-family:'Consolas','Menlo',monospace;font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--text);min-height:120px;margin:0;">Klikni na tlačítko výše pro spuštění testu.</pre>
+      </div>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-ewelink">
+      <div class="card" style="max-width:900px;">
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:.4rem;">💡 eWeLink — spínání zásuvky</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Cloud sync s eWeLink přes Firebase Cloud Function (region <code>europe-west1</code>). Po autorizaci a nastavení Device ID se v hlavičce zobrazí tlačítko pro rychlé spínání. Polling stavu každých 5 min (šetří API limit).</p>
+
+        <div style="margin-bottom:1.2rem;padding:1rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);">
+          <div style="font-weight:600;margin-bottom:.5rem;">1) OAuth autorizace</div>
+          <div id="ewelink-auth-status" style="font-size:13px;color:var(--muted);margin-bottom:.8rem;line-height:1.5;">⏳ Načítám stav…</div>
+          <button class="primary" id="ewelink-auth-btn" onclick="bukovarEwelinkAuthorize()" style="font-size:14px;padding:10px 22px;min-height:unset;">🔐 Autorizovat eWeLink účet</button>
+        </div>
+
+        <div style="margin-bottom:1.2rem;padding:1rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);">
+          <div style="font-weight:600;margin-bottom:.7rem;">2) Konfigurace zařízení</div>
+          <div style="display:grid;grid-template-columns:160px 1fr;gap:.55rem .8rem;align-items:center;font-size:13px;">
+            <label for="ewelink-cfg-deviceid">Device ID:</label>
+            <input type="text" id="ewelink-cfg-deviceid" placeholder="např. 1000abcdef" style="font-family:'DM Sans',sans-serif;font-size:14px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;" />
+            <label for="ewelink-cfg-label">Název tlačítka:</label>
+            <input type="text" id="ewelink-cfg-label" placeholder="např. Světla zahrádka" style="font-family:'DM Sans',sans-serif;font-size:14px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;" />
+            <label for="ewelink-cfg-icon">Ikona:</label>
+            <select id="ewelink-cfg-icon" style="font-family:'DM Sans',sans-serif;font-size:14px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;">
+              <option value="💡">💡 Žárovka</option>
+              <option value="🔆">🔆 Slunce</option>
+              <option value="🔌">🔌 Zásuvka</option>
+              <option value="🔥">🔥 Oheň</option>
+              <option value="❄">❄ Chlazení</option>
+              <option value="🚪">🚪 Dveře</option>
+              <option value="📺">📺 Obrazovka</option>
+              <option value="🎵">🎵 Hudba</option>
+              <option value="☕">☕ Kávovar</option>
+              <option value="🪟">🪟 Okno/Roleta</option>
+            </select>
+            <label for="ewelink-cfg-enabled">Povolit:</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;"><input type="checkbox" id="ewelink-cfg-enabled" style="width:18px;height:18px;cursor:pointer;" /> Zobrazit tlačítko v hlavičce pokladny</label>
+          </div>
+          <div style="display:flex;gap:.6rem;margin-top:1rem;">
+            <button class="primary" onclick="bukovarEwelinkSaveConfig()" style="font-size:14px;padding:9px 20px;min-height:unset;">💾 Uložit konfiguraci</button>
+            <button onclick="bukovarEwelinkAdminInit()" style="font-size:14px;padding:9px 20px;min-height:unset;">↻ Obnovit</button>
+            <button onclick="bukovarEwelinkTest('devices')" style="font-size:14px;padding:9px 20px;min-height:unset;" title="Vypsat všechna zařízení v eWeLink účtu — pro zjištění Device ID">📋 Seznam zařízení</button>
+          </div>
+        </div>
+
+        <div style="padding:1rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);">
+          <div style="font-weight:600;margin-bottom:.7rem;">3) Test</div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem;">
+            <button class="primary" onclick="bukovarEwelinkTest('on')" style="font-size:14px;padding:9px 18px;min-height:unset;background:#16a34a;border-color:#16a34a;">⚡ Zapnout</button>
+            <button class="primary" onclick="bukovarEwelinkTest('off')" style="font-size:14px;padding:9px 18px;min-height:unset;background:#475569;border-color:#475569;">⭕ Vypnout</button>
+            <button onclick="bukovarEwelinkTest('toggle')" style="font-size:14px;padding:9px 18px;min-height:unset;">🔄 Toggle</button>
+            <button onclick="bukovarEwelinkTest('status')" style="font-size:14px;padding:9px 18px;min-height:unset;">↻ Obnovit stav</button>
+          </div>
+          <pre id="ewelink-output" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;font-family:'Consolas','Menlo',monospace;font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--text);min-height:80px;margin:0;">Klikni na tlačítko výše pro test.</pre>
+        </div>
       </div>
     </div>
   </main>
@@ -1111,7 +1197,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.21';
+const APP_VERSION = '7.23';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -4090,6 +4176,236 @@ function updateTabBadges() {
   const fns = getFunctions(app, 'europe-west1');
   const callLoxoneTemp = httpsCallable(fns, 'getLoxoneTemp');
 
+  // --- Loxone teplotní badge v hlavičce + polling (V7.22) ---
+  const LOXONE_POLL_MS = 120000; // 2 min
+  let _loxonePollTimer = null;
+
+  function _loxoneUpdateBadge(d) {
+    const el = document.getElementById('loxone-temp-badge');
+    if (!el) return;
+    el.classList.remove('cold','ok','warn','offline');
+    const valueEl = el.querySelector('.ltb-value');
+    const labelEl = el.querySelector('.ltb-label');
+    let alertEl  = el.querySelector('.ltb-alert');
+    if (alertEl) alertEl.remove();
+
+    const online = d && d.online === true && typeof d.temperature === 'number';
+    if (!online) {
+      el.classList.add('offline');
+      valueEl.textContent = '—';
+      labelEl.textContent = 'teplota piva';
+      el.title = 'Loxone offline — ' + ((d && d.error) || 'bez detailu');
+      return;
+    }
+
+    const t = d.temperature;
+    const tStr = t.toFixed(1).replace('.', ',');
+    valueEl.innerHTML = tStr + '<span class="ltb-unit">°C</span>';
+    labelEl.textContent = 'teplota piva';
+    el.title = 'Tank 2 — ' + tStr + ' °C (aktualizace ' + (d.timestamp ? new Date(d.timestamp).toLocaleTimeString('cs-CZ') : 'teď') + ')';
+
+    if (t > 5) {
+      el.classList.add('warn');
+      alertEl = document.createElement('div');
+      alertEl.className = 'ltb-alert';
+      alertEl.textContent = 'VOLAT PÁJU';
+      el.appendChild(alertEl);
+    } else if (t > 3) {
+      el.classList.add('ok');
+    } else {
+      el.classList.add('cold');
+    }
+  }
+
+  window.bukovarLoxoneRefresh = async function() {
+    if (!auth.currentUser) return;
+    try {
+      const r = await callLoxoneTemp();
+      _loxoneUpdateBadge(r.data || {});
+    } catch (e) {
+      console.warn('[loxone] refresh failed:', e.code || e.message || e);
+      _loxoneUpdateBadge({ online: false, error: e.code || e.message || String(e) });
+    }
+  };
+
+  function loxoneStartPolling() {
+    if (_loxonePollTimer) return;
+    window.bukovarLoxoneRefresh();
+    _loxonePollTimer = setInterval(window.bukovarLoxoneRefresh, LOXONE_POLL_MS);
+  }
+  function loxoneStopPolling() {
+    if (_loxonePollTimer) { clearInterval(_loxonePollTimer); _loxonePollTimer = null; }
+    _loxoneUpdateBadge({ online: false, error: 'Odhlášen' });
+  }
+
+  // --- eWeLink Cloud Functions (V7.22) ---
+  const callEwelinkStatus     = httpsCallable(fns, 'ewelinkStatus');
+  const callEwelinkToggle     = httpsCallable(fns, 'ewelinkToggle');
+  const callEwelinkAuthState  = httpsCallable(fns, 'ewelinkAuthState');
+  const callEwelinkPrepare    = httpsCallable(fns, 'ewelinkOAuthPrepare');
+  const callEwelinkSetConfig  = httpsCallable(fns, 'ewelinkSetConfig');
+  const callEwelinkDevices    = httpsCallable(fns, 'ewelinkDevices');
+  let _ewelinkPollTimer = null;
+
+  function _ewelinkSetBtn(state, label, icon) {
+    const btn = document.getElementById('header-ewelink-btn');
+    if (!btn) return;
+    btn.classList.remove('on','off','pending','error');
+    btn.classList.add(state);
+    btn.querySelector('.header-ewelink-icon').textContent = icon || '💡';
+    btn.querySelector('.header-ewelink-label').textContent = label || 'eWeLink';
+    btn.title = (label || 'eWeLink') + ' — ' + state.toUpperCase();
+  }
+
+  window.bukovarEwelinkRefresh = async function() {
+    const btn = document.getElementById('header-ewelink-btn');
+    if (!btn || !auth.currentUser) return;
+    try {
+      const r = await callEwelinkStatus();
+      const d = r.data || {};
+      if (!d.enabled || !d.configured || !d.authorized) {
+        btn.hidden = true;
+        return;
+      }
+      btn.hidden = false;
+      if (d.error) {
+        _ewelinkSetBtn('error', d.label, d.icon);
+      } else {
+        _ewelinkSetBtn(d.state === 'on' ? 'on' : 'off', d.label, d.icon);
+      }
+    } catch (e) {
+      console.warn('[ewelink] status failed:', e);
+      _ewelinkSetBtn('error', null, '💡');
+    }
+  };
+
+  window.bukovarEwelinkClick = async function() {
+    const btn = document.getElementById('header-ewelink-btn');
+    if (!btn || btn.disabled) return;
+    const labelText = btn.querySelector('.header-ewelink-label').textContent;
+    const iconText = btn.querySelector('.header-ewelink-icon').textContent;
+    btn.disabled = true;
+    _ewelinkSetBtn('pending', labelText, iconText);
+    try {
+      const r = await callEwelinkToggle({ state: 'toggle' });
+      const newState = r.data && r.data.state;
+      _ewelinkSetBtn(newState === 'on' ? 'on' : 'off', labelText, iconText);
+    } catch (e) {
+      console.error('[ewelink] toggle failed:', e);
+      _ewelinkSetBtn('error', labelText, iconText);
+      alert('Chyba spínání eWeLink: ' + (e.message || e.code));
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  function ewelinkStartPolling() {
+    if (_ewelinkPollTimer) clearInterval(_ewelinkPollTimer);
+    _ewelinkPollTimer = setInterval(function(){ window.bukovarEwelinkRefresh(); }, 5 * 60 * 1000);
+  }
+  function ewelinkStopPolling() {
+    if (_ewelinkPollTimer) { clearInterval(_ewelinkPollTimer); _ewelinkPollTimer = null; }
+    const btn = document.getElementById('header-ewelink-btn');
+    if (btn) btn.hidden = true;
+  }
+
+  // Admin UI helpers
+  window.bukovarEwelinkAdminInit = async function() {
+    const statusEl = document.getElementById('ewelink-auth-status');
+    if (!statusEl) return;
+    statusEl.textContent = '⏳ Načítám stav…';
+    try {
+      const r = await callEwelinkAuthState();
+      const d = r.data || {};
+      const btn = document.getElementById('ewelink-auth-btn');
+      if (d.authorized) {
+        const exp = d.atExpiresAt ? new Date(d.atExpiresAt).toLocaleString('cs-CZ') : '?';
+        const acc = (d.accountInfo && (d.accountInfo.email || d.accountInfo.phoneNumber)) || '(neuvedeno)';
+        statusEl.innerHTML = '✅ Autorizováno — účet <strong>' + acc + '</strong>, region <strong>' + (d.region || '?') + '</strong>, token expiruje <strong>' + exp + '</strong>';
+        if (btn) btn.textContent = '🔄 Znovu autorizovat';
+      } else {
+        statusEl.innerHTML = '❌ <strong>Neautorizováno</strong> — klikni „Autorizovat" pro spárování s eWeLink účtem';
+        if (btn) btn.textContent = '🔐 Autorizovat eWeLink účet';
+      }
+      const dev = d.device || {};
+      document.getElementById('ewelink-cfg-deviceid').value = dev.deviceId || '';
+      document.getElementById('ewelink-cfg-label').value = dev.label || '';
+      document.getElementById('ewelink-cfg-icon').value = dev.icon || '💡';
+      document.getElementById('ewelink-cfg-enabled').checked = !!dev.enabled;
+    } catch (e) {
+      console.error('[ewelink/admin] init failed:', e);
+      statusEl.textContent = '⚠ Chyba: ' + (e.message || e.code || e);
+    }
+  };
+
+  window.bukovarEwelinkAuthorize = async function() {
+    const btn = document.getElementById('ewelink-auth-btn');
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Připravuji…';
+    try {
+      const r = await callEwelinkPrepare();
+      const url = r.data && r.data.loginUrl;
+      if (!url) throw new Error('Cloud Function nevrátila loginUrl');
+      const w = window.open(url, 'ewelink-oauth', 'width=620,height=760,scrollbars=yes');
+      if (!w) { alert('Popup blokován — povol popups pro tuto stránku.'); throw new Error('popup blocked'); }
+      btn.textContent = '⏱ Po přihlášení v okně klikni Obnovit stav';
+      const out = document.getElementById('ewelink-output');
+      if (out) { out.style.color='var(--muted)'; out.textContent = '👉 V novém okně se přihlas do eWeLink účtu. Po úspěchu klikni níže „↻ Obnovit stav".'; }
+    } catch (e) {
+      console.error('[ewelink/auth] prepare failed:', e);
+      alert('Chyba: ' + (e.message || e.code));
+      btn.textContent = orig;
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  window.bukovarEwelinkSaveConfig = async function() {
+    const payload = {
+      deviceId: document.getElementById('ewelink-cfg-deviceid').value.trim(),
+      label:    document.getElementById('ewelink-cfg-label').value.trim(),
+      icon:     document.getElementById('ewelink-cfg-icon').value,
+      enabled:  document.getElementById('ewelink-cfg-enabled').checked
+    };
+    const out = document.getElementById('ewelink-output');
+    try {
+      await callEwelinkSetConfig(payload);
+      if (out) { out.style.color = '#1e8a3c'; out.textContent = '✅ Konfigurace uložena: ' + JSON.stringify(payload, null, 2); }
+      window.bukovarEwelinkRefresh();
+    } catch (e) {
+      console.error('[ewelink/save] failed:', e);
+      if (out) { out.style.color = '#a4101b'; out.textContent = '❌ Uložení selhalo: ' + (e.message || e.code); }
+    }
+  };
+
+  window.bukovarEwelinkTest = async function(action) {
+    const out = document.getElementById('ewelink-output');
+    if (!out) return;
+    out.style.color = 'var(--text)';
+    out.textContent = '⏳ Volám…';
+    try {
+      let r;
+      if (action === 'status') {
+        r = await callEwelinkStatus();
+        out.textContent = '📦 Status:\n' + JSON.stringify(r.data, null, 2);
+      } else if (action === 'devices') {
+        r = await callEwelinkDevices();
+        out.textContent = '📋 Seznam zařízení v eWeLink účtu:\n' + JSON.stringify(r.data, null, 2);
+      } else {
+        r = await callEwelinkToggle({ state: action }); // 'on' / 'off' / 'toggle'
+        out.textContent = '✅ Spínání ' + action.toUpperCase() + ':\n' + JSON.stringify(r.data, null, 2);
+        window.bukovarEwelinkRefresh();
+      }
+      out.style.color = '#1e8a3c';
+    } catch (e) {
+      out.textContent = '❌ Chyba\ncode: ' + (e.code || '?') + '\nmessage: ' + (e.message || '?');
+      if (e.details) out.textContent += '\ndetails: ' + JSON.stringify(e.details);
+      out.style.color = '#a4101b';
+    }
+  };
+
   window.bukovarLoxoneTest = async function() {
     const out = document.getElementById('loxone-output');
     const btn = document.getElementById('loxone-test-btn');
@@ -4114,6 +4430,7 @@ function updateTabBadges() {
         lines.push('📡 Senzor: ' + (r.data.sensor || '?'));
         lines.push('🕐 Časová značka: ' + (r.data.timestamp || '?'));
         out.style.color = '#1e8a3c';
+        _loxoneUpdateBadge(r.data);
       } else if (r.data && r.data.online === false) {
         lines.push('⚠ Cloud Function odpověděla, ale Loxone NENÍ dostupný:');
         lines.push('   Error: ' + (r.data.error || '(bez detailu)'));
@@ -4382,11 +4699,16 @@ function updateTabBadges() {
       window.bukovarSyncCounter();
       autoEnableCloudSync();
       attachVolaniListener();
+      window.bukovarEwelinkRefresh();
+      ewelinkStartPolling();
+      loxoneStartPolling();
     } else {
       if (window.bukovarDetachAllListeners) window.bukovarDetachAllListeners();
       if (window.bukovarSetCloudSyncActive) window.bukovarSetCloudSyncActive(false);
       detachVolaniListener();
       if (window.bukovarOnRemoteVolani) window.bukovarOnRemoteVolani([]);
+      ewelinkStopPolling();
+      loxoneStopPolling();
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       passwordInput.value = '';
