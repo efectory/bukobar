@@ -1078,7 +1078,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.15';
+const APP_VERSION = '7.16';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -2192,7 +2192,7 @@ function renderMiniHistory() {
           ? '<span class="mini-hist-icon" style="color:#15803d;">✓ dluh OK</span>'
           : '<span class="mini-hist-icon" style="color:#15803d;">✓ OK</span>';
     html += '<div class="mini-hist-item' + cls + '" onclick="miniHistClick(' + r.id + ')">'
-      + '<span class="mini-hist-num">#' + r.num + '</span>'
+      + '<span class="mini-hist-num">#' + (r.num != null ? r.num : '?') + '</span>'
       + '<span class="mini-hist-czk">' + r.celkem + ' Kč</span>'
       + statusLabel
       + '</div>';
@@ -2239,7 +2239,7 @@ function renderUctenky() {
     div.innerHTML =
       '<div class="uctenka-row-header">' +
         '<div>' +
-          '<div><span class="uctenka-num">#' + rec.num + '</span>' + badge + '</div>' +
+          '<div><span class="uctenka-num">#' + (rec.num != null ? rec.num : '?') + '</span>' + badge + '</div>' +
           '<div style="font-weight:500;margin-top:1px">' + casStr + '</div>' +
           '<div class="uctenka-row-meta">' + pocetStr + (rec.dluh_jmeno ? ' · <strong>' + rec.dluh_jmeno + '</strong>' : '') + '</div>' +
         '</div>' +
