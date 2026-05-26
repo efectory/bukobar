@@ -1,1 +1,10 @@
 bukovar-pokladna-V*.html
+
+# Firebase
+firebase-debug.log
+firebase-debug.*.log
+functions/node_modules/
+
+# OS / screenshoty
+Snímek obrazovky*.png
+*.tmp

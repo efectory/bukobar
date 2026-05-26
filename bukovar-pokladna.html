@@ -867,6 +867,7 @@
       <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','zaloha',this);cloudSyncRefresh()">Záloha dat</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','impl',this);renderImpl()">Implementace</button>
+      <button class="subtab-btn" onclick="switchSubtab('admin','loxone',this);bukovarLoxoneTest()">🌡 Loxone</button>
     </div>
 
     <div class="subtab-content active" id="subtab-admin-pet">
@@ -939,6 +940,17 @@
           <button class="primary" onclick="implAdd()" style="padding:9px 18px;font-size:14px;">+ Přidat</button>
         </div>
         <div id="impl-list"></div>
+      </div>
+    </div>
+
+    <div class="subtab-content" id="subtab-admin-loxone">
+      <div class="card" style="max-width:900px;">
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:.4rem;">🌡 Loxone — test připojení</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Volá Cloud Function <code>getLoxoneTemp</code> (region <code>europe-west1</code>), která z Miniserveru přes veřejnou IP přečte hodnotu čidla <strong>Tank 2 - skutečnost</strong>. Tlačítko spustí jeden test — výsledek (úspěch nebo přesný error) se zobrazí níže.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="primary" id="loxone-test-btn" onclick="bukovarLoxoneTest()" style="font-size:14px;padding:10px 22px;min-height:unset;">🌡 Otestovat připojení</button>
+        </div>
+        <pre id="loxone-output" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;font-family:'Consolas','Menlo',monospace;font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--text);min-height:120px;margin:0;">Klikni na tlačítko výše pro spuštění testu.</pre>
       </div>
     </div>
   </main>
@@ -1078,7 +1090,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.16';
+const APP_VERSION = '7.17';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -3988,6 +4000,7 @@ function updateTabBadges() {
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
   import { initializeFirestore, persistentLocalCache, doc, getDoc, setDoc, runTransaction, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-functions.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCVt5sqRuJzFDclyMnwM6D0Pqz5E8449oA",
@@ -4010,6 +4023,60 @@ function updateTabBadges() {
     db = initializeFirestore(app, {});
   }
   const counterRef = doc(db, 'meta', 'counter');
+
+  // --- Loxone Cloud Function (V7.17) ---
+  const fns = getFunctions(app, 'europe-west1');
+  const callLoxoneTemp = httpsCallable(fns, 'getLoxoneTemp');
+
+  window.bukovarLoxoneTest = async function() {
+    const out = document.getElementById('loxone-output');
+    const btn = document.getElementById('loxone-test-btn');
+    if (!out || !btn) return;
+    btn.disabled = true;
+    btn.textContent = '⏳ Volám funkci…';
+    const t0 = performance.now();
+    const lines = [];
+    lines.push('🔗 Endpoint: https://europe-west1-' + app.options.projectId + '.cloudfunctions.net/getLoxoneTemp');
+    lines.push('👤 Přihlášený uživatel: ' + (auth.currentUser ? auth.currentUser.email : '❌ NENÍ PŘIHLÁŠEN'));
+    lines.push('');
+    try {
+      const r = await callLoxoneTemp();
+      const dt = Math.round(performance.now() - t0);
+      lines.push('✅ HTTP volání proběhlo OK (' + dt + ' ms)');
+      lines.push('');
+      lines.push('📦 Odpověď z Cloud Function:');
+      lines.push(JSON.stringify(r.data, null, 2));
+      lines.push('');
+      if (r.data && r.data.online === true && typeof r.data.temperature === 'number') {
+        lines.push('🌡 Teplota: ' + r.data.temperature.toFixed(2) + ' °C');
+        lines.push('📡 Senzor: ' + (r.data.sensor || '?'));
+        lines.push('🕐 Časová značka: ' + (r.data.timestamp || '?'));
+        out.style.color = '#1e8a3c';
+      } else if (r.data && r.data.online === false) {
+        lines.push('⚠ Cloud Function odpověděla, ale Loxone NENÍ dostupný:');
+        lines.push('   Error: ' + (r.data.error || '(bez detailu)'));
+        out.style.color = '#b25500';
+      } else {
+        lines.push('⚠ Neočekávaný tvar odpovědi.');
+        out.style.color = '#b25500';
+      }
+    } catch (e) {
+      const dt = Math.round(performance.now() - t0);
+      lines.push('❌ Volání selhalo (' + dt + ' ms)');
+      lines.push('');
+      lines.push('Error code:    ' + (e.code || '(žádný)'));
+      lines.push('Error message: ' + (e.message || '(prázdné)'));
+      if (e.details !== undefined) lines.push('Error details: ' + JSON.stringify(e.details));
+      lines.push('');
+      lines.push('Plný error objekt:');
+      try { lines.push(JSON.stringify(e, Object.getOwnPropertyNames(e), 2)); } catch (_) { lines.push(String(e)); }
+      out.style.color = '#a4101b';
+    } finally {
+      out.textContent = lines.join('\n');
+      btn.disabled = false;
+      btn.textContent = '🌡 Otestovat připojení';
+    }
+  };
 
   // Counter sync — bezpečnostní pojistka, localStorage zůstává primárním zdrojem
   window.bukovarSyncCounter = async function() {
