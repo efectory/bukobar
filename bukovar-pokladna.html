@@ -1166,7 +1166,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.34';
+const APP_VERSION = '7.35';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1397,35 +1397,21 @@ function objednavkaTisk(id) {
     return d.textContent;
   });
 
-  const printArea = document.getElementById('print-area') || (function() {
-    const el = document.createElement('div');
-    el.id = 'print-area';
-    el.style.display = 'none';
-    document.body.appendChild(el);
-    return el;
-  })();
-  printArea.innerHTML =
-    '<div style="font-family:monospace;font-size:14px;padding:1rem;max-width:280px;">' +
-    '<div style="text-align:center;font-size:18px;font-weight:700;border-bottom:2px dashed #000;padding-bottom:6px;margin-bottom:8px;">🛎 OBJEDNÁVKA</div>' +
-    '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">' + _escapeHtml(stul) + '</div>' +
-    '<div style="font-size:12px;color:#444;margin-bottom:10px;">' + _escapeHtml(cas) + '</div>' +
-    '<div style="border-top:1px dashed #000;padding-top:6px;font-size:15px;line-height:1.6;">' +
-      polozky.map(function(p) { return _escapeHtml(p); }).join('<br>') +
-    '</div>' +
-    '<div style="margin-top:14px;border-top:2px dashed #000;padding-top:6px;text-align:center;font-size:11px;color:#666;">Bukovar pokladna</div>' +
-    '</div>';
-
-  // Tisk + obnovit display
-  const origDisplay = printArea.style.display;
-  printArea.style.display = 'block';
-  document.body.classList.add('printing-order');
-  setTimeout(function() {
-    window.print();
-    setTimeout(function() {
-      printArea.style.display = origDisplay;
-      document.body.classList.remove('printing-order');
-    }, 100);
-  }, 50);
+  // Stejná tisková cesta jako útratový lístek (iframe + RECEIPT_CSS, 80mm)
+  var html = '<div class="receipt-print">';
+  html += '<div class="rp-center" style="font-size:19px;font-weight:700;">OBJEDNÁVKA</div>';
+  html += '<hr class="rp-line">';
+  html += '<div class="rp-center" style="font-size:18px;font-weight:700;">' + _escapeHtml(stul) + '</div>';
+  html += '<div class="rp-center">' + _escapeHtml(cas) + '</div>';
+  html += '<hr class="rp-line">';
+  polozky.forEach(function(p) {
+    html += '<div class="rp-row"><span>' + _escapeHtml(p) + '</span></div>';
+  });
+  html += '<hr class="rp-line">';
+  html += '<div class="rp-footer">Bukovar pokladna</div>';
+  html += '<div style="height:32px;"></div>';
+  html += '</div>';
+  printReceiptIframe(html);
 }
 
 // --- Kategorie ---
