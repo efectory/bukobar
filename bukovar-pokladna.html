@@ -1166,7 +1166,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.35';
+const APP_VERSION = '7.36';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1932,12 +1932,20 @@ function printReceiptIframe(html) {
   doc.open();
   doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + RECEIPT_CSS + '</style></head><body>' + html + '</body></html>');
   doc.close();
+  // Cleanup až po zavření print dialogu (afterprint) nebo nejpozději po 60 s
+  var cleaned = false;
+  function cleanup() {
+    if (cleaned) return;
+    cleaned = true;
+    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+  }
   setTimeout(function() {
+    try {
+      iframe.contentWindow.addEventListener('afterprint', cleanup);
+    } catch(e) {}
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-    setTimeout(function() {
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-    }, 1000);
+    setTimeout(cleanup, 60000);
   }, 250);
 }
 
