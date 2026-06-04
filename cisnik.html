@@ -303,6 +303,13 @@
   .pivo-btn.oranzova     { background: #fff7ed; color: #9a3412; border-color: #ea580c; }
   .pivo-btn.modra        { background: #dbeafe; color: #1e40af; border-color: #2563eb; }
   .pivo-btn.tmave-zelena { background: #f0fdf4; color: #14532d; border-color: #166534; }
+  .pivo-btn.bila         { background: #f8fafc; color: #334155; border-color: #94a3b8; }
+  /* Radler — výběr základního piva (bottom sheet) */
+  .radler-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+  .radler-overlay[hidden] { display: none; }
+  .radler-sheet { background: var(--surface); width: 100%; max-width: 560px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 1.2rem 1rem calc(1rem + env(safe-area-inset-bottom)); box-shadow: 0 -8px 30px rgba(0,0,0,.25); }
+  .radler-title { font-family: 'DM Serif Display', serif; font-size: 22px; text-align: center; margin-bottom: 1rem; color: var(--text); }
+  .radler-cancel { width: 100%; margin-top: 1rem; padding: 14px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--muted); border-radius: var(--radius); font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
 
   .cat-btn {
     font-family: 'DM Sans', sans-serif;
@@ -706,6 +713,14 @@
   </main>
 </div>
 
+<div class="radler-overlay" id="radler-overlay" hidden>
+  <div class="radler-sheet">
+    <div class="radler-title">Radler — z jakého piva?</div>
+    <div class="grid-4" id="radler-beer-grid"></div>
+    <button class="radler-cancel" id="radler-cancel-btn">Zrušit</button>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -724,10 +739,13 @@
   const auth = getAuth(app);
 
   let db;
-  try { db = initializeFirestore(app, { localCache: persistentLocalCache({}) }); }
+  // experimentalForceLongPolling: vynutí long-polling místo streamovacího WebChannelu —
+  // na mobilních sítích jinak onSnapshot nedoručoval živé změny (stav objednávky se
+  // aktualizoval až po F5). Stejná oprava jako v pokladně (V7.40).
+  try { db = initializeFirestore(app, { localCache: persistentLocalCache({}), experimentalForceLongPolling: true }); }
   catch (e) {
-    try { db = initializeFirestore(app, { localCache: memoryLocalCache() }); }
-    catch (e2) { db = initializeFirestore(app, {}); }
+    try { db = initializeFirestore(app, { localCache: memoryLocalCache(), experimentalForceLongPolling: true }); }
+    catch (e2) { db = initializeFirestore(app, { experimentalForceLongPolling: true }); }
   }
 
   async function setupPersistence() {
@@ -1234,7 +1252,7 @@
     }
     const topTile = e.target.closest('.item-tile');
     if (topTile) {
-      addToCart({ nazev: topTile.dataset.nazev, cena: parseInt(topTile.dataset.cena, 10) || 0 });
+      addItemFromTile(topTile);
       topTile.style.transform = 'scale(.92)';
       setTimeout(function() { topTile.style.transform = ''; }, 120);
       return;
@@ -1249,9 +1267,47 @@
   document.getElementById('cat-body').addEventListener('click', function(e) {
     const tile = e.target.closest('.item-tile');
     if (!tile) return;
-    addToCart({ nazev: tile.dataset.nazev, cena: parseInt(tile.dataset.cena, 10) || 0 });
+    addItemFromTile(tile);
     tile.style.transform = 'scale(.92)';
     setTimeout(function() { tile.style.transform = ''; }, 120);
+  });
+
+  // Klik na dlaždici: Radler nejdřív zeptá na základní pivo, jinak rovnou do košíku
+  function addItemFromTile(tile) {
+    var nazev = tile.dataset.nazev;
+    var cena = parseInt(tile.dataset.cena, 10) || 0;
+    if (nazev === 'Radler') { openRadlerChooser(cena); return; }
+    addToCart({ nazev: nazev, cena: cena });
+  }
+
+  function openRadlerChooser(cena) {
+    var grid = document.getElementById('radler-beer-grid');
+    var html = '';
+    BEERS_CEP.forEach(function(b) {
+      html += '<button class="pivo-btn ' + b.barva + '" data-beer="' + escapeHtml(b.n) + '">' +
+        '<span class="pivo-name">' + escapeHtml(b.n) + '</span></button>';
+    });
+    html += '<button class="pivo-btn bila" data-beer="Nealko" style="grid-column:1/-1;">' +
+      '<span class="pivo-name">Nealko</span></button>';
+    grid.innerHTML = html;
+    grid.dataset.cena = cena;
+    document.getElementById('radler-overlay').removeAttribute('hidden');
+  }
+  function closeRadlerChooser() {
+    document.getElementById('radler-overlay').setAttribute('hidden', '');
+  }
+
+  document.getElementById('radler-beer-grid').addEventListener('click', function(e) {
+    var btn = e.target.closest('.pivo-btn');
+    if (!btn) return;
+    var beer = btn.dataset.beer;
+    var cena = parseInt(this.dataset.cena, 10) || 0;
+    addToCart({ nazev: 'Radler (' + beer + ')', cena: cena });
+    closeRadlerChooser();
+  });
+  document.getElementById('radler-cancel-btn').addEventListener('click', closeRadlerChooser);
+  document.getElementById('radler-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeRadlerChooser();
   });
 
   document.getElementById('cart-body').addEventListener('click', function(e) {
