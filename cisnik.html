@@ -1371,7 +1371,10 @@
     const polozky = keys.map(function(k) {
       return { nazev: cart[k].nazev, pocet: cart[k].pocet, cena: cart[k].cena };
     });
-    const poznamka = (orderNote || '').trim();
+    // Přečti poznámku přímo z viditelného políčka (robustní proti desyncu orderNote)
+    const _noteEl = Array.prototype.slice.call(document.querySelectorAll('.cart-note'))
+      .filter(function(t) { return t.offsetParent !== null; })[0];
+    const poznamka = ((_noteEl ? _noteEl.value : orderNote) || '').trim();
 
     try {
       await addDoc(collection(db, 'objednavky'), {
@@ -1390,6 +1393,7 @@
       editOrigId = null;
       cart = {};
       orderNote = '';
+      document.querySelectorAll('.cart-note').forEach(function(t) { t.value = ''; });
       updateCartCounters();
       document.getElementById('sent-msg').textContent =
         polozky.length === 1
