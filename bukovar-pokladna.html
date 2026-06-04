@@ -419,6 +419,9 @@
   .pet-card-plan { font-size: 18px; font-weight: 700; text-align: center; padding: 10px 4px; border-radius: 4px; line-height: 1.2; display: flex; align-items: center; justify-content: center; }
   .pet-card-plan.needs { background: var(--warn-bg); color: var(--warn-text); }
   .pet-card-plan.ok { background: var(--success-bg); color: var(--success-text); }
+  .pet-card-stock-edit { font-size: 16px; font-weight: 700; text-align: center; padding: 8px 4px; border-radius: 4px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); cursor: pointer; transition: background .1s, border-color .1s, color .1s; display: flex; align-items: center; justify-content: center; }
+  .pet-card-stock-edit:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  .pet-stock-input { width: 100%; box-sizing: border-box; font-family: 'DM Sans',sans-serif; font-size: 15px; font-weight: 700; text-align: center; padding: 6px 4px; border: 2px solid var(--accent); border-radius: 4px; background: var(--surface); color: var(--text); outline: none; }
   .pet-doplnit-btn { font-family: 'DM Sans',sans-serif; font-size: 12px; padding: 5px 4px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); cursor: pointer; width: 100%; text-align: center; transition: background .1s; min-height: unset; }
   .pet-doplnit-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
   .pet-input-row { display: flex; gap: 3px; align-items: center; }
@@ -446,6 +449,38 @@
   .fridge-legend-item { display: flex; align-items: center; gap: 6px; }
   .fridge-legend-swatch { width: 16px; height: 16px; border: 1px solid; border-radius: 3px; display: inline-block; }
   .fridge-legend-total { margin-left: auto; font-weight: 700; color: var(--text); }
+  /* Editovatelný nákres lednice (V7.37) */
+  .fridge-stripe { cursor: pointer; transition: filter .1s, box-shadow .1s; }
+  .fridge-stripe:hover { filter: brightness(.97); box-shadow: 0 0 0 2px rgba(181,56,26,.3); }
+  .fridge-add-btn { font-family: 'DM Sans',sans-serif; font-size: 11px; font-weight: 600; padding: 5px 6px; border: 1px dashed var(--border-strong); border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; width: 100%; min-height: unset; transition: background .1s, color .1s, border-color .1s; }
+  .fridge-add-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .fridge-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 99990; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .fridge-modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 12px 40px rgba(0,0,0,.25); width: 100%; max-width: 360px; padding: 1.4rem; font-family: 'DM Sans', sans-serif; }
+  .fridge-modal-title { font-family: 'DM Serif Display', serif; font-size: 19px; margin-bottom: 1rem; color: var(--text); font-weight: normal; }
+  .fridge-modal-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: .6rem 0 .25rem; }
+  .fridge-modal-select, .fridge-modal-grid input { width: 100%; padding: 10px; font-size: 15px; font-family: inherit; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; box-sizing: border-box; }
+  .fridge-modal-select:focus, .fridge-modal-grid input:focus { border-color: var(--accent); }
+  .fridge-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fridge-modal-preview { margin-top: .8rem; font-size: 13px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+  .fridge-modal-actions { display: flex; align-items: center; gap: 8px; margin-top: 1.2rem; }
+  .fridge-modal-actions button { font-family: 'DM Sans',sans-serif; font-size: 14px; padding: 9px 16px; border-radius: var(--radius); cursor: pointer; min-height: unset; border: 1px solid; }
+  .fridge-modal-save { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 500; }
+  .fridge-modal-save:hover { background: #9c2e14; }
+  .fridge-modal-cancel { background: transparent; color: var(--muted); border-color: var(--border-strong); }
+  .fridge-modal-cancel:hover { background: var(--bg); }
+  .fridge-modal-del { background: transparent; color: var(--accent); border-color: rgba(181,56,26,.35); }
+  .fridge-modal-del:hover { background: #ffeaea; }
+  .fridge-avail-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fridge-avail-btn { font-family: 'DM Sans',sans-serif; font-size: 14px; font-weight: 600; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: var(--surface); color: var(--muted); cursor: pointer; min-height: unset; transition: background .1s, border-color .1s, color .1s; }
+  .fridge-avail-btn.avail.active { background: #dcfce7; border-color: #16a34a; color: #15803d; }
+  .fridge-avail-btn.unavail.active { background: #fee2e2; border-color: #dc2626; color: #b91c1c; }
+  /* Nedostupné pivo — odlišení v nákresu */
+  .fridge-stripe.unavailable { filter: grayscale(.65); opacity: .6; background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,.07) 5px, rgba(0,0,0,.07) 10px); }
+  .fridge-stripe.unavailable > span:first-child { text-decoration: line-through; }
+  .fridge-stripe-unavail { font-size: 10px; font-weight: 700; color: #b91c1c; letter-spacing: .03em; }
+  .pet-card-plan.unavailable { background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 600; }
+  .pet-card-stock.unavailable { opacity: .5; }
+  .pet-card-stock.unavailable > span:first-child, .pet-card-stock.unavailable { text-decoration: none; }
   .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
   .admin-pet-grid { display: flex; flex-direction: column; gap: 4px; }
   .admin-pet-row { display: grid; grid-template-columns: 110px repeat(8, 1fr); gap: 4px; align-items: center; }
@@ -589,7 +624,7 @@
     <button class="tab-btn" id="tab-btn-otevreni" onclick="switchTab('otevreni',this);resetOtevreni()">Otevření hospody</button>
     <button class="tab-btn" id="tab-btn-pet" onclick="switchTab('pet',this);renderPetPlan()">Petkovací plán</button>
     <button class="tab-btn" id="tab-btn-uzavirka" onclick="switchTab('uzavirka',this);resetChecklist()">Uzavírka hospody</button>
-    <button class="tab-btn" onclick="switchTab('administrace',this);renderAdminPetConfig()">Administrace</button>
+    <button class="tab-btn" onclick="switchTab('administrace',this);renderTrzby()">Administrace</button>
   </div>
   <div style="display:flex;align-items:center;">
     <div class="loxone-temp-badge offline" id="loxone-temp-badge" title="Teplota chlazení piva (Loxone Tank 2). Aktualizuje se každé 2 min.">
@@ -890,8 +925,7 @@
 <div class="tab-content" id="tab-administrace">
   <main>
     <div class="subtab-bar">
-      <button class="subtab-btn active" onclick="switchSubtab('admin','pet',this)">Petkovací plán</button>
-      <button class="subtab-btn" onclick="switchSubtab('admin','trzby',this);renderTrzby()">Tržby</button>
+      <button class="subtab-btn active" onclick="switchSubtab('admin','trzby',this);renderTrzby()">Tržby</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladhospoda',this);renderSkladHospoda()">Sklad — hospoda</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladpivovar',this);renderSkladPivovar()">Sklad — pivovar</button>
       <button class="subtab-btn" onclick="switchSubtab('admin','skladnast',this);renderSkladNastaveni()">Nastavení sklad</button>
@@ -901,13 +935,7 @@
       <button class="subtab-btn" onclick="switchSubtab('admin','ewelink',this);bukovarEwelinkAdminInit()">💡 eWeLink</button>
     </div>
 
-    <div class="subtab-content active" id="subtab-admin-pet">
-      <div class="card">
-        <div id="admin-pet-config"></div>
-      </div>
-    </div>
-
-    <div class="subtab-content" id="subtab-admin-trzby">
+    <div class="subtab-content active" id="subtab-admin-trzby">
       <div class="card">
         <div id="trzby-content"></div>
       </div>
@@ -1166,7 +1194,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.36';
+const APP_VERSION = '7.37';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -2614,6 +2642,15 @@ window.bukovarOnRemoteImpl = function(items) {
   if (!window.bukovarApplyRemote('bukovar_impl', items)) return;
   if (typeof renderImpl === 'function') renderImpl();
 };
+window.bukovarOnRemoteFridgeLayout = function(items) {
+  if (!window.bukovarApplyRemote('bukovar_fridge_layout', items)) return;
+  if (typeof renderPetPlan === 'function' && document.getElementById('tab-pet') && document.getElementById('tab-pet').classList.contains('active')) renderPetPlan();
+};
+window.bukovarOnRemoteBeerAvailability = function(items) {
+  if (!window.bukovarApplyRemote('bukovar_beer_availability', items)) return;
+  if (typeof updateTabBadges === 'function') updateTabBadges();
+  if (typeof renderPetPlan === 'function' && document.getElementById('tab-pet') && document.getElementById('tab-pet').classList.contains('active')) renderPetPlan();
+};
 
 const BEER_STATUS_CEP = [
   'Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°',
@@ -3336,15 +3373,17 @@ function saveOtevreniEdit(idx) {
 
 var UKOLY_PET_BEERS = ['Hraďák 10°','Štamgast 11°','Šedá vlčice 11°','Kohoutí 12°','Zlatka 11°','Mezulánka 11°','Nelson 12°','Dublin 13°'];
 
+// Kapacita (cílový plný stav) se nově počítá z nákresu „Jak skládat petky do lednice"
+// (viz getFridgeCapacityByBeer). Zde zůstávají jen prahy spuštění petkování po dnech.
 var PET_CONFIG_DEFAULTS = {
-  'Hraďák 10°':     { th_stred: 12, th_ctvrtek: 10, th_patek: 10, th_sobota: 12, capacity: 12 },
-  'Štamgast 11°':   { th_stred: 8,  th_ctvrtek: 6,  th_patek: 6,  th_sobota: 8,  capacity: 8  },
-  'Šedá vlčice 11°':{ th_stred: 12, th_ctvrtek: 10, th_patek: 10, th_sobota: 12, capacity: 12 },
-  'Kohoutí 12°':    { th_stred: 16, th_ctvrtek: 12, th_patek: 12, th_sobota: 16, capacity: 16 },
-  'Zlatka 11°':     { th_stred: 4,  th_ctvrtek: 3,  th_patek: 3,  th_sobota: 4,  capacity: 4  },
-  'Mezulánka 11°':  { th_stred: 8,  th_ctvrtek: 6,  th_patek: 6,  th_sobota: 8,  capacity: 8  },
-  'Nelson 12°':     { th_stred: 8,  th_ctvrtek: 6,  th_patek: 6,  th_sobota: 8,  capacity: 8  },
-  'Dublin 13°':     { th_stred: 4,  th_ctvrtek: 3,  th_patek: 3,  th_sobota: 4,  capacity: 4  },
+  'Hraďák 10°':     { th_stred: 12, th_ctvrtek: 10, th_patek: 10, th_sobota: 12 },
+  'Štamgast 11°':   { th_stred: 8,  th_ctvrtek: 6,  th_patek: 6,  th_sobota: 8  },
+  'Šedá vlčice 11°':{ th_stred: 12, th_ctvrtek: 10, th_patek: 10, th_sobota: 12 },
+  'Kohoutí 12°':    { th_stred: 16, th_ctvrtek: 12, th_patek: 12, th_sobota: 16 },
+  'Zlatka 11°':     { th_stred: 4,  th_ctvrtek: 3,  th_patek: 3,  th_sobota: 4  },
+  'Mezulánka 11°':  { th_stred: 8,  th_ctvrtek: 6,  th_patek: 6,  th_sobota: 8  },
+  'Nelson 12°':     { th_stred: 8,  th_ctvrtek: 6,  th_patek: 6,  th_sobota: 8  },
+  'Dublin 13°':     { th_stred: 4,  th_ctvrtek: 3,  th_patek: 3,  th_sobota: 4  },
 };
 
 var PET_TH_DAYS = ['th_stred','th_ctvrtek','th_patek','th_sobota'];
@@ -3358,7 +3397,7 @@ function getPetConfig() {
     var def = PET_CONFIG_DEFAULTS[beer];
     // migrate old single threshold → copy to all days
     var oldTh = (s.threshold != null) ? Number(s.threshold) : null;
-    cfg[beer] = { capacity: s.capacity != null ? Number(s.capacity) : def.capacity };
+    cfg[beer] = {};
     PET_TH_DAYS.forEach(function(dk) {
       cfg[beer][dk] = s[dk] != null ? Number(s[dk]) : (oldTh !== null ? oldTh : def[dk]);
     });
@@ -3427,7 +3466,10 @@ function renderAdminPetConfig() {
   var el = document.getElementById('admin-pet-config');
   if (!el) return;
   var cfg = getPetConfig();
-  var html = '<div class="admin-pet-grid">';
+  var html = '<div style="font-size:13px;color:var(--muted);margin-bottom:.9rem;line-height:1.5;">'
+    + 'Kapacita (cílový plný stav) se nastavuje v <strong>Petkovacím plánu</strong> kliknutím na pivo v nákresu „Jak skládat petky do lednice". Zde se jen zobrazuje. <strong>Práh</strong> = od jakého stavu skladu se pivo objeví v plánu k napetkování.'
+    + '</div>';
+  html += '<div class="admin-pet-grid">';
 
   // Řádek 0 — hlavičky piv
   html += '<div class="admin-pet-row"><div class="admin-pet-row-label"></div>';
@@ -3444,9 +3486,13 @@ function renderAdminPetConfig() {
       + '>' + v + '</div>';
   }
 
-  // Řádek Kapacita
-  html += '<div class="admin-pet-row"><div class="admin-pet-row-label">Kapacita</div>';
-  UKOLY_PET_BEERS.forEach(function(beer, i) { html += cell(i, 'capacity', cfg[beer].capacity); });
+  // Řádek Kapacita — jen pro čtení, počítá se z nákresu „Jak skládat petky do lednice"
+  var fridgeCap = getFridgeCapacityByBeer();
+  html += '<div class="admin-pet-row"><div class="admin-pet-row-label">Kapacita (z lednice)</div>';
+  UKOLY_PET_BEERS.forEach(function(beer) {
+    html += '<div class="admin-pet-cell" style="cursor:default;background:var(--bg);color:var(--muted);border-style:dashed;"'
+      + ' title="Počítá se automaticky z nákresu „Jak skládat petky do lednice“ — uprav ho v Petkovacím plánu">' + (fridgeCap[beer] || 0) + '</div>';
+  });
   html += '</div>';
 
   // Řádky Práh po dnech
@@ -3607,7 +3653,7 @@ function adminPetExport() {
   var cfg = getPetConfig();
   var lines = UKOLY_PET_BEERS.map(function(beer) {
     var c = cfg[beer];
-    return "  '" + beer + "': { th_stred: " + c.th_stred + ', th_ctvrtek: ' + c.th_ctvrtek + ', th_patek: ' + c.th_patek + ', th_sobota: ' + c.th_sobota + ', capacity: ' + c.capacity + ' },';
+    return "  '" + beer + "': { th_stred: " + c.th_stred + ', th_ctvrtek: ' + c.th_ctvrtek + ', th_patek: ' + c.th_patek + ', th_sobota: ' + c.th_sobota + ' },';
   });
   var txt = 'var PET_CONFIG_DEFAULTS = {\n' + lines.join('\n') + '\n};';
   var box = document.getElementById('admin-pet-export');
@@ -3619,44 +3665,247 @@ function adminPetExport() {
 
 var PET_COLORS = ['zelena','hneda','seda','zlata','zluta','oranzova','modra','tmave-zelena'];
 
-function renderFridgeDiagram() {
-  function stripe(beer, colorClass, rowCount, depth) {
-    var total = rowCount * depth;
-    return '<div class="fridge-stripe ' + colorClass + '">'
-      + '<span>' + beer + '</span>'
-      + '<span class="fridge-stripe-meta">' + rowCount + ' řad × ' + depth + ' ks = ' + total + ' ks</span>'
-      + '</div>';
+// Výchozí rozvržení lednice — odpovídá původnímu natvrdo zadanému stavu
+var FRIDGE_LAYOUT_DEFAULT = [
+  { label: '4. patro (nahoře)', stripes: [ { beer: 'Kohoutí 12°', rows: 6, depth: 3 } ] },
+  { label: '3. patro',          stripes: [ { beer: 'Šedá vlčice 11°', rows: 4, depth: 4 }, { beer: 'Štamgast 11°', rows: 2, depth: 4 } ] },
+  { label: '2. patro',          stripes: [ { beer: 'Hraďák 10°', rows: 4, depth: 4 }, { beer: 'Nelson 12°', rows: 2, depth: 4 } ] },
+  { label: '1. patro (dole)',   stripes: [ { beer: 'Zlatka 11°', rows: 2, depth: 4 }, { beer: 'Dublin 13°', rows: 1, depth: 4 }, { beer: 'Mezulánka 11°', rows: 3, depth: 4 } ] },
+];
+
+// Pivo → barevná třída pruhu (zachovává původní barvy nákresu)
+var FRIDGE_BEER_COLORS = {
+  'Hraďák 10°': 'zelena',
+  'Štamgast 11°': 'hneda',
+  'Šedá vlčice 11°': 'bila',
+  'Kohoutí 12°': 'zlata',
+  'Zlatka 11°': 'zluta',
+  'Mezulánka 11°': 'oranzova',
+  'Nelson 12°': 'modra',
+  'Dublin 13°': 'tmave-zelena',
+};
+
+function getFridgeLayout() {
+  var raw = localStorage.getItem('bukovar_fridge_layout');
+  if (!raw) return JSON.parse(JSON.stringify(FRIDGE_LAYOUT_DEFAULT));
+  try {
+    var parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) throw new Error('bad');
+    return parsed.map(function(shelf, i) {
+      var def = FRIDGE_LAYOUT_DEFAULT[i] || { label: (i + 1) + '. patro', stripes: [] };
+      var label = (shelf && typeof shelf.label === 'string') ? shelf.label : def.label;
+      var stripes = (shelf && Array.isArray(shelf.stripes)) ? shelf.stripes : [];
+      stripes = stripes
+        .filter(function(s) { return s && UKOLY_PET_BEERS.indexOf(s.beer) !== -1; })
+        .slice(0, 3)
+        .map(function(s) {
+          return { beer: s.beer, rows: Math.max(0, parseInt(s.rows, 10) || 0), depth: Math.max(0, parseInt(s.depth, 10) || 0) };
+        });
+      return { label: label, stripes: stripes };
+    });
+  } catch (e) {
+    return JSON.parse(JSON.stringify(FRIDGE_LAYOUT_DEFAULT));
   }
-  function shelfHtml(patroLabel, totalKs, stripes) {
-    return '<div class="fridge-shelf">'
-      + '<div class="fridge-shelf-label">' + patroLabel + ' — ' + totalKs + ' ks</div>'
-      + '<div class="fridge-rows">' + stripes.join('') + '</div>'
+}
+
+function saveFridgeLayout(layout) {
+  localStorage.setItem('bukovar_fridge_layout', JSON.stringify(layout));
+}
+
+// Kapacita piva (cílový plný stav) = součet ks daného piva přes všechna patra nákresu lednice
+function getFridgeCapacityByBeer() {
+  var layout = getFridgeLayout();
+  var cap = {};
+  UKOLY_PET_BEERS.forEach(function(b) { cap[b] = 0; });
+  layout.forEach(function(shelf) {
+    shelf.stripes.forEach(function(s) {
+      if (cap[s.beer] == null) cap[s.beer] = 0;
+      cap[s.beer] += (s.rows || 0) * (s.depth || 0);
+    });
+  });
+  return cap;
+}
+
+// Dostupnost piva — pivo, které zrovna nemáme (např. Vlčice). Nedostupné = nepetkovat.
+function getBeerAvailability() {
+  try { return JSON.parse(localStorage.getItem('bukovar_beer_availability') || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function isBeerAvailable(beer) {
+  return getBeerAvailability()[beer] !== false; // chybí = dostupné
+}
+function setBeerAvailability(map) {
+  localStorage.setItem('bukovar_beer_availability', JSON.stringify(map));
+}
+
+function renderFridgeDiagram() {
+  var layout = getFridgeLayout();
+  var grandTotal = 0;
+
+  function stripe(s, shelfIdx, stripeIdx) {
+    var total = s.rows * s.depth;
+    var colorClass = FRIDGE_BEER_COLORS[s.beer] || 'bila';
+    var avail = isBeerAvailable(s.beer);
+    return '<div class="fridge-stripe ' + colorClass + (avail ? '' : ' unavailable') + '" onclick="openFridgeEdit(' + shelfIdx + ',' + stripeIdx + ')" title="Klikni pro úpravu">'
+      + '<span>' + s.beer + '</span>'
+      + '<span class="fridge-stripe-meta">' + s.rows + ' řad × ' + s.depth + ' ks = ' + total + ' ks</span>'
+      + (avail ? '' : '<span class="fridge-stripe-unavail">✕ NEDOSTUPNÉ</span>')
       + '</div>';
   }
 
   var html = '<div class="fridge-diagram">';
   html += '<div class="fridge-title">Jak skládat petky do lednice</div>';
   html += '<div class="fridge-shelves-row">';
-  html += shelfHtml('4. patro (nahoře)', 18, [
-    stripe('Kohoutí 12°', 'zlata', 6, 3)
-  ]);
-  html += shelfHtml('3. patro', 24, [
-    stripe('Šedá vlčice 11°', 'bila',  4, 4),
-    stripe('Štamgast 11°',    'hneda', 2, 4)
-  ]);
-  html += shelfHtml('2. patro', 24, [
-    stripe('Hraďák 10°', 'zelena', 4, 4),
-    stripe('Nelson 12°', 'modra',  2, 4)
-  ]);
-  html += shelfHtml('1. patro (dole)', 24, [
-    stripe('Zlatka 11°',    'zluta',        2, 4),
-    stripe('Dublin 13°',    'tmave-zelena', 1, 4),
-    stripe('Mezulánka 11°', 'oranzova',     3, 4)
-  ]);
+  layout.forEach(function(shelf, si) {
+    var shelfTotal = 0;
+    shelf.stripes.forEach(function(s) { shelfTotal += s.rows * s.depth; });
+    grandTotal += shelfTotal;
+    html += '<div class="fridge-shelf">';
+    html += '<div class="fridge-shelf-label">' + shelf.label + ' — ' + shelfTotal + ' ks</div>';
+    html += '<div class="fridge-rows">';
+    shelf.stripes.forEach(function(s, sti) { html += stripe(s, si, sti); });
+    if (shelf.stripes.length < 3) {
+      html += '<button class="fridge-add-btn" onclick="openFridgeEdit(' + si + ',-1)">+ Přidat pivo</button>';
+    }
+    html += '</div></div>';
+  });
   html += '</div>';
-  html += '<div class="fridge-legend"><div class="fridge-legend-total">Celkem: 90 ks</div></div>';
+  html += '<div class="fridge-legend"><div class="fridge-legend-total">Celkem: ' + grandTotal + ' ks</div></div>';
   html += '</div>';
   return html;
+}
+
+// --- Modální editor pruhu lednice (V7.37) ---
+var _fridgeEdit = null; // { shelf, stripe }  stripe = -1 → nové pivo
+var _fridgeEditAvail = true; // dostupnost vybraného piva v otevřeném modalu
+
+function openFridgeEdit(shelfIdx, stripeIdx) {
+  var layout = getFridgeLayout();
+  var shelf = layout[shelfIdx];
+  if (!shelf) return;
+  var isNew = stripeIdx < 0;
+  var cur = isNew ? { beer: '', rows: 4, depth: 4 } : shelf.stripes[stripeIdx];
+  if (!cur) return;
+  _fridgeEdit = { shelf: shelfIdx, stripe: stripeIdx };
+  _fridgeEditAvail = cur.beer ? isBeerAvailable(cur.beer) : true;
+
+  var opts = UKOLY_PET_BEERS.map(function(b) {
+    return '<option value="' + b + '"' + (b === cur.beer ? ' selected' : '') + '>' + b + '</option>';
+  }).join('');
+  if (isNew) opts = '<option value="" disabled selected>— vyber pivo —</option>' + opts;
+
+  var html = ''
+    + '<div class="fridge-modal-backdrop" onclick="closeFridgeEdit()">'
+    + '<div class="fridge-modal" onclick="event.stopPropagation()">'
+    + '<div class="fridge-modal-title">' + (isNew ? 'Přidat pivo' : 'Upravit pivo') + ' — ' + shelf.label + '</div>'
+    + '<label class="fridge-modal-label">Typ piva</label>'
+    + '<select id="fridge-edit-beer" class="fridge-modal-select" onchange="fridgeEditBeerChanged()">' + opts + '</select>'
+    + '<label class="fridge-modal-label">Dostupnost (platí pro celé pivo)</label>'
+    + '<div class="fridge-avail-toggle" id="fridge-edit-avail">'
+    +   '<button type="button" class="fridge-avail-btn avail" onclick="setFridgeAvail(true)">Skladem</button>'
+    +   '<button type="button" class="fridge-avail-btn unavail" onclick="setFridgeAvail(false)">Nedostupné</button>'
+    + '</div>'
+    + '<div class="fridge-modal-grid">'
+    +   '<div><label class="fridge-modal-label">Počet řad</label><input type="number" id="fridge-edit-rows" min="0" step="1" value="' + cur.rows + '" oninput="updateFridgePreview()" /></div>'
+    +   '<div><label class="fridge-modal-label">Ks v řadě</label><input type="number" id="fridge-edit-depth" min="0" step="1" value="' + cur.depth + '" oninput="updateFridgePreview()" /></div>'
+    + '</div>'
+    + '<div class="fridge-modal-preview" id="fridge-edit-preview"></div>'
+    + '<div class="fridge-modal-actions">'
+    +   (isNew ? '' : '<button class="fridge-modal-del" onclick="deleteFridgeStripe()">Smazat</button>')
+    +   '<div style="flex:1"></div>'
+    +   '<button class="fridge-modal-cancel" onclick="closeFridgeEdit()">Zrušit</button>'
+    +   '<button class="fridge-modal-save" onclick="saveFridgeStripe()">Uložit</button>'
+    + '</div>'
+    + '</div></div>';
+
+  var container = document.getElementById('fridge-modal-root');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'fridge-modal-root';
+    document.body.appendChild(container);
+  }
+  container.innerHTML = html;
+  updateFridgeAvailUI();
+  updateFridgePreview();
+}
+
+// Přepínač dostupnosti v modalu
+function setFridgeAvail(v) {
+  _fridgeEditAvail = !!v;
+  updateFridgeAvailUI();
+}
+function updateFridgeAvailUI() {
+  var wrap = document.getElementById('fridge-edit-avail');
+  if (!wrap) return;
+  var av = wrap.querySelector('.avail');
+  var un = wrap.querySelector('.unavail');
+  if (av) av.classList.toggle('active', _fridgeEditAvail);
+  if (un) un.classList.toggle('active', !_fridgeEditAvail);
+}
+// Při změně piva v selectu načti jeho aktuální dostupnost
+function fridgeEditBeerChanged() {
+  var beerEl = document.getElementById('fridge-edit-beer');
+  var beer = beerEl ? beerEl.value : '';
+  _fridgeEditAvail = beer ? isBeerAvailable(beer) : true;
+  updateFridgeAvailUI();
+  updateFridgePreview();
+}
+
+function updateFridgePreview() {
+  var rEl = document.getElementById('fridge-edit-rows');
+  var dEl = document.getElementById('fridge-edit-depth');
+  var pEl = document.getElementById('fridge-edit-preview');
+  if (!pEl) return;
+  var r = parseInt(rEl ? rEl.value : 0, 10) || 0;
+  var d = parseInt(dEl ? dEl.value : 0, 10) || 0;
+  pEl.textContent = r + ' řad × ' + d + ' ks = ' + (r * d) + ' ks celkem';
+}
+
+function closeFridgeEdit() {
+  var container = document.getElementById('fridge-modal-root');
+  if (container) container.innerHTML = '';
+  _fridgeEdit = null;
+}
+
+function saveFridgeStripe() {
+  if (!_fridgeEdit) return;
+  var beerEl = document.getElementById('fridge-edit-beer');
+  var rEl = document.getElementById('fridge-edit-rows');
+  var dEl = document.getElementById('fridge-edit-depth');
+  var beer = beerEl ? beerEl.value : '';
+  var rows = parseInt(rEl ? rEl.value : NaN, 10);
+  var depth = parseInt(dEl ? dEl.value : NaN, 10);
+  if (!beer || UKOLY_PET_BEERS.indexOf(beer) === -1) { alert('Vyber typ piva.'); return; }
+  if (isNaN(rows) || rows < 0 || isNaN(depth) || depth < 0) { alert('Zadej platný počet řad a ks v řadě (≥ 0).'); return; }
+  var layout = getFridgeLayout();
+  var shelf = layout[_fridgeEdit.shelf];
+  if (!shelf) { closeFridgeEdit(); return; }
+  var entry = { beer: beer, rows: rows, depth: depth };
+  if (_fridgeEdit.stripe < 0) {
+    if (shelf.stripes.length >= 3) { alert('Patro může mít maximálně 3 druhy piv.'); return; }
+    shelf.stripes.push(entry);
+  } else {
+    shelf.stripes[_fridgeEdit.stripe] = entry;
+  }
+  saveFridgeLayout(layout);
+  // Dostupnost se ukládá zvlášť — platí pro celé pivo, ne jen pro tento pruh
+  var avail = getBeerAvailability();
+  avail[beer] = _fridgeEditAvail;
+  setBeerAvailability(avail);
+  closeFridgeEdit();
+  renderPetPlan();
+}
+
+function deleteFridgeStripe() {
+  if (!_fridgeEdit || _fridgeEdit.stripe < 0) return;
+  var layout = getFridgeLayout();
+  var shelf = layout[_fridgeEdit.shelf];
+  if (shelf && shelf.stripes[_fridgeEdit.stripe]) {
+    shelf.stripes.splice(_fridgeEdit.stripe, 1);
+    saveFridgeLayout(layout);
+  }
+  closeFridgeEdit();
+  renderPetPlan();
 }
 
 function getPetPriorityTimes() {
@@ -3695,16 +3944,19 @@ function renderPetPlan() {
   var druhy = 0;
 
   var petCfg = getPetConfig();
+  var fridgeCap = getFridgeCapacityByBeer();
+  var availMap = getBeerAvailability();
   var beersData = UKOLY_PET_BEERS.map(function(beer, i) {
     var key = beer + ' v PET';
     var current = (sklad[key] || {}).qty || 0;
     var threshold = getPetThresholdToday(petCfg, beer);
-    var ideal = petCfg[beer].capacity;
-    var needs = current <= threshold;
-    var priority = current > 0 && current <= ideal * 0.5;
+    var ideal = fridgeCap[beer] || 0;
+    var available = availMap[beer] !== false;
+    var needs = available && current <= threshold;
+    var priority = available && current > 0 && current <= ideal * 0.5;
     var toBottle = needs ? Math.max(ideal - current, 0) : 0;
     if (needs) { total += toBottle; druhy++; }
-    return { beer: beer, current: current, needs: needs, priority: priority, toBottle: toBottle, col: PET_COLORS[i] };
+    return { beer: beer, current: current, available: available, needs: needs, priority: priority, toBottle: toBottle, col: PET_COLORS[i] };
   });
 
   var priorityTimes = syncPetPriorityTimes(beersData);
@@ -3716,18 +3968,28 @@ function renderPetPlan() {
   html += '<div class="pet-plan-row"><div class="pet-plan-row-label"></div>';
   beersData.forEach(function(d) {
     var timeStr = d.priority && priorityTimes[d.beer] ? formatPetPriorityTime(priorityTimes[d.beer]) : '';
-    html += '<div class="pet-card-stock vip-btn ' + d.col + '">' + d.beer
+    html += '<div class="pet-card-stock vip-btn ' + d.col + (d.available ? '' : ' unavailable') + '">' + d.beer
       + (d.priority ? '<span class="pet-priority-badge">⚠ Priorita'
           + (timeStr ? '<span class="pet-priority-time">' + timeStr + '</span>' : '')
           + '</span>' : '')
+      + (d.available ? '' : '<span class="pet-card-stock-meta">✕ nedostupné</span>')
       + '</div>';
   });
   html += '</div>';
 
-  // Řádek 1 — potřeba napetkovat
+  // Řádek 1 — aktuální stav (editovatelné)
+  html += '<div class="pet-plan-row"><div class="pet-plan-row-label">Aktuální stav</div>';
+  beersData.forEach(function(d, i) {
+    html += '<div class="pet-card-stock-edit" onclick="petStockClick(' + i + ',this)" title="Klikni pro úpravu aktuálního stavu">' + d.current + ' ks</div>';
+  });
+  html += '</div>';
+
+  // Řádek 2 — potřeba napetkovat
   html += '<div class="pet-plan-row"><div class="pet-plan-row-label">Potřeba napetkovat</div>';
   beersData.forEach(function(d) {
-    if (d.needs) {
+    if (!d.available) {
+      html += '<div class="pet-card-plan unavailable">— nepetkovat</div>';
+    } else if (d.needs) {
       html += '<div class="pet-card-plan needs' + (d.priority ? ' priority' : '') + '">→ ' + d.toBottle + ' ks</div>';
     } else {
       html += '<div class="pet-card-plan ok">✓ OK</div>';
@@ -3786,6 +4048,34 @@ function hidePetInput(idx) {
   if (el) el.classList.add('hidden');
 }
 
+// Editace aktuálního stavu PET skladu přímo v petkovacím plánu
+function petStockClick(idx, el) {
+  if (el.querySelector('input')) return;
+  var beer = UKOLY_PET_BEERS[idx];
+  var key = beer + ' v PET';
+  var cur = (getSklad()[key] || {}).qty || 0;
+  el.innerHTML = '<input type="number" class="pet-stock-input" min="0" step="1" value="' + cur + '" />';
+  var inp = el.querySelector('input');
+  inp.focus();
+  inp.select();
+  var done = false;
+  function save() {
+    if (done) return;
+    done = true;
+    var v = parseInt(inp.value, 10);
+    if (isNaN(v) || v < 0) { renderPetPlan(); return; }
+    var sklad = getSklad();
+    sklad[key] = Object.assign({}, sklad[key], { qty: v });
+    saveSklad(sklad);
+    renderPetPlan();
+  }
+  inp.addEventListener('blur', save);
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+    if (e.key === 'Escape') { done = true; renderPetPlan(); }
+  });
+}
+
 function savePetDoplneni(idx) {
   var inp = document.getElementById('pet-qty-' + idx);
   var qty = parseInt(inp ? inp.value : 0);
@@ -3824,10 +4114,13 @@ function updateTabBadges() {
   if (uzBtn) uzBtn.innerHTML = 'Uzavírka hospody' + (uzavreno ? ' <span class="tab-done-badge">✓</span>' : ' <span class="tab-warn-badge">Uzavřít!</span>');
   if (petBtn) {
     var sklad = getSklad();
-    var petCfg = getPetConfig();
+    var fridgeCap = getFridgeCapacityByBeer();
+    var availMap = getBeerAvailability();
     var hasPriority = UKOLY_PET_BEERS.some(function(beer) {
+      if (availMap[beer] === false) return false;
       var current = (sklad[beer + ' v PET'] || {}).qty || 0;
-      return current > 0 && current <= petCfg[beer].capacity * 0.5;
+      var cap = fridgeCap[beer] || 0;
+      return current > 0 && cap > 0 && current <= cap * 0.5;
     });
     petBtn.innerHTML = 'Petkovací plán' + (hasPriority ? ' <span class="tab-warn-badge">⚠ Petkovat!</span>' : ' <span class="tab-done-badge">✓</span>');
   }
@@ -4202,7 +4495,9 @@ function updateTabBadges() {
     'bukovar_pet_history':        { ref: doc(db, 'data', 'pet_history'),                 callback: 'bukovarOnRemotePetHistory' },
     'bukovar_pet_config':         { ref: doc(db, 'data', 'pet_config'),                  callback: 'bukovarOnRemotePetConfig' },
     'bukovar_pet_priority_times': { ref: doc(db, 'data', 'pet_priority_times'),          callback: 'bukovarOnRemotePetPriorityTimes' },
-    'bukovar_impl':               { ref: doc(db, 'data', 'impl'),                        callback: 'bukovarOnRemoteImpl' }
+    'bukovar_impl':               { ref: doc(db, 'data', 'impl'),                        callback: 'bukovarOnRemoteImpl' },
+    'bukovar_fridge_layout':      { ref: doc(db, 'data', 'fridge_layout'),               callback: 'bukovarOnRemoteFridgeLayout' },
+    'bukovar_beer_availability':  { ref: doc(db, 'data', 'beer_availability'),           callback: 'bukovarOnRemoteBeerAvailability' }
   };
   const listenerHandles = {};
 
@@ -4238,7 +4533,9 @@ function updateTabBadges() {
         'bukovar_pet_history': 'PET historie',
         'bukovar_pet_config': 'PET konfigurace',
         'bukovar_pet_priority_times': 'PET priority časy',
-        'bukovar_impl': 'Implementační úkoly'
+        'bukovar_impl': 'Implementační úkoly',
+        'bukovar_fridge_layout': 'Rozvržení lednice',
+        'bukovar_beer_availability': 'Dostupnost piv'
       };
       for (const key of keys) {
         const snap = await getDoc(SYNC_TYPES[key].ref);
@@ -4271,7 +4568,9 @@ function updateTabBadges() {
       'bukovar_pet_history': allData.pet_history,
       'bukovar_pet_config': allData.pet_config,
       'bukovar_pet_priority_times': allData.pet_priority_times,
-      'bukovar_impl': allData.impl
+      'bukovar_impl': allData.impl,
+      'bukovar_fridge_layout': allData.fridge_layout,
+      'bukovar_beer_availability': allData.beer_availability
     };
     try {
       for (const key of Object.keys(mapping)) {
