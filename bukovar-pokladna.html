@@ -502,6 +502,9 @@
   .vycep-card-btn { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 600; padding: 13px; border-radius: 8px; border: 1px solid var(--success-text); background: var(--success-text); color: #fff; cursor: pointer; min-height: unset; }
   .vycep-card-btn:hover { filter: brightness(.92); }
   .vycep-empty { grid-column: 1 / -1; padding: 3.5rem 1rem; text-align: center; color: var(--muted); font-size: 19px; }
+  /* Poznámka k objednávce (V7.41) */
+  .order-note { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #92400e; line-height: 1.3; word-break: break-word; }
+  .vycep-card-note { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 17px; font-weight: 700; color: #92400e; line-height: 1.3; word-break: break-word; }
   .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
   .admin-pet-grid { display: flex; flex-direction: column; gap: 4px; }
   .admin-pet-row { display: grid; grid-template-columns: 110px repeat(8, 1fr); gap: 4px; align-items: center; }
@@ -1224,7 +1227,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.40';
+const APP_VERSION = '7.41';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1404,6 +1407,7 @@ function _splitObjednavka(o) {
   });
   return {
     id: o.id, stul: o.stul, ts: o.ts, polozky: o.polozky || [],
+    poznamka: o.poznamka || '',
     vycep: vycep, kasa: kasa,
     hasVycep: vycep.length > 0, hasKasa: kasa.length > 0,
     vycepDone: o.vycepDone === true, kasaDone: o.kasaDone === true
@@ -1466,6 +1470,7 @@ function renderObjednavkyKasa() {
       +     '<div class="order-card-time">' + ago + '</div>'
       +   '</div>'
       +   '<div class="order-card-items">' + polozkyHtml + '</div>'
+      +   (o.poznamka ? '<div class="order-note">📝 ' + _escapeHtml(o.poznamka) + '</div>' : '')
       +   '<div class="order-card-actions">'
       +     '<button class="order-card-btn vydat" onclick="objednavkaVydatKasa(\'' + safeId + '\', this)">✓ Vydat</button>'
       +     '<button class="order-card-btn" onclick="objednavkaTisk(\'' + safeId + '\')">🖨 Tisk</button>'
@@ -1510,6 +1515,7 @@ function renderObjednavkyVycep() {
       +     '<div class="vycep-card-time">' + ago + '</div>'
       +   '</div>'
       +   '<div class="vycep-card-items">' + itemsHtml + '</div>'
+      +   (o.poznamka ? '<div class="vycep-card-note">📝 ' + _escapeHtml(o.poznamka) + '</div>' : '')
       +   '<button class="vycep-card-btn" onclick="objednavkaVydatVycep(\'' + safeId + '\', this)">✓ Hotovo</button>'
       + '</div>';
   }).join('');
@@ -4810,6 +4816,7 @@ function updateTabBadges() {
           id: d.id,
           stul: data.stul,
           polozky: Array.isArray(data.polozky) ? data.polozky : [],
+          poznamka: data.poznamka || '',
           ts: data.ts ? data.ts.toMillis() : null,
           vycepDone: data.vycepDone === true,
           kasaDone: data.kasaDone === true

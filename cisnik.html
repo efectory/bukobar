@@ -414,6 +414,9 @@
     font-weight: 600;
   }
   .cart-inline-total .val { font-size: 17px; font-weight: 700; }
+  .cart-note { width: 100%; box-sizing: border-box; margin-top: .6rem; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); font-family: inherit; font-size: 15px; line-height: 1.35; resize: vertical; outline: none; }
+  .cart-note:focus { border-color: var(--accent); }
+  .cart-note::placeholder { color: var(--muted); }
 
   /* ========== Generická dlaždice pro produkty (TOP 4 + kategorie sub-screen) ========== */
   .item-tile {
@@ -895,6 +898,14 @@
   let currentCategory = null;
   let editMode = false;
   let editOrigId = null;
+  let orderNote = '';   // poznámka k objednávce (sdílená mezi inline a plným košíkem)
+
+  // Drží poznámku napříč re-rendery; oba košíky používají class .cart-note
+  document.addEventListener('input', function(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('cart-note')) {
+      orderNote = e.target.value;
+    }
+  });
 
   function cartCount()  { let n = 0; for (const k in cart) n += cart[k].pocet; return n; }
   function cartPrice()  { let p = 0; for (const k in cart) p += cart[k].pocet * cart[k].cena; return p; }
@@ -1025,6 +1036,7 @@
       '<div class="menu-section-label">Vybrané položky</div>' +
       '<div class="cart-inline-list" id="cart-inline-list"></div>' +
       '<div class="cart-inline-total"><span>Celkem</span><span class="val" id="cart-inline-total-val">0 Kč</span></div>' +
+      '<textarea class="cart-note" rows="2" maxlength="200" placeholder="Poznámka k objednávce (nepovinné)…">' + escapeHtml(orderNote) + '</textarea>' +
     '</div>';
 
     body.innerHTML = html;
@@ -1111,6 +1123,7 @@
       '</div>';
     });
     html += '<div class="cart-total"><div class="cart-total-label">Celkem</div><div class="cart-total-value">' + cartPrice() + ' Kč</div></div>';
+    html += '<textarea class="cart-note" rows="2" maxlength="200" placeholder="Poznámka k objednávce (nepovinné)…">' + escapeHtml(orderNote) + '</textarea>';
     body.innerHTML = html;
   }
 
@@ -1132,6 +1145,7 @@
           id: d.id,
           stul: data.stul,
           polozky: Array.isArray(data.polozky) ? data.polozky : [],
+          poznamka: data.poznamka || '',
           ts: data.ts ? data.ts.toMillis() : null
         });
       });
@@ -1199,6 +1213,7 @@
     o.polozky.forEach(function(p) {
       cart[p.nazev] = { nazev: p.nazev, cena: p.cena || 0, pocet: p.pocet || 1 };
     });
+    orderNote = o.poznamka || '';
     editMode = true;
     editOrigId = id;
     updateCartCounters();
@@ -1356,11 +1371,13 @@
     const polozky = keys.map(function(k) {
       return { nazev: cart[k].nazev, pocet: cart[k].pocet, cena: cart[k].cena };
     });
+    const poznamka = (orderNote || '').trim();
 
     try {
       await addDoc(collection(db, 'objednavky'), {
         stul: currentStul.id,
         polozky: polozky,
+        poznamka: poznamka,
         status: 'active',
         ts: serverTimestamp(),
         createdBy: currentUid
@@ -1372,6 +1389,7 @@
       editMode = false;
       editOrigId = null;
       cart = {};
+      orderNote = '';
       updateCartCounters();
       document.getElementById('sent-msg').textContent =
         polozky.length === 1
