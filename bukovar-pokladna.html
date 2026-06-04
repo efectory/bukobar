@@ -1224,7 +1224,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.39';
+const APP_VERSION = '7.40';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -4285,13 +4285,14 @@ function updateTabBadges() {
 
   let db;
   try {
-    // experimentalAutoDetectLongPolling: na sítích/zařízeních, kde tiše selže
-    // streamovací přenos (WebChannel) — typicky některé tablety/proxy/VPN —
-    // se automaticky přepne na long-polling, aby onSnapshot doručil data (V7.39).
-    db = initializeFirestore(app, { localCache: persistentLocalCache({}), experimentalAutoDetectLongPolling: true });
+    // experimentalForceLongPolling: vynutí long-polling místo streamovacího
+    // WebChannelu. Na některých tabletech/sítích WebChannel realtime stream tiše
+    // selhával (onSnapshot nedoručoval živé aktualizace — pomohlo až F5), auto-detekce
+    // (V7.39) to nespolehlivě poznala. Force je nejkompatibilnější režim (V7.40).
+    db = initializeFirestore(app, { localCache: persistentLocalCache({}), experimentalForceLongPolling: true });
   } catch (e) {
     console.warn('[firestore] persistent cache failed, fallback to in-memory:', e);
-    db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+    db = initializeFirestore(app, { experimentalForceLongPolling: true });
   }
   const counterRef = doc(db, 'meta', 'counter');
 
