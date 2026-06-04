@@ -481,6 +481,27 @@
   .pet-card-plan.unavailable { background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 600; }
   .pet-card-stock.unavailable { opacity: .5; }
   .pet-card-stock.unavailable > span:first-child, .pet-card-stock.unavailable { text-decoration: none; }
+  .pet-plan-empty { padding: 1.2rem 1.4rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+  /* Objednávky výčep — plnoobrazovkový display (V7.38) */
+  .tab-vycep-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 6px; margin-left: 6px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; line-height: 1; }
+  .tab-vycep-badge[hidden] { display: none !important; }
+  .vycep-screen { padding: 1.2rem 1.6rem 2.4rem; }
+  .vycep-head { font-family: 'DM Serif Display', serif; font-size: 28px; font-weight: normal; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 12px; color: var(--text); }
+  .vycep-head-count { font-family: 'DM Sans', sans-serif; font-size: 18px; font-weight: 700; min-width: 36px; height: 36px; padding: 0 12px; border-radius: 18px; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+  .vycep-orders-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+  .vycep-card { border: 2px solid var(--border-strong); border-radius: 12px; background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .vycep-card.fresh { border-color: var(--accent); animation: vycep-fresh 1.4s ease; }
+  @keyframes vycep-fresh { 0% { background: #fff3ee; box-shadow: 0 0 0 3px rgba(181,56,26,.25); } 100% { background: var(--surface); box-shadow: 0 2px 10px rgba(0,0,0,.06); } }
+  .vycep-card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .vycep-card-stul { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.15; }
+  .vycep-card-time { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .vycep-card-items { flex: 1; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .vycep-card-item { font-size: 21px; font-weight: 600; color: var(--text); line-height: 1.25; }
+  .vycep-card-qty { color: var(--accent); font-weight: 800; margin-right: 4px; }
+  .vycep-card-btn { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 600; padding: 13px; border-radius: 8px; border: 1px solid var(--success-text); background: var(--success-text); color: #fff; cursor: pointer; min-height: unset; }
+  .vycep-card-btn:hover { filter: brightness(.92); }
+  .vycep-empty { grid-column: 1 / -1; padding: 3.5rem 1rem; text-align: center; color: var(--muted); font-size: 19px; }
   .pet-hist-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); display: flex; justify-content: space-between; }
   .admin-pet-grid { display: flex; flex-direction: column; gap: 4px; }
   .admin-pet-row { display: grid; grid-template-columns: 110px repeat(8, 1fr); gap: 4px; align-items: center; }
@@ -620,6 +641,7 @@
 <div class="tabs" style="justify-content:space-between;">
   <div style="display:flex;">
     <button class="tab-btn active" onclick="switchTab('kasa',this)">Pokladna</button>
+    <button class="tab-btn" id="tab-btn-vycep" onclick="switchTab('vycep',this);renderObjednavkyVycep()">Objednávky výčep <span class="tab-vycep-badge" id="tab-vycep-badge" hidden>0</span></button>
     <button class="tab-btn" id="tab-btn-uctenky" onclick="switchTab('uctenky',this);renderUctenky()">Historie účtenek</button>
     <button class="tab-btn" id="tab-btn-otevreni" onclick="switchTab('otevreni',this);resetOtevreni()">Otevření hospody</button>
     <button class="tab-btn" id="tab-btn-pet" onclick="switchTab('pet',this);renderPetPlan()">Petkovací plán</button>
@@ -922,6 +944,14 @@
 </div><!-- /tab-uzavirka -->
 
 
+<div class="tab-content" id="tab-vycep">
+  <div class="vycep-screen">
+    <div class="vycep-head">🍺 Objednávky výčep <span class="vycep-head-count" id="vycep-head-count">0</span></div>
+    <div class="vycep-orders-list" id="vycep-orders-list"></div>
+  </div>
+</div><!-- /tab-vycep -->
+
+
 <div class="tab-content" id="tab-administrace">
   <main>
     <div class="subtab-bar">
@@ -1194,7 +1224,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.37';
+const APP_VERSION = '7.38';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1347,7 +1377,11 @@ function vyriditVolani(id, btn) {
 }
 
 // --- Objednávky z mobilního číšníka (V7.27, Fáze 3) ---
+// V7.38: rozdělení objednávky na "výčep" (čepovaná piva + Kofola + Radler + Frizzante)
+// a "pokladnu" (vše ostatní). Výčep i pokladna vyřizují svou část nezávisle.
 let _objednavkyLastIds = new Set();
+var _objednavkyFresh = new Set();
+var _objednavkyCache = [];
 
 function _escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, function(c) {
@@ -1355,42 +1389,76 @@ function _escapeHtml(s) {
   });
 }
 
+// Je položka "výčepní"? = čepované pivo nebo Kofola / Radler / Frizzante (vše z kohoutu)
+function isVycepItem(nazev) {
+  if (!nazev) return false;
+  var n = String(nazev);
+  if (BEER_STATUS_CEP.indexOf(n) !== -1) return true;   // 8 čepovaných piv
+  return /^(Kofola|Radler|Frizzante)/.test(n);          // + Kofola, Radler, Frizzante (vč. velikostí)
+}
+
+function _splitObjednavka(o) {
+  var vycep = [], kasa = [];
+  (o.polozky || []).forEach(function(p) {
+    if (isVycepItem(p.nazev)) vycep.push(p); else kasa.push(p);
+  });
+  return {
+    id: o.id, stul: o.stul, ts: o.ts, polozky: o.polozky || [],
+    vycep: vycep, kasa: kasa,
+    hasVycep: vycep.length > 0, hasKasa: kasa.length > 0,
+    vycepDone: o.vycepDone === true, kasaDone: o.kasaDone === true
+  };
+}
+
+function _findObjednavka(id) {
+  for (var i = 0; i < _objednavkyCache.length; i++) {
+    if (_objednavkyCache[i].id === id) return _objednavkyCache[i];
+  }
+  return null;
+}
+
 window.bukovarOnRemoteObjednavky = function(items) {
-  const col = document.getElementById('kasa-orders');
-  const badge = document.getElementById('header-objednavky-badge');
-  const countEl = document.getElementById('obj-count');
-  const listEl = document.getElementById('orders-list');
-  const headCountEl = document.getElementById('orders-head-count');
+  _objednavkyCache = (items || []).map(_splitObjednavka);
+
+  // Detekce nových objednávek (kvůli "fresh" zvýraznění)
+  var newIds = new Set(_objednavkyCache.map(function(x) { return x.id; }));
+  var freshIds = new Set();
+  newIds.forEach(function(id) { if (!_objednavkyLastIds.has(id)) freshIds.add(id); });
+  _objednavkyLastIds = newIds;
+  _objednavkyFresh = freshIds;
+
+  renderObjednavkyKasa();
+  renderObjednavkyVycep();
+};
+
+// Panel objednávek na pokladně — jen NE-výčepní položky
+function renderObjednavkyKasa() {
+  var col = document.getElementById('kasa-orders');
+  var badge = document.getElementById('header-objednavky-badge');
+  var countEl = document.getElementById('obj-count');
+  var listEl = document.getElementById('orders-list');
+  var headCountEl = document.getElementById('orders-head-count');
   if (!col || !listEl) return;
 
-  const n = items.length;
+  var rows = _objednavkyCache.filter(function(o) { return o.hasKasa && !o.kasaDone; });
+  var n = rows.length;
   if (badge && countEl) {
     if (n > 0) { badge.removeAttribute('hidden'); countEl.textContent = String(n); }
     else { badge.setAttribute('hidden', ''); }
   }
   if (headCountEl) headCountEl.textContent = String(n);
 
-  // Detekce nových objednávek (kvůli "fresh" zvýraznění)
-  const newIds = new Set(items.map(function(x) { return x.id; }));
-  const freshIds = new Set();
-  newIds.forEach(function(id) { if (!_objednavkyLastIds.has(id)) freshIds.add(id); });
-  _objednavkyLastIds = newIds;
-
-  if (n === 0) {
-    col.setAttribute('hidden', '');
-    listEl.innerHTML = '';
-    return;
-  }
+  if (n === 0) { col.setAttribute('hidden', ''); listEl.innerHTML = ''; return; }
   col.removeAttribute('hidden');
 
-  listEl.innerHTML = items.map(function(o) {
-    const label = stulLabel(o.stul);
-    const ago = _formatVolaniAgo(o.ts);
-    const fresh = freshIds.has(o.id) ? ' fresh' : '';
-    const polozkyHtml = (o.polozky || []).map(function(p) {
+  listEl.innerHTML = rows.map(function(o) {
+    var label = stulLabel(o.stul);
+    var ago = _formatVolaniAgo(o.ts);
+    var fresh = _objednavkyFresh.has(o.id) ? ' fresh' : '';
+    var polozkyHtml = o.kasa.map(function(p) {
       return '<div>' + p.pocet + '× ' + _escapeHtml(p.nazev) + '</div>';
     }).join('');
-    const safeId = o.id.replace(/[\\\']/g, '');
+    var safeId = o.id.replace(/[\\\']/g, '');
     return ''
       + '<div class="order-card' + fresh + '" data-id="' + safeId + '">'
       +   '<div class="order-card-top">'
@@ -1399,17 +1467,75 @@ window.bukovarOnRemoteObjednavky = function(items) {
       +   '</div>'
       +   '<div class="order-card-items">' + polozkyHtml + '</div>'
       +   '<div class="order-card-actions">'
-      +     '<button class="order-card-btn vydat" onclick="objednavkaVydat(\'' + safeId + '\', this)">✓ Vydat</button>'
+      +     '<button class="order-card-btn vydat" onclick="objednavkaVydatKasa(\'' + safeId + '\', this)">✓ Vydat</button>'
       +     '<button class="order-card-btn" onclick="objednavkaTisk(\'' + safeId + '\')">🖨 Tisk</button>'
       +   '</div>'
       + '</div>';
   }).join('');
-};
+}
 
-function objednavkaVydat(id, btn) {
+// Plnoobrazovkový display "Objednávky výčep" — jen výčepní položky
+function renderObjednavkyVycep() {
+  var listEl = document.getElementById('vycep-orders-list');
+  var headCountEl = document.getElementById('vycep-head-count');
+  var tabBadge = document.getElementById('tab-vycep-badge');
+
+  var rows = _objednavkyCache.filter(function(o) { return o.hasVycep && !o.vycepDone; });
+  var n = rows.length;
+
+  if (tabBadge) {
+    if (n > 0) { tabBadge.removeAttribute('hidden'); tabBadge.textContent = String(n); }
+    else { tabBadge.setAttribute('hidden', ''); }
+  }
+  if (headCountEl) headCountEl.textContent = String(n);
+  if (!listEl) return;
+
+  if (n === 0) {
+    listEl.innerHTML = '<div class="vycep-empty">Žádné objednávky k načepování 🍺</div>';
+    return;
+  }
+
+  listEl.innerHTML = rows.map(function(o) {
+    var label = stulLabel(o.stul);
+    var ago = _formatVolaniAgo(o.ts);
+    var fresh = _objednavkyFresh.has(o.id) ? ' fresh' : '';
+    var safeId = o.id.replace(/[\\\']/g, '');
+    var itemsHtml = o.vycep.map(function(p) {
+      return '<div class="vycep-card-item"><span class="vycep-card-qty">' + p.pocet + '×</span>' + _escapeHtml(p.nazev) + '</div>';
+    }).join('');
+    return ''
+      + '<div class="vycep-card' + fresh + '" data-id="' + safeId + '">'
+      +   '<div class="vycep-card-top">'
+      +     '<div class="vycep-card-stul">' + _escapeHtml(label) + '</div>'
+      +     '<div class="vycep-card-time">' + ago + '</div>'
+      +   '</div>'
+      +   '<div class="vycep-card-items">' + itemsHtml + '</div>'
+      +   '<button class="vycep-card-btn" onclick="objednavkaVydatVycep(\'' + safeId + '\', this)">✓ Hotovo</button>'
+      + '</div>';
+  }).join('');
+}
+
+// Vyřízení výčepní části — pokud pokladní část neexistuje/je hotová, archivuj celou objednávku
+function objednavkaVydatVycep(id, btn) {
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  if (window.bukovarObjednavkaVydat) {
-    window.bukovarObjednavkaVydat(id).catch(function() {
+  var o = _findObjednavka(id);
+  var fields = { vycepDone: true };
+  if (o && (!o.hasKasa || o.kasaDone)) fields.status = 'handled';
+  if (window.bukovarObjednavkaUpdate) {
+    window.bukovarObjednavkaUpdate(id, fields).catch(function() {
+      if (btn) { btn.disabled = false; btn.textContent = '✓ Hotovo'; }
+    });
+  }
+}
+
+// Vyřízení pokladní části — pokud výčepní část neexistuje/je hotová, archivuj celou objednávku
+function objednavkaVydatKasa(id, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  var o = _findObjednavka(id);
+  var fields = { kasaDone: true };
+  if (o && (!o.hasVycep || o.vycepDone)) fields.status = 'handled';
+  if (window.bukovarObjednavkaUpdate) {
+    window.bukovarObjednavkaUpdate(id, fields).catch(function() {
       if (btn) { btn.disabled = false; btn.textContent = '✓ Vydat'; }
     });
   }
@@ -3956,40 +4082,48 @@ function renderPetPlan() {
     var priority = available && current > 0 && current <= ideal * 0.5;
     var toBottle = needs ? Math.max(ideal - current, 0) : 0;
     if (needs) { total += toBottle; druhy++; }
-    return { beer: beer, current: current, available: available, needs: needs, priority: priority, toBottle: toBottle, col: PET_COLORS[i] };
+    return { beer: beer, idx: i, current: current, available: available, needs: needs, priority: priority, toBottle: toBottle, col: PET_COLORS[i] };
   });
 
   var priorityTimes = syncPetPriorityTimes(beersData);
 
+  // Do plánu jdou jen dostupná piva; nedostupná zůstávají jen v nákresu lednice
+  var shown = beersData.filter(function(d) { return d.available; });
+
   var html = renderFridgeDiagram();
+
+  if (!shown.length) {
+    html += '<div class="pet-plan-empty">Všechna piva jsou označená jako nedostupná. Pivo zase zpřístupníš kliknutím na něj v nákresu „Jak skládat petky do lednice".</div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  var gridStyle = ' style="grid-template-columns:180px repeat(' + shown.length + ',1fr)"';
   html += '<div class="pet-plan-grid">';
 
   // Řádek 0 — hlavičky piv
-  html += '<div class="pet-plan-row"><div class="pet-plan-row-label"></div>';
-  beersData.forEach(function(d) {
+  html += '<div class="pet-plan-row"' + gridStyle + '><div class="pet-plan-row-label"></div>';
+  shown.forEach(function(d) {
     var timeStr = d.priority && priorityTimes[d.beer] ? formatPetPriorityTime(priorityTimes[d.beer]) : '';
-    html += '<div class="pet-card-stock vip-btn ' + d.col + (d.available ? '' : ' unavailable') + '">' + d.beer
+    html += '<div class="pet-card-stock vip-btn ' + d.col + '">' + d.beer
       + (d.priority ? '<span class="pet-priority-badge">⚠ Priorita'
           + (timeStr ? '<span class="pet-priority-time">' + timeStr + '</span>' : '')
           + '</span>' : '')
-      + (d.available ? '' : '<span class="pet-card-stock-meta">✕ nedostupné</span>')
       + '</div>';
   });
   html += '</div>';
 
   // Řádek 1 — aktuální stav (editovatelné)
-  html += '<div class="pet-plan-row"><div class="pet-plan-row-label">Aktuální stav</div>';
-  beersData.forEach(function(d, i) {
-    html += '<div class="pet-card-stock-edit" onclick="petStockClick(' + i + ',this)" title="Klikni pro úpravu aktuálního stavu">' + d.current + ' ks</div>';
+  html += '<div class="pet-plan-row"' + gridStyle + '><div class="pet-plan-row-label">Aktuální stav</div>';
+  shown.forEach(function(d) {
+    html += '<div class="pet-card-stock-edit" onclick="petStockClick(' + d.idx + ',this)" title="Klikni pro úpravu aktuálního stavu">' + d.current + ' ks</div>';
   });
   html += '</div>';
 
   // Řádek 2 — potřeba napetkovat
-  html += '<div class="pet-plan-row"><div class="pet-plan-row-label">Potřeba napetkovat</div>';
-  beersData.forEach(function(d) {
-    if (!d.available) {
-      html += '<div class="pet-card-plan unavailable">— nepetkovat</div>';
-    } else if (d.needs) {
+  html += '<div class="pet-plan-row"' + gridStyle + '><div class="pet-plan-row-label">Potřeba napetkovat</div>';
+  shown.forEach(function(d) {
+    if (d.needs) {
       html += '<div class="pet-card-plan needs' + (d.priority ? ' priority' : '') + '">→ ' + d.toBottle + ' ks</div>';
     } else {
       html += '<div class="pet-card-plan ok">✓ OK</div>';
@@ -3997,9 +4131,10 @@ function renderPetPlan() {
   });
   html += '</div>';
 
-  // Řádek 2 — doplnit tlačítka
-  html += '<div class="pet-plan-row"><div class="pet-plan-row-label"></div>';
-  beersData.forEach(function(d, i) {
+  // Řádek 3 — doplnit tlačítka
+  html += '<div class="pet-plan-row"' + gridStyle + '><div class="pet-plan-row-label"></div>';
+  shown.forEach(function(d) {
+    var i = d.idx;
     html += '<div>'
       + '<button class="pet-doplnit-btn" onclick="showPetInput(' + i + ')">+ Doplnit</button>'
       + '<div class="pet-input-row hidden" id="pet-input-' + i + '">'
@@ -4671,7 +4806,9 @@ function updateTabBadges() {
           id: d.id,
           stul: data.stul,
           polozky: Array.isArray(data.polozky) ? data.polozky : [],
-          ts: data.ts ? data.ts.toMillis() : null
+          ts: data.ts ? data.ts.toMillis() : null,
+          vycepDone: data.vycepDone === true,
+          kasaDone: data.kasaDone === true
         });
       });
       items.sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
@@ -4696,6 +4833,23 @@ function updateTabBadges() {
     } catch (e) {
       console.error('[objednavky] vydat failed:', e);
       alert('Chyba při vyřízení objednávky: ' + (e.message || e.code));
+    }
+  };
+
+  // V7.38: generická aktualizace objednávky (příznaky vycepDone/kasaDone, příp. archivace).
+  // Při status='handled' doplní razítko a autora. Vyhazuje chybu → tlačítko v UI se obnoví.
+  window.bukovarObjednavkaUpdate = async function(id, fields) {
+    try {
+      const payload = Object.assign({}, fields || {});
+      if (payload.status === 'handled') {
+        payload.handledAt = serverTimestamp();
+        payload.handledBy = auth.currentUser ? auth.currentUser.email : null;
+      }
+      await updateDoc(doc(db, 'objednavky', id), payload);
+    } catch (e) {
+      console.error('[objednavky] update failed:', e);
+      alert('Chyba při vyřízení objednávky: ' + (e.message || e.code));
+      throw e;
     }
   };
 
