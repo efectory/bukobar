@@ -13,6 +13,9 @@
       ]
     }
   ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
@@ -25,6 +28,7 @@
       "*.png",
       "*.tmp",
       "*.log",
+      "firestore.rules",
       "bukovar-pokladna-V*.html",
       "firebase-debug.log*"
     ],
