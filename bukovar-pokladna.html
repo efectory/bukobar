@@ -631,6 +631,12 @@
     <button id="auth-submit">Přihlásit</button>
     <div class="auth-error" id="auth-error"></div>
   </div>
+  <div class="auth-box" style="max-width:380px;margin-top:1rem;text-align:center;">
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:.2rem;">📱 Mobilní číšník</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:.9rem;">Naskenuj telefonem pro objednávky</div>
+    <div id="cisnik-qr" style="display:inline-block;line-height:0;"></div>
+    <a id="cisnik-qr-link" href="cisnik.html" target="_blank" style="display:block;margin-top:.7rem;font-size:12px;color:var(--accent);text-decoration:none;word-break:break-all;"></a>
+  </div>
 </div>
 
 <div class="volani-panel" id="volani-panel" hidden>
@@ -1242,7 +1248,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.42';
+const APP_VERSION = '7.43';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1295,7 +1301,19 @@ document.addEventListener('DOMContentLoaded', function() {
   updateTabBadges();
   // Fallback seed pizzy pro zařízení bez cloud sync (s cloudem seeduje bukovarOnRemoteSklad).
   setTimeout(function() { if (!cloudSyncActive) maybeSeedPizzaStock(); }, 6000);
+  renderCisnikQr();
 });
+
+// QR na úvodní (přihlašovací) obrazovce — odkaz na mobilního číšníka
+function renderCisnikQr() {
+  var el = document.getElementById('cisnik-qr');
+  if (!el || typeof QRCode === 'undefined') return;
+  var url = new URL('cisnik.html', location.href).href;
+  el.innerHTML = '';
+  new QRCode(el, { text: url, width: 180, height: 180, colorDark: '#1a1610', colorLight: '#ffffff' });
+  var link = document.getElementById('cisnik-qr-link');
+  if (link) { link.href = url; link.textContent = url; }
+}
 
 // --- Volání hostů (V7.20) ---
 let _volaniTitleOrig = null;
