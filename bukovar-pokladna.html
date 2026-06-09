@@ -1179,12 +1179,11 @@
 
 <div class="modal-overlay hidden" id="pizza-modal">
   <div class="modal">
-    <h3>Jaká pizza? <span id="pizza-modal-count" style="font-weight:500;color:var(--muted);font-size:14px;"></span></h3>
-    <p style="font-size:13px;color:var(--muted);margin:-.3rem 0 .8rem;">Přiřaďte každou pizzu k druhu — odečte se ze skladu.</p>
+    <h3>Jaká pizza?</h3>
+    <p style="font-size:13px;color:var(--muted);margin:-.3rem 0 .8rem;">Vyber druh — odečte se ze skladu.</p>
     <div id="pizza-druhy-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;"></div>
     <div class="modal-actions">
       <button onclick="closePizzaModal()">Zrušit</button>
-      <button class="primary" id="pizza-confirm-btn" onclick="confirmPizzaDruhy()" disabled>Potvrdit</button>
     </div>
   </div>
 </div>
@@ -1248,7 +1247,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.43';
+const APP_VERSION = '7.44';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1704,6 +1703,10 @@ function quickAdd(item) {
     otevriTrojbaleniModal();
     return;
   }
+  if (typeof PIZZA_MENU_NAME !== 'undefined' && item.n === PIZZA_MENU_NAME) {
+    openPizzaPicker(item);
+    return;
+  }
   quickAddDirect(item, null, null);
 }
 
@@ -2053,12 +2056,6 @@ function uzavrit() {
     setTimeout(function() { el.classList.remove('wf-error'); }, 1500);
     return;
   }
-  // Pizza Della Casa bez určeného druhu → nejdřív vyber druh (odečet ze skladu)
-  if (pizzaNeedsType()) { openPizzaModal(); return; }
-  proceedUzavrit();
-}
-
-function proceedUzavrit() {
   if (paymentMethod === 'QR') {
     showQrModal();
   } else if (paymentMethod === 'Dluh') {
@@ -2071,71 +2068,42 @@ function proceedUzavrit() {
   }
 }
 
-// --- Pizza — výběr druhu při placení ---
-function pizzaUnassignedCount() {
-  return receiptItems.reduce(function(s, it) {
-    return s + (it.nazev === PIZZA_MENU_NAME && !it.skladKey ? it.pocet : 0);
-  }, 0);
-}
-function pizzaNeedsType() { return pizzaUnassignedCount() > 0; }
+// --- Pizza — výběr druhu při přidání na účtenku ---
+var pendingPizzaItem = null;
 
-var pizzaDruhCounts = [];
-
-function openPizzaModal() {
-  pizzaDruhCounts = PIZZA_DRUHY.map(function() { return 0; });
-  renderPizzaDruhy();
+function openPizzaPicker(item) {
+  pendingPizzaItem = item;
+  var html = '';
+  PIZZA_DRUHY.forEach(function(d, i) {
+    html += '<button class="vip-btn" style="text-align:left;justify-content:flex-start;padding:12px 14px;" onclick="selectPizzaDruh(' + i + ')">' + d.nazev + '</button>';
+  });
+  document.getElementById('pizza-druhy-list').innerHTML = html;
   document.getElementById('pizza-modal').classList.remove('hidden');
 }
 
 function closePizzaModal() {
   document.getElementById('pizza-modal').classList.add('hidden');
+  pendingPizzaItem = null;
 }
 
-function renderPizzaDruhy() {
-  var total = pizzaUnassignedCount();
-  var assigned = pizzaDruhCounts.reduce(function(s, n) { return s + n; }, 0);
-  document.getElementById('pizza-modal-count').textContent = 'přiřazeno ' + assigned + ' / ' + total;
-  var html = '';
-  PIZZA_DRUHY.forEach(function(d, i) {
-    html += '<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 10px;">'
-      + '<span style="flex:1;font-size:15px;">' + d.nazev + '</span>'
-      + '<button class="qty-btn" onclick="pizzaDruhDelta(' + i + ',-1)" ' + (pizzaDruhCounts[i] <= 0 ? 'disabled' : '') + '>−</button>'
-      + '<span style="min-width:24px;text-align:center;font-weight:600;font-size:16px;">' + pizzaDruhCounts[i] + '</span>'
-      + '<button class="qty-btn" onclick="pizzaDruhDelta(' + i + ',1)" ' + (assigned >= total ? 'disabled' : '') + '>+</button>'
-      + '</div>';
+function selectPizzaDruh(i) {
+  var item = pendingPizzaItem;
+  if (!item) return;
+  var d = PIZZA_DRUHY[i];
+  var existing = receiptItems.find(function(r) {
+    return r.nazev === item.n && r.popisek === d.nazev;
   });
-  document.getElementById('pizza-druhy-list').innerHTML = html;
-  document.getElementById('pizza-confirm-btn').disabled = (assigned !== total || total === 0);
-}
-
-function pizzaDruhDelta(i, delta) {
-  var total = pizzaUnassignedCount();
-  var assigned = pizzaDruhCounts.reduce(function(s, n) { return s + n; }, 0);
-  if (delta > 0 && assigned >= total) return;
-  if (delta < 0 && pizzaDruhCounts[i] <= 0) return;
-  pizzaDruhCounts[i] += delta;
-  renderPizzaDruhy();
-}
-
-function confirmPizzaDruhy() {
-  var assigned = pizzaDruhCounts.reduce(function(s, n) { return s + n; }, 0);
-  if (assigned !== pizzaUnassignedCount()) return;
-  // Zapamatovat cenu z původní (nepřiřazené) pizzy
-  var orig = receiptItems.find(function(it) { return it.nazev === PIZZA_MENU_NAME && !it.skladKey; });
-  var cena = orig ? orig.cena : 155;
-  // Odebrat nepřiřazené pizzy a nahradit je řádky podle druhu
-  receiptItems = receiptItems.filter(function(it) { return !(it.nazev === PIZZA_MENU_NAME && !it.skladKey); });
-  PIZZA_DRUHY.forEach(function(d, i) {
-    if (pizzaDruhCounts[i] <= 0) return;
-    receiptItems.push({
-      nazev: PIZZA_MENU_NAME, pocet: pizzaDruhCounts[i], cena: cena,
-      warn: false, stamgast: false,
-      skladKey: d.sklad, skladInc: 1, popisek: d.nazev
-    });
-  });
+  if (existing) { existing.pocet++; }
+  else {
+    var entry = {
+      nazev: item.n, pocet: 1, cena: item.p, warn: false, stamgast: false,
+      popisek: d.nazev, skladKey: d.sklad, skladInc: 1
+    };
+    applyStamgastToItem(entry);
+    receiptItems.unshift(entry);
+  }
   closePizzaModal();
   renderItems();
-  proceedUzavrit();
 }
 
 function finalizeAfterPayment() {
@@ -2741,7 +2709,7 @@ const SKLAD_MAP = {
   'Nelson 12° v PET': { key: 'Nelson 12° v PET', inc: 1 },
   'Dublin 13° v PET': { key: 'Dublin 13° v PET', inc: 1 },
   'Utopenec': { key: 'Utopenec', inc: 1 }, 'Tlačenka ve skle': { key: 'Tlačenka ve skle', inc: 1 },
-  // 'Pizza Della Casa' se neodečítá automaticky — druh (a tedy skladový klíč) se vybírá při placení (viz pizza-modal).
+  // 'Pizza Della Casa' se neodečítá automaticky — druh (a tedy skladový klíč) se vybírá při přidání na účtenku (viz openPizzaPicker).
   'Nakládaný hermelín': { key: 'Nakládaný hermelín', inc: 1 }, 'Chipsy': { key: 'Chipsy', inc: 1 },
   'Slané tyčinky': { key: 'Slané tyčinky', inc: 1 }, 'Křupky': { key: 'Křupky', inc: 1 }, 'Arašídy': { key: 'Arašídy', inc: 1 },
   'Paštiky Čongrády': { key: 'Paštiky Čongrády', inc: 1 },
@@ -3018,7 +2986,7 @@ function renderSkladNastaveni() {
       if (typeof PIZZA_MENU_NAME !== 'undefined' && item.n === PIZZA_MENU_NAME) {
         PIZZA_DRUHY.forEach(function(d, di) {
           if (di === 0) {
-            html += '<tr><td rowspan="' + PIZZA_DRUHY.length + '">' + item.n + ' <span class="sklad-min">(druh při placení)</span></td><td>' + d.sklad + '</td><td class="sn-inc">−1 ks</td></tr>';
+            html += '<tr><td rowspan="' + PIZZA_DRUHY.length + '">' + item.n + ' <span class="sklad-min">(výběr druhu při přidání)</span></td><td>' + d.sklad + '</td><td class="sn-inc">−1 ks</td></tr>';
           } else {
             html += '<tr><td>' + d.sklad + '</td><td class="sn-inc">−1 ks</td></tr>';
           }
