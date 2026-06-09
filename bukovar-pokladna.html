@@ -558,8 +558,6 @@
   #auth-overlay button:hover { background: #9c2e14; }
   #auth-overlay button:disabled { opacity: .55; cursor: not-allowed; }
   #auth-overlay .auth-error { color: var(--accent); font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
-  .header-mode { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 5px 12px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; display: inline-flex; align-items: center; }
-  .header-mode:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
   .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
 
@@ -667,7 +665,6 @@
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <span class="header-objednavky" id="header-objednavky-badge" title="Objednávky z mobilního číšníka" hidden>🛎 <span class="obj-count" id="obj-count">0</span></span>
     <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
-    <a class="header-mode" href="bukobar-admin.html" title="Přepnout do administrace (interní systém)">⚙ Změna režimu</a>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
   </div>
 </div>
@@ -1247,7 +1244,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.44';
+const APP_VERSION = '7.45';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
