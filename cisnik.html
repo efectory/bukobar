@@ -724,6 +724,14 @@
   </div>
 </div>
 
+<div class="radler-overlay" id="pizza-overlay" hidden>
+  <div class="radler-sheet">
+    <div class="radler-title">Pizza — jaký druh?</div>
+    <div id="pizza-druh-grid" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <button class="radler-cancel" id="pizza-cancel-btn">Zrušit</button>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -1292,8 +1300,37 @@
     var nazev = tile.dataset.nazev;
     var cena = parseInt(tile.dataset.cena, 10) || 0;
     if (nazev === 'Radler') { openRadlerChooser(cena); return; }
+    if (typeof PIZZA_MENU_NAME !== 'undefined' && nazev === PIZZA_MENU_NAME) { openPizzaChooser(cena); return; }
     addToCart({ nazev: nazev, cena: cena });
   }
+
+  function openPizzaChooser(cena) {
+    var grid = document.getElementById('pizza-druh-grid');
+    var html = '';
+    PIZZA_DRUHY.forEach(function(d) {
+      html += '<button class="item-tile" style="width:100%;text-align:left;min-height:48px;" data-druh="' + escapeHtml(d.nazev) + '">' +
+        '<span class="item-name">' + escapeHtml(d.nazev) + '</span></button>';
+    });
+    grid.innerHTML = html;
+    grid.dataset.cena = cena;
+    document.getElementById('pizza-overlay').removeAttribute('hidden');
+  }
+  function closePizzaChooser() {
+    document.getElementById('pizza-overlay').setAttribute('hidden', '');
+  }
+
+  document.getElementById('pizza-druh-grid').addEventListener('click', function(e) {
+    var btn = e.target.closest('.item-tile');
+    if (!btn) return;
+    var druh = btn.dataset.druh;
+    var cena = parseInt(this.dataset.cena, 10) || 0;
+    addToCart({ nazev: PIZZA_MENU_NAME + ' (' + druh + ')', cena: cena });
+    closePizzaChooser();
+  });
+  document.getElementById('pizza-cancel-btn').addEventListener('click', closePizzaChooser);
+  document.getElementById('pizza-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closePizzaChooser();
+  });
 
   function openRadlerChooser(cena) {
     var grid = document.getElementById('radler-beer-grid');

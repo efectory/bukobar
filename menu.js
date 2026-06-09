@@ -86,3 +86,21 @@ const PET_VOLUME = '1,0l';
 // Top 4 produkty pro mobilního číšníka — rychlá nabídka na home screen.
 // Pokud bys chtěl změnit, uprav názvy (musí přesně sedět s MENU.n).
 const TOP_4 = ['Radler', 'Birel nealko neochucený', 'Espresso', 'Targa Tonic'];
+
+// Pizza Della Casa se prodává za jednu cenu (viz MENU), ale eviduje se ve skladu
+// podle druhu. `nazev` = popisek na účtence / v objednávce, `sklad` = klíč v SKLAD_GROUPS.
+// Pokladna: výběr druhu při placení. Číšník: výběr druhu při přidání do košíku.
+const PIZZA_MENU_NAME = 'Pizza Della Casa';
+const PIZZA_DRUHY = [
+  { nazev: 'Šunková',                            sklad: 'Pizza šunková' },
+  { nazev: 'Šunková se žampiony (smetanový základ)', sklad: 'Pizza šunková se žampiony' },
+  { nazev: 'Špenát slanina',                     sklad: 'Pizza špenát slanina' },
+  { nazev: 'Mexicana',                           sklad: 'Pizza mexicana' },
+];
+// Počáteční naskladnění (jednorázový seed, jen pokud klíč ve skladu chybí).
+const PIZZA_SEED = {
+  'Pizza šunková': 17,
+  'Pizza šunková se žampiony': 15,
+  'Pizza špenát slanina': 7,
+  'Pizza mexicana': 8,
+};

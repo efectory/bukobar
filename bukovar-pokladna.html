@@ -558,6 +558,8 @@
   #auth-overlay button:hover { background: #9c2e14; }
   #auth-overlay button:disabled { opacity: .55; cursor: not-allowed; }
   #auth-overlay .auth-error { color: var(--accent); font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
+  .header-mode { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 5px 12px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; display: inline-flex; align-items: center; }
+  .header-mode:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
   .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
 
@@ -659,6 +661,7 @@
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <span class="header-objednavky" id="header-objednavky-badge" title="Objednávky z mobilního číšníka" hidden>🛎 <span class="obj-count" id="obj-count">0</span></span>
     <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
+    <a class="header-mode" href="bukobar-admin.html" title="Přepnout do administrace (interní systém)">⚙ Změna režimu</a>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
   </div>
 </div>
@@ -1168,6 +1171,18 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="pizza-modal">
+  <div class="modal">
+    <h3>Jaká pizza? <span id="pizza-modal-count" style="font-weight:500;color:var(--muted);font-size:14px;"></span></h3>
+    <p style="font-size:13px;color:var(--muted);margin:-.3rem 0 .8rem;">Přiřaďte každou pizzu k druhu — odečte se ze skladu.</p>
+    <div id="pizza-druhy-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;"></div>
+    <div class="modal-actions">
+      <button onclick="closePizzaModal()">Zrušit</button>
+      <button class="primary" id="pizza-confirm-btn" onclick="confirmPizzaDruhy()" disabled>Potvrdit</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="stamgast-modal">
   <div class="modal">
     <h3>Štamgast?</h3>
@@ -1227,7 +1242,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.41';
+const APP_VERSION = '7.42';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1278,6 +1293,8 @@ document.addEventListener('DOMContentLoaded', function() {
   renderOtevreniHistory();
   renderPetPlan();
   updateTabBadges();
+  // Fallback seed pizzy pro zařízení bez cloud sync (s cloudem seeduje bukovarOnRemoteSklad).
+  setTimeout(function() { if (!cloudSyncActive) maybeSeedPizzaStock(); }, 6000);
 });
 
 // --- Volání hostů (V7.20) ---
@@ -2018,6 +2035,12 @@ function uzavrit() {
     setTimeout(function() { el.classList.remove('wf-error'); }, 1500);
     return;
   }
+  // Pizza Della Casa bez určeného druhu → nejdřív vyber druh (odečet ze skladu)
+  if (pizzaNeedsType()) { openPizzaModal(); return; }
+  proceedUzavrit();
+}
+
+function proceedUzavrit() {
   if (paymentMethod === 'QR') {
     showQrModal();
   } else if (paymentMethod === 'Dluh') {
@@ -2028,6 +2051,73 @@ function uzavrit() {
     printReceiptIframe(buildReceiptHtml());
     resetApp();
   }
+}
+
+// --- Pizza — výběr druhu při placení ---
+function pizzaUnassignedCount() {
+  return receiptItems.reduce(function(s, it) {
+    return s + (it.nazev === PIZZA_MENU_NAME && !it.skladKey ? it.pocet : 0);
+  }, 0);
+}
+function pizzaNeedsType() { return pizzaUnassignedCount() > 0; }
+
+var pizzaDruhCounts = [];
+
+function openPizzaModal() {
+  pizzaDruhCounts = PIZZA_DRUHY.map(function() { return 0; });
+  renderPizzaDruhy();
+  document.getElementById('pizza-modal').classList.remove('hidden');
+}
+
+function closePizzaModal() {
+  document.getElementById('pizza-modal').classList.add('hidden');
+}
+
+function renderPizzaDruhy() {
+  var total = pizzaUnassignedCount();
+  var assigned = pizzaDruhCounts.reduce(function(s, n) { return s + n; }, 0);
+  document.getElementById('pizza-modal-count').textContent = 'přiřazeno ' + assigned + ' / ' + total;
+  var html = '';
+  PIZZA_DRUHY.forEach(function(d, i) {
+    html += '<div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 10px;">'
+      + '<span style="flex:1;font-size:15px;">' + d.nazev + '</span>'
+      + '<button class="qty-btn" onclick="pizzaDruhDelta(' + i + ',-1)" ' + (pizzaDruhCounts[i] <= 0 ? 'disabled' : '') + '>−</button>'
+      + '<span style="min-width:24px;text-align:center;font-weight:600;font-size:16px;">' + pizzaDruhCounts[i] + '</span>'
+      + '<button class="qty-btn" onclick="pizzaDruhDelta(' + i + ',1)" ' + (assigned >= total ? 'disabled' : '') + '>+</button>'
+      + '</div>';
+  });
+  document.getElementById('pizza-druhy-list').innerHTML = html;
+  document.getElementById('pizza-confirm-btn').disabled = (assigned !== total || total === 0);
+}
+
+function pizzaDruhDelta(i, delta) {
+  var total = pizzaUnassignedCount();
+  var assigned = pizzaDruhCounts.reduce(function(s, n) { return s + n; }, 0);
+  if (delta > 0 && assigned >= total) return;
+  if (delta < 0 && pizzaDruhCounts[i] <= 0) return;
+  pizzaDruhCounts[i] += delta;
+  renderPizzaDruhy();
+}
+
+function confirmPizzaDruhy() {
+  var assigned = pizzaDruhCounts.reduce(function(s, n) { return s + n; }, 0);
+  if (assigned !== pizzaUnassignedCount()) return;
+  // Zapamatovat cenu z původní (nepřiřazené) pizzy
+  var orig = receiptItems.find(function(it) { return it.nazev === PIZZA_MENU_NAME && !it.skladKey; });
+  var cena = orig ? orig.cena : 155;
+  // Odebrat nepřiřazené pizzy a nahradit je řádky podle druhu
+  receiptItems = receiptItems.filter(function(it) { return !(it.nazev === PIZZA_MENU_NAME && !it.skladKey); });
+  PIZZA_DRUHY.forEach(function(d, i) {
+    if (pizzaDruhCounts[i] <= 0) return;
+    receiptItems.push({
+      nazev: PIZZA_MENU_NAME, pocet: pizzaDruhCounts[i], cena: cena,
+      warn: false, stamgast: false,
+      skladKey: d.sklad, skladInc: 1, popisek: d.nazev
+    });
+  });
+  closePizzaModal();
+  renderItems();
+  proceedUzavrit();
 }
 
 function finalizeAfterPayment() {
@@ -2537,7 +2627,9 @@ const SKLAD_GROUPS = [
     { n: 'Beefeater Gin', unit: 'l' }, { n: 'Bacardi', unit: 'l' }, { n: 'Aperol', unit: 'l' },
   ]},
   { col: 1, label: 'Občerstvení', items: [
-    { n: 'Utopenec', unit: 'ks' }, { n: 'Tlačenka ve skle', unit: 'ks' }, { n: 'Pizza Della Casa', unit: 'ks' },
+    { n: 'Utopenec', unit: 'ks' }, { n: 'Tlačenka ve skle', unit: 'ks' },
+    { n: 'Pizza šunková', unit: 'ks' }, { n: 'Pizza šunková se žampiony', unit: 'ks' },
+    { n: 'Pizza špenát slanina', unit: 'ks' }, { n: 'Pizza mexicana', unit: 'ks' },
     { n: 'Nakládaný hermelín', unit: 'ks' }, { n: 'Chipsy', unit: 'ks' },
     { n: 'Slané tyčinky', unit: 'ks' }, { n: 'Křupky', unit: 'ks' }, { n: 'Arašídy', unit: 'ks' },
     { n: 'Paštiky Čongrády', unit: 'ks' }, { n: 'Paštika ve skle Čongrády', unit: 'ks' },
@@ -2630,7 +2722,8 @@ const SKLAD_MAP = {
   'Mezulánka 11° v PET': { key: 'Mezulánka 11° v PET', inc: 1 },
   'Nelson 12° v PET': { key: 'Nelson 12° v PET', inc: 1 },
   'Dublin 13° v PET': { key: 'Dublin 13° v PET', inc: 1 },
-  'Utopenec': { key: 'Utopenec', inc: 1 }, 'Tlačenka ve skle': { key: 'Tlačenka ve skle', inc: 1 }, 'Pizza Della Casa': { key: 'Pizza Della Casa', inc: 1 },
+  'Utopenec': { key: 'Utopenec', inc: 1 }, 'Tlačenka ve skle': { key: 'Tlačenka ve skle', inc: 1 },
+  // 'Pizza Della Casa' se neodečítá automaticky — druh (a tedy skladový klíč) se vybírá při placení (viz pizza-modal).
   'Nakládaný hermelín': { key: 'Nakládaný hermelín', inc: 1 }, 'Chipsy': { key: 'Chipsy', inc: 1 },
   'Slané tyčinky': { key: 'Slané tyčinky', inc: 1 }, 'Křupky': { key: 'Křupky', inc: 1 }, 'Arašídy': { key: 'Arašídy', inc: 1 },
   'Paštiky Čongrády': { key: 'Paštiky Čongrády', inc: 1 },
@@ -2644,7 +2737,8 @@ const SKLAD_MIN = {
   'Rozlévané víno': 0, 'Lahvové víno bílé': 20, 'Lahvové víno bílé premium': 20, 'Lahvové víno červené': 20,
   'Prosecco Mionetto': 20, 'Prosecco Treviso': 20, 'Prosecco rozlévané': 0,
   'Beefeater Gin': 3, 'Bacardi': 3, 'Aperol': 3,
-  'Utopenec': 10, 'Tlačenka ve skle': 10, 'Pizza Della Casa': 50, 'Nakládaný hermelín': 10,
+  'Utopenec': 10, 'Tlačenka ve skle': 10, 'Nakládaný hermelín': 10,
+  'Pizza šunková': 3, 'Pizza šunková se žampiony': 3, 'Pizza špenát slanina': 3, 'Pizza mexicana': 3,
   'Chipsy': 10, 'Slané tyčinky': 10, 'Křupky': 10, 'Arašídy': 10,
   'Paštiky Čongrády': 10, 'Paštika ve skle Čongrády': 10, 'Škvarky v sádle Čongrády': 10,
   'Zákusek': 5,
@@ -2734,9 +2828,29 @@ function saveSklad(data) {
   updateBeerStatus();
 }
 
+// Jednorázové naskladnění druhů pizzy — přidá jen klíče, které ve skladu ještě nejsou
+// (idempotentní: po prvním seedu klíče existují a už se nepřepisují).
+function maybeSeedPizzaStock() {
+  if (typeof PIZZA_SEED === 'undefined') return;
+  var sklad = getSklad();
+  var changed = false;
+  Object.keys(PIZZA_SEED).forEach(function(key) {
+    if (sklad[key] === undefined) {
+      sklad[key] = { qty: PIZZA_SEED[key], unit: 'ks' };
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveSklad(sklad);
+    if (typeof renderSklad === 'function') renderSklad();
+  }
+}
+
 // Remote update handlery — volány z Firebase modulu po onSnapshot
 window.bukovarOnRemoteSklad = function(items) {
-  if (!window.bukovarApplyRemote('bukovar_sklad', items)) return;
+  var applied = window.bukovarApplyRemote('bukovar_sklad', items);
+  maybeSeedPizzaStock(); // po znalosti remote stavu doplnit chybějící druhy pizzy
+  if (!applied) return;
   updateBeerStatus();
   if (typeof renderSkladNastaveni === 'function') {
     var nastEl = document.getElementById('sklad-nastaveni-content');
@@ -2883,7 +2997,15 @@ function renderSkladNastaveni() {
     html += '<tr><td colspan="3" class="sn-section-title">' + cat + '</td></tr>';
     bycat[cat].forEach(function(item) {
       var rule = SKLAD_MAP[item.n];
-      if (rule) {
+      if (typeof PIZZA_MENU_NAME !== 'undefined' && item.n === PIZZA_MENU_NAME) {
+        PIZZA_DRUHY.forEach(function(d, di) {
+          if (di === 0) {
+            html += '<tr><td rowspan="' + PIZZA_DRUHY.length + '">' + item.n + ' <span class="sklad-min">(druh při placení)</span></td><td>' + d.sklad + '</td><td class="sn-inc">−1 ks</td></tr>';
+          } else {
+            html += '<tr><td>' + d.sklad + '</td><td class="sn-inc">−1 ks</td></tr>';
+          }
+        });
+      } else if (rule) {
         var rules = Array.isArray(rule) ? rule : [rule];
         rules.forEach(function(r, ri) {
           var unit = skladGetUnit(r.key);
