@@ -1134,6 +1134,19 @@
   </div>
 </div>
 
+<!-- Dárkové dvojbalení modal -->
+<div class="modal-overlay hidden" id="dvojbaleni-modal">
+  <div class="modal" style="max-width:580px;">
+    <h3>Dárkové dvojbalení — 215 Kč</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:.75rem;">Vyber 2 položky (piva i sklenice, mohou se opakovat):</p>
+    <div id="dvojbaleni-sloty"></div>
+    <div class="modal-actions" style="margin-top:1rem;">
+      <button onclick="closeDvojbaleniModal()">Zrušit</button>
+      <button class="primary" id="dvojbaleni-potvrdit-btn" onclick="potvrdDvojbaleni()" disabled>Přidat na účet</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="dzbanek-modal">
   <div class="modal">
     <h3 id="dzbanek-modal-title">Jaké pivo do džbánku?</h3>
@@ -1244,7 +1257,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.45';
+const APP_VERSION = '7.46';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -1700,6 +1713,10 @@ function quickAdd(item) {
     otevriTrojbaleniModal();
     return;
   }
+  if (item.n === 'Dárkové dvojbalení') {
+    otevriDvojbaleniModal();
+    return;
+  }
   if (typeof PIZZA_MENU_NAME !== 'undefined' && item.n === PIZZA_MENU_NAME) {
     openPizzaPicker(item);
     return;
@@ -1828,6 +1845,89 @@ function potvrdTrojbaleni() {
   closeTrojbaleniModal();
 }
 
+// --- Dárkové dvojbalení (zrcadlo trojbalení, 2 sloty, sdílí TROJBALENI_VOLBY) ---
+var dvojbaleniVybrane = [null, null];
+var dvojbaleniEditGroupId = null;
+
+function otevriDvojbaleniModal(groupId) {
+  dvojbaleniEditGroupId = groupId || null;
+  dvojbaleniVybrane = [null, null];
+  if (groupId) {
+    receiptItems.forEach(function(r) {
+      if (r.giftGroupId !== groupId) return;
+      if (r.nazev === 'Dárkové dvojbalení' && r.skladRules) {
+        r.skladRules.forEach(function(rule, idx) {
+          if (idx < 2) {
+            dvojbaleniVybrane[idx] = rule.key === 'Sklenice' ? 'Sklenice' : rule.key.replace(' v PET', '');
+          }
+        });
+      }
+    });
+  }
+  renderDvojbaleniSloty();
+  document.getElementById('dvojbaleni-modal').classList.remove('hidden');
+  updateDvojbaleniBtn();
+}
+
+function renderDvojbaleniSloty() {
+  var html = '';
+  for (var s = 0; s < 2; s++) {
+    html += '<div style="margin-bottom:.7rem;">';
+    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:5px;">' + (s+1) + '. položka: <strong style="color:var(--text);">' + (dvojbaleniVybrane[s] || '—') + '</strong></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:5px;">';
+    TROJBALENI_VOLBY.forEach(function(p) {
+      var selected = dvojbaleniVybrane[s] === p.name;
+      var style = 'font-size:11px;padding:7px 4px;min-height:unset;' + (selected ? 'outline:3px solid var(--accent);outline-offset:-2px;' : '');
+      html += '<button class="vip-btn ' + p.cls + '" style="' + style + '" onclick="vyberDvojbaleniPivo(' + s + ', \'' + p.name + '\')">' + p.name + '</button>';
+    });
+    html += '</div></div>';
+  }
+  document.getElementById('dvojbaleni-sloty').innerHTML = html;
+}
+
+function vyberDvojbaleniPivo(slot, beer) {
+  dvojbaleniVybrane[slot] = beer;
+  renderDvojbaleniSloty();
+  updateDvojbaleniBtn();
+}
+
+function updateDvojbaleniBtn() {
+  var ok = dvojbaleniVybrane.every(function(b){ return b !== null; });
+  document.getElementById('dvojbaleni-potvrdit-btn').disabled = !ok;
+}
+
+function closeDvojbaleniModal() {
+  document.getElementById('dvojbaleni-modal').classList.add('hidden');
+  dvojbaleniEditGroupId = null;
+  dvojbaleniVybrane = [null, null];
+}
+
+function potvrdDvojbaleni() {
+  if (!dvojbaleniVybrane.every(function(b){ return b !== null; })) return;
+  if (dvojbaleniEditGroupId) {
+    receiptItems = receiptItems.filter(function(r){ return r.giftGroupId !== dvojbaleniEditGroupId; });
+  }
+  var groupId = 'gift-' + Date.now() + '-' + Math.floor(Math.random()*10000);
+  var popisek = dvojbaleniVybrane.join(', ');
+  var skladRules = dvojbaleniVybrane.map(function(b){
+    return { key: b === 'Sklenice' ? 'Sklenice' : (b + ' v PET'), inc: 1 };
+  });
+  var dvojItem = {
+    nazev: 'Dárkové dvojbalení',
+    pocet: 1,
+    cena: 215,
+    warn: false,
+    stamgast: false,
+    popisek: popisek,
+    skladRules: skladRules,
+    giftGroupId: groupId
+  };
+  applyStamgastToItem(dvojItem);
+  receiptItems.unshift(dvojItem);
+  renderItems();
+  closeDvojbaleniModal();
+}
+
 var RADLER_BEER_BUTTONS = {
   'Hraďák 10°':      'radler-btn-hradak',
   'Štamgast 11°':    'radler-btn-stamgast',
@@ -1903,6 +2003,8 @@ function renderItems() {
     var nameOnclick;
     if (item.giftGroupId && item.nazev === 'Dárkové trojbalení') {
       nameOnclick = "otevriTrojbaleniModal('" + item.giftGroupId + "')";
+    } else if (item.giftGroupId && item.nazev === 'Dárkové dvojbalení') {
+      nameOnclick = "otevriDvojbaleniModal('" + item.giftGroupId + "')";
     } else {
       nameOnclick = "openItemPickerModal(function(m){receiptItems[" + i + "].nazev=m.n;receiptItems[" + i + "].cena=m.p;receiptItems[" + i + "].warn=false;receiptItems[" + i + "].stamgast=false;applyStamgastToItem(receiptItems[" + i + "]);closeItemPickerModal();renderItems();})";
     }

@@ -62,6 +62,7 @@ const MENU = [
   {n:"Rum premium (Kraken, Espero...)",c:"Destiláty",p:99,u:"0,05l"},
   {n:"Rum luxus (Don Papa, Diplomatico...)",c:"Destiláty",p:129,u:"0,05l"},
   {n:"Dárkové trojbalení",c:"Merch",p:320},
+  {n:"Dárkové dvojbalení",c:"Merch",p:215},
   {n:"Sklenice",c:"Merch",p:105}
 ];
 
