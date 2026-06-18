@@ -662,6 +662,11 @@
       <div class="ltb-value">—</div>
       <div class="ltb-label">teplota piva</div>
     </div>
+    <div class="loxone-temp-badge offline" id="loxone-temp2-badge" title="Teplota chladáku (Loxone). Aktualizuje se každé 2 min.">
+      <div class="ltb-value">—</div>
+      <div class="ltb-label">teplota chladák</div>
+    </div>
+    <button class="header-ewelink off" id="loxone-switch-btn" onclick="bukovarLoxoneSwitchClick()" title="Vypínač chlazení chladák (Loxone)" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">❄️</span><span class="header-ewelink-label">Chlazení chladák</span><span class="header-ewelink-state">VYP</span></button>
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <span class="header-objednavky" id="header-objednavky-badge" title="Objednávky z mobilního číšníka" hidden>🛎 <span class="obj-count" id="obj-count">0</span></span>
     <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
@@ -1257,7 +1262,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.46';
+const APP_VERSION = '7.47';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -4512,13 +4517,17 @@ function updateTabBadges() {
   // --- Loxone Cloud Function (V7.17) ---
   const fns = getFunctions(app, 'europe-west1');
   const callLoxoneTemp = httpsCallable(fns, 'getLoxoneTemp');
+  const callLoxoneTemp2 = httpsCallable(fns, 'getLoxoneTemp2');
+  const callLoxoneSwitch = httpsCallable(fns, 'loxoneSwitch');
 
   // --- Loxone teplotní badge v hlavičce + polling (V7.22) ---
   const LOXONE_POLL_MS = 120000; // 2 min
   let _loxonePollTimer = null;
 
-  function _loxoneUpdateBadge(d) {
-    const el = document.getElementById('loxone-temp-badge');
+  // Společné vykreslení teplotní badge. Prahy (V7.47, sjednoceno):
+  // 0–3 °C zelená, 3–6 °C oranžová, nad 6 °C červená + „VOLAT PÁJU".
+  function _renderTempBadge(elId, d, labelText) {
+    const el = document.getElementById(elId);
     if (!el) return;
     el.classList.remove('cold','ok','warn','offline');
     const valueEl = el.querySelector('.ltb-value');
@@ -4530,7 +4539,7 @@ function updateTabBadges() {
     if (!online) {
       el.classList.add('offline');
       valueEl.textContent = '—';
-      labelEl.textContent = 'teplota piva';
+      labelEl.textContent = labelText;
       el.title = 'Loxone offline — ' + ((d && d.error) || 'bez detailu');
       return;
     }
@@ -4538,10 +4547,10 @@ function updateTabBadges() {
     const t = d.temperature;
     const tStr = t.toFixed(1).replace('.', ',');
     valueEl.innerHTML = tStr + '<span class="ltb-unit">°C</span>';
-    labelEl.textContent = 'teplota piva';
-    el.title = 'Tank 2 — ' + tStr + ' °C (aktualizace ' + (d.timestamp ? new Date(d.timestamp).toLocaleTimeString('cs-CZ') : 'teď') + ')';
+    labelEl.textContent = labelText;
+    el.title = labelText + ' — ' + tStr + ' °C (aktualizace ' + (d.timestamp ? new Date(d.timestamp).toLocaleTimeString('cs-CZ') : 'teď') + ')';
 
-    if (t > 5) {
+    if (t > 6) {
       el.classList.add('warn');
       alertEl = document.createElement('div');
       alertEl.className = 'ltb-alert';
@@ -4554,6 +4563,9 @@ function updateTabBadges() {
     }
   }
 
+  function _loxoneUpdateBadge(d)  { _renderTempBadge('loxone-temp-badge', d, 'teplota piva'); }
+  function _loxone2UpdateBadge(d) { _renderTempBadge('loxone-temp2-badge', d, 'teplota chladák'); }
+
   window.bukovarLoxoneRefresh = async function() {
     if (!auth.currentUser) return;
     try {
@@ -4562,6 +4574,13 @@ function updateTabBadges() {
     } catch (e) {
       console.warn('[loxone] refresh failed:', e.code || e.message || e);
       _loxoneUpdateBadge({ online: false, error: e.code || e.message || String(e) });
+    }
+    try {
+      const r2 = await callLoxoneTemp2();
+      _loxone2UpdateBadge(r2.data || {});
+    } catch (e) {
+      console.warn('[loxone/temp2] refresh failed:', e.code || e.message || e);
+      _loxone2UpdateBadge({ online: false, error: e.code || e.message || String(e) });
     }
   };
 
@@ -4573,6 +4592,61 @@ function updateTabBadges() {
   function loxoneStopPolling() {
     if (_loxonePollTimer) { clearInterval(_loxonePollTimer); _loxonePollTimer = null; }
     _loxoneUpdateBadge({ online: false, error: 'Odhlášen' });
+    _loxone2UpdateBadge({ online: false, error: 'Odhlášen' });
+  }
+
+  // --- Loxone vypínač chlazení chladák v hlavičce + polling (V7.47) ---
+  let _loxoneSwitchPollTimer = null;
+
+  function _loxoneSwitchSetBtn(state) { // 'on' | 'off' | 'pending' | 'error'
+    const btn = document.getElementById('loxone-switch-btn');
+    if (!btn) return;
+    btn.hidden = false;
+    btn.classList.remove('on','off','pending','error');
+    btn.classList.add(state === 'on' ? 'on' : state === 'pending' ? 'pending' : state === 'error' ? 'error' : 'off');
+    const stateEl = btn.querySelector('.header-ewelink-state');
+    if (stateEl) stateEl.textContent = state === 'on' ? 'ZAP' : state === 'pending' ? '…' : state === 'error' ? 'ERR' : 'VYP';
+    btn.disabled = (state === 'pending');
+  }
+
+  window.bukovarLoxoneSwitchRefresh = async function() {
+    if (!auth.currentUser) return;
+    try {
+      const r = await callLoxoneSwitch({ action: 'status' });
+      const d = r.data || {};
+      if (!d.online || d.state == null) _loxoneSwitchSetBtn('error');
+      else _loxoneSwitchSetBtn(d.state === 'on' ? 'on' : 'off');
+    } catch (e) {
+      console.warn('[loxone/switch] status failed:', e.code || e.message || e);
+      _loxoneSwitchSetBtn('error');
+    }
+  };
+
+  window.bukovarLoxoneSwitchClick = async function() {
+    const btn = document.getElementById('loxone-switch-btn');
+    if (!btn || btn.disabled) return;
+    const action = btn.classList.contains('on') ? 'off' : 'on';
+    _loxoneSwitchSetBtn('pending');
+    try {
+      const r = await callLoxoneSwitch({ action });
+      const d = r.data || {};
+      if (!d.online || d.state == null) _loxoneSwitchSetBtn('error');
+      else _loxoneSwitchSetBtn(d.state === 'on' ? 'on' : 'off');
+    } catch (e) {
+      console.error('[loxone/switch] toggle failed:', e.code || e.message || e);
+      _loxoneSwitchSetBtn('error');
+    }
+  };
+
+  function loxoneSwitchStartPolling() {
+    if (_loxoneSwitchPollTimer) clearInterval(_loxoneSwitchPollTimer);
+    window.bukovarLoxoneSwitchRefresh();
+    _loxoneSwitchPollTimer = setInterval(function(){ window.bukovarLoxoneSwitchRefresh(); }, 5 * 60 * 1000);
+  }
+  function loxoneSwitchStopPolling() {
+    if (_loxoneSwitchPollTimer) { clearInterval(_loxoneSwitchPollTimer); _loxoneSwitchPollTimer = null; }
+    const btn = document.getElementById('loxone-switch-btn');
+    if (btn) btn.hidden = true;
   }
 
   // --- eWeLink Cloud Functions (V7.24) ---
@@ -5116,6 +5190,7 @@ function updateTabBadges() {
       window.bukovarEwelinkRefresh();
       ewelinkStartPolling();
       loxoneStartPolling();
+      loxoneSwitchStartPolling();
     } else {
       if (window.bukovarDetachAllListeners) window.bukovarDetachAllListeners();
       if (window.bukovarSetCloudSyncActive) window.bukovarSetCloudSyncActive(false);
@@ -5125,6 +5200,7 @@ function updateTabBadges() {
       if (window.bukovarOnRemoteObjednavky) window.bukovarOnRemoteObjednavky([]);
       ewelinkStopPolling();
       loxoneStopPolling();
+      loxoneSwitchStopPolling();
       overlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       passwordInput.value = '';
