@@ -561,27 +561,7 @@
   .header-logout { background: transparent; border: 1px solid rgba(245,241,234,.25); color: rgba(245,241,234,.7); font-size: 13px; padding: 4px 12px; border-radius: 6px; margin: auto 1rem auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; }
   .header-logout:hover { background: rgba(245,241,234,.08); color: rgba(245,241,234,.95); }
 
-  /* eWeLink tlačítko v hlavičce (V7.24) — vertikální páčka + barva dle stavu */
-  .header-ewelink[hidden] { display: none !important; }
-  .header-ewelink { display: flex; align-items: center; gap: 8px; background: #475569; color: #fff; border: 1px solid #475569; font-size: 14px; font-weight: 600; padding: 3px 12px; border-radius: 6px; margin: auto 10px auto 0; min-height: unset; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .18s, border-color .18s; }
-  .header-ewelink:hover { filter: brightness(.92); }
-  .header-ewelink.on { background: #16a34a; border-color: #15803d; }
-  .header-ewelink.off { background: #475569; border-color: #334155; }
-  .header-ewelink.off.alarm-off { background: #dc2626; border-color: #b91c1c; }
-  .header-ewelink.pending { background: #ea580c; border-color: #c2410c; cursor: wait; }
-  .header-ewelink.error { background: #7f1d1d; border-color: #450a0a; }
-  .header-ewelink:disabled { cursor: wait; opacity: .85; }
-  .header-ewelink .header-ewelink-icon { font-size: 15px; line-height: 1; }
-  .header-ewelink .header-ewelink-label { font-size: 13px; }
-  .header-ewelink .header-ewelink-state { font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 1px 7px; border-radius: 3px; background: rgba(255,255,255,.22); color: #fff; margin-left: 2px; }
-
-  /* Vertikální toggle páčka — nahoře = ZAP, dole = VYP */
-  .header-ewelink .ew-toggle { display: inline-block; width: 16px; height: 28px; border-radius: 8px; background: rgba(0,0,0,.32); border: 1px solid rgba(255,255,255,.5); position: relative; flex-shrink: 0; box-shadow: inset 0 1px 2px rgba(0,0,0,.3); }
-  .header-ewelink .ew-toggle::after { content: ''; position: absolute; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.4); transition: top .2s cubic-bezier(.4,1.6,.5,1); }
-  .header-ewelink.on .ew-toggle::after      { top: 2px; }
-  .header-ewelink.off .ew-toggle::after     { top: 14px; }
-  .header-ewelink.pending .ew-toggle::after { top: 8px; opacity: .6; }
-  .header-ewelink.error .ew-toggle::after   { top: 8px; opacity: .6; }
+  /* (V7.49) eWeLink „dochlazování" se přesunul do sloučeného #pivo-ctrl — viz .cool-ctrl / .ck-switch níže. Staré .header-ewelink styly odstraněny. */
 
   /* Volání hostů (V7.20) */
   .header-volani[hidden], .volani-panel[hidden] { display: none !important; }
@@ -617,10 +597,10 @@
   .loxone-temp-badge.offline .ltb-value { font-size: 22px; opacity: .65; }
   .loxone-temp-badge[hidden] { display: none !important; }
 
-  /* Chladák — sloučená teplota + vypínač (V7.48): vlevo teplota (barva dle prahu), vpravo cockpit páčka */
-  .chladak-ctrl { display: flex; align-items: stretch; margin: auto 10px auto 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; font-family: 'DM Sans', sans-serif; user-select: none; transition: filter .15s; }
-  .chladak-ctrl[hidden] { display: none !important; }
-  .chladak-ctrl:hover { filter: brightness(.96); }
+  /* Sloučená teplota + vypínač (V7.48/V7.49): vlevo teplota (barva dle prahu), vpravo cockpit páčka. Použito pro chladák i pivo. */
+  .cool-ctrl { display: flex; align-items: stretch; margin: auto 10px auto 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; font-family: 'DM Sans', sans-serif; user-select: none; transition: filter .15s; }
+  .cool-ctrl[hidden] { display: none !important; }
+  .cool-ctrl:hover { filter: brightness(.96); }
   /* Levá část — teplota (sdílí .ltb-* s teplotní badge) */
   .ck-temp { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 78px; padding: 4px 12px; line-height: 1.05; }
   .ck-temp .ltb-value { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
@@ -695,11 +675,17 @@
     <button class="tab-btn" onclick="switchTab('administrace',this);renderTrzby()">Administrace</button>
   </div>
   <div style="display:flex;align-items:center;">
-    <div class="loxone-temp-badge offline" id="loxone-temp-badge" title="Teplota chlazení piva (Loxone Tank 2). Aktualizuje se každé 2 min.">
-      <div class="ltb-value">—</div>
-      <div class="ltb-label">teplota piva</div>
+    <div class="cool-ctrl" id="pivo-ctrl" onclick="bukovarEwelinkClick()" title="Pivo — teplota (Loxone Tank 2) + dochlazování (eWeLink). Klikni pro ZAP/VYP.">
+      <div class="ck-temp offline" id="loxone-temp-badge">
+        <div class="ltb-value">—</div>
+        <div class="ltb-label">pivo</div>
+      </div>
+      <div class="ck-switch off" id="header-ewelink-btn" hidden>
+        <span class="ck-lever"></span>
+        <span class="ck-switch-info"><span class="ck-led"></span><span class="ck-state">VYP</span></span>
+      </div>
     </div>
-    <div class="chladak-ctrl" id="chladak-ctrl" onclick="bukovarLoxoneSwitchClick()" title="Chladák — teplota + vypínač chlazení (Loxone). Klikni pro ZAP/VYP." hidden>
+    <div class="cool-ctrl" id="chladak-ctrl" onclick="bukovarLoxoneSwitchClick()" title="Chladák — teplota + vypínač chlazení (Loxone). Klikni pro ZAP/VYP." hidden>
       <div class="ck-temp offline" id="ck-temp">
         <div class="ltb-value">—</div>
         <div class="ltb-label">chladák</div>
@@ -711,7 +697,6 @@
     </div>
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <span class="header-objednavky" id="header-objednavky-badge" title="Objednávky z mobilního číšníka" hidden>🛎 <span class="obj-count" id="obj-count">0</span></span>
-    <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
     <button class="header-logout" id="header-logout-btn" onclick="bukovarLogout()" title="Odhlásit obsluhu">⎋ Odhlásit</button>
   </div>
 </div>
@@ -1304,7 +1289,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.48';
+const APP_VERSION = '7.49';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -4605,7 +4590,7 @@ function updateTabBadges() {
     }
   }
 
-  function _loxoneUpdateBadge(d)  { _renderTempBadge('loxone-temp-badge', d, 'teplota piva'); }
+  function _loxoneUpdateBadge(d)  { _renderTempBadge('loxone-temp-badge', d, 'pivo'); }
   function _loxone2UpdateBadge(d) { _renderTempBadge('ck-temp', d, 'chladák'); }
 
   window.bukovarLoxoneRefresh = async function() {
@@ -4700,60 +4685,47 @@ function updateTabBadges() {
   const callEwelinkDevices    = httpsCallable(fns, 'ewelinkDevices');
   let _ewelinkPollTimer = null;
 
-  function _ewelinkSetBtn(state, label, icon) {
-    const btn = document.getElementById('header-ewelink-btn');
-    if (!btn) return;
-    btn.classList.remove('on','off','pending','error');
-    btn.classList.add(state);
-    btn.querySelector('.header-ewelink-icon').textContent = icon || '💡';
-    btn.querySelector('.header-ewelink-label').textContent = label || 'eWeLink';
-    const stateLabel = state === 'on' ? 'ZAP' : (state === 'off' ? 'VYP' : (state === 'pending' ? '…' : 'ERR'));
-    const stateEl = btn.querySelector('.header-ewelink-state');
-    if (stateEl) stateEl.textContent = stateLabel;
-    const longState = state === 'on' ? 'ZAPNUTO' : (state === 'off' ? 'VYPNUTO' : state.toUpperCase());
-    btn.title = (label || 'eWeLink') + ' — ' + longState + ' (klikni pro přepnutí)';
+  // eWeLink (dochlazování piva) jako cockpit páčka uvnitř #pivo-ctrl (V7.49)
+  function _ewelinkSetBtn(state) { // 'on' | 'off' | 'pending' | 'error'
+    const sw = document.getElementById('header-ewelink-btn');
+    if (!sw) return;
+    sw.classList.remove('on','off','pending','error');
+    sw.classList.add(state === 'on' ? 'on' : state === 'pending' ? 'pending' : state === 'error' ? 'error' : 'off');
+    const stateEl = sw.querySelector('.ck-state');
+    if (stateEl) stateEl.textContent = state === 'on' ? 'ZAP' : state === 'pending' ? '…' : state === 'error' ? 'ERR' : 'VYP';
   }
 
   window.bukovarEwelinkRefresh = async function() {
-    const btn = document.getElementById('header-ewelink-btn');
-    if (!btn || !auth.currentUser) return;
+    const sw = document.getElementById('header-ewelink-btn');
+    if (!sw || !auth.currentUser) return;
     try {
       const r = await callEwelinkStatus();
       const d = r.data || {};
       if (!d.enabled || !d.configured || !d.authorized) {
-        btn.hidden = true;
+        sw.hidden = true;
         return;
       }
-      btn.hidden = false;
-      btn.classList.toggle('alarm-off', !!d.alarmWhenOff);
-      if (d.error) {
-        _ewelinkSetBtn('error', d.label, d.icon);
-      } else {
-        _ewelinkSetBtn(d.state === 'on' ? 'on' : 'off', d.label, d.icon);
-      }
+      sw.hidden = false;
+      if (d.error) _ewelinkSetBtn('error');
+      else _ewelinkSetBtn(d.state === 'on' ? 'on' : 'off');
     } catch (e) {
       console.warn('[ewelink] status failed:', e);
-      _ewelinkSetBtn('error', null, '💡');
+      _ewelinkSetBtn('error');
     }
   };
 
   window.bukovarEwelinkClick = async function() {
-    const btn = document.getElementById('header-ewelink-btn');
-    if (!btn || btn.disabled) return;
-    const labelText = btn.querySelector('.header-ewelink-label').textContent;
-    const iconText = btn.querySelector('.header-ewelink-icon').textContent;
-    btn.disabled = true;
-    _ewelinkSetBtn('pending', labelText, iconText);
+    const sw = document.getElementById('header-ewelink-btn');
+    if (!sw || sw.hidden || sw.classList.contains('pending')) return;
+    _ewelinkSetBtn('pending');
     try {
       const r = await callEwelinkToggle({ state: 'toggle' });
       const newState = r.data && r.data.state;
-      _ewelinkSetBtn(newState === 'on' ? 'on' : 'off', labelText, iconText);
+      _ewelinkSetBtn(newState === 'on' ? 'on' : 'off');
     } catch (e) {
       console.error('[ewelink] toggle failed:', e);
-      _ewelinkSetBtn('error', labelText, iconText);
+      _ewelinkSetBtn('error');
       alert('Chyba spínání eWeLink: ' + (e.message || e.code));
-    } finally {
-      btn.disabled = false;
     }
   };
 
