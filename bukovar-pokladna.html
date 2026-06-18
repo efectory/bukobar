@@ -616,6 +616,43 @@
   .loxone-temp-badge.offline { background: var(--bg); color: var(--muted); border-color: var(--border); }
   .loxone-temp-badge.offline .ltb-value { font-size: 22px; opacity: .65; }
   .loxone-temp-badge[hidden] { display: none !important; }
+
+  /* Chladák — sloučená teplota + vypínač (V7.48): vlevo teplota (barva dle prahu), vpravo cockpit páčka */
+  .chladak-ctrl { display: flex; align-items: stretch; margin: auto 10px auto 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; font-family: 'DM Sans', sans-serif; user-select: none; transition: filter .15s; }
+  .chladak-ctrl[hidden] { display: none !important; }
+  .chladak-ctrl:hover { filter: brightness(.96); }
+  /* Levá část — teplota (sdílí .ltb-* s teplotní badge) */
+  .ck-temp { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 78px; padding: 4px 12px; line-height: 1.05; }
+  .ck-temp .ltb-value { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
+  .ck-temp .ltb-value .ltb-unit { font-size: 14px; font-weight: 600; margin-left: 2px; opacity: .85; }
+  .ck-temp .ltb-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; opacity: .85; margin-top: 2px; }
+  .ck-temp .ltb-alert { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+  .ck-temp.cold    { background: #dcfce7; color: #166534; }
+  .ck-temp.ok      { background: #fef3c7; color: #92400e; }
+  .ck-temp.warn    { background: #dc2626; color: #fff; animation: volani-pulse 1.4s ease-in-out infinite; }
+  .ck-temp.offline { background: var(--bg); color: var(--muted); }
+  .ck-temp.offline .ltb-value { font-size: 18px; opacity: .65; }
+  /* Pravá část — cockpit panel s páčkou a LED */
+  .ck-switch { display: flex; align-items: center; gap: 9px; padding: 3px 13px; background: #1e293b; transition: background .18s; }
+  .ck-switch.pending { cursor: wait; }
+  .ck-lever { position: relative; width: 20px; height: 30px; border-radius: 5px; background: linear-gradient(#0f172a,#1e293b); border: 1px solid #0b1220; box-shadow: inset 0 1px 3px rgba(0,0,0,.6); flex-shrink: 0; }
+  .ck-lever::before { content: ''; position: absolute; left: 50%; top: 4px; bottom: 4px; width: 3px; transform: translateX(-50%); background: #0b1220; border-radius: 2px; }
+  .ck-lever::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: 13px; height: 13px; border-radius: 3px; background: linear-gradient(#e2e8f0,#94a3b8); border: 1px solid #64748b; box-shadow: 0 2px 3px rgba(0,0,0,.5); transition: top .22s cubic-bezier(.4,1.6,.5,1); }
+  .ck-switch.on  .ck-lever::after { top: 3px; }
+  .ck-switch.off .ck-lever::after { top: 14px; }
+  .ck-switch.pending .ck-lever::after,
+  .ck-switch.error   .ck-lever::after { top: 9px; opacity: .6; }
+  .ck-switch-info { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .ck-led { width: 11px; height: 11px; border-radius: 50%; background: #64748b; box-shadow: 0 0 2px rgba(0,0,0,.6); transition: background .18s, box-shadow .18s; }
+  .ck-switch.on  .ck-led { background: #22c55e; box-shadow: 0 0 7px 1px rgba(34,197,94,.9); }
+  .ck-switch.off .ck-led { background: #ef4444; box-shadow: 0 0 7px 1px rgba(239,68,68,.9); }
+  .ck-switch.pending .ck-led { background: #f59e0b; box-shadow: 0 0 7px 1px rgba(245,158,11,.9); }
+  .ck-switch.error .ck-led { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,.7); }
+  .ck-state { font-size: 11px; font-weight: 700; letter-spacing: .5px; color: #cbd5e1; }
+  .ck-switch.on  .ck-state { color: #4ade80; }
+  .ck-switch.off .ck-state { color: #f87171; }
+  .ck-switch.pending .ck-state { color: #fdba74; }
+  .ck-switch.error .ck-state { color: #fca5a5; }
 </style>
 </head>
 <body>
@@ -662,11 +699,16 @@
       <div class="ltb-value">—</div>
       <div class="ltb-label">teplota piva</div>
     </div>
-    <div class="loxone-temp-badge offline" id="loxone-temp2-badge" title="Teplota chladáku (Loxone). Aktualizuje se každé 2 min.">
-      <div class="ltb-value">—</div>
-      <div class="ltb-label">teplota chladák</div>
+    <div class="chladak-ctrl" id="chladak-ctrl" onclick="bukovarLoxoneSwitchClick()" title="Chladák — teplota + vypínač chlazení (Loxone). Klikni pro ZAP/VYP." hidden>
+      <div class="ck-temp offline" id="ck-temp">
+        <div class="ltb-value">—</div>
+        <div class="ltb-label">chladák</div>
+      </div>
+      <div class="ck-switch off" id="ck-switch">
+        <span class="ck-lever"></span>
+        <span class="ck-switch-info"><span class="ck-led"></span><span class="ck-state">VYP</span></span>
+      </div>
     </div>
-    <button class="header-ewelink off" id="loxone-switch-btn" onclick="bukovarLoxoneSwitchClick()" title="Vypínač chlazení chladák (Loxone)" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">❄️</span><span class="header-ewelink-label">Chlazení chladák</span><span class="header-ewelink-state">VYP</span></button>
     <button class="header-volani" id="header-volani-btn" onclick="toggleVolaniPanel()" title="Volání hostů" hidden>🔔 <span class="volani-count" id="volani-count">0</span></button>
     <span class="header-objednavky" id="header-objednavky-badge" title="Objednávky z mobilního číšníka" hidden>🛎 <span class="obj-count" id="obj-count">0</span></span>
     <button class="header-ewelink off" id="header-ewelink-btn" onclick="bukovarEwelinkClick()" title="eWeLink" hidden><span class="ew-toggle"></span><span class="header-ewelink-icon">💡</span><span class="header-ewelink-label">eWeLink</span><span class="header-ewelink-state">VYP</span></button>
@@ -1262,7 +1304,7 @@
 </div>
 
 <script>
-const APP_VERSION = '7.47';
+const APP_VERSION = '7.48';
 
 // V7.7 migrace: ChitoTonic → Targa Tonic ve všech uložených datech
 (function migrateChitoTonic(){
@@ -4564,7 +4606,7 @@ function updateTabBadges() {
   }
 
   function _loxoneUpdateBadge(d)  { _renderTempBadge('loxone-temp-badge', d, 'teplota piva'); }
-  function _loxone2UpdateBadge(d) { _renderTempBadge('loxone-temp2-badge', d, 'teplota chladák'); }
+  function _loxone2UpdateBadge(d) { _renderTempBadge('ck-temp', d, 'chladák'); }
 
   window.bukovarLoxoneRefresh = async function() {
     if (!auth.currentUser) return;
@@ -4599,14 +4641,14 @@ function updateTabBadges() {
   let _loxoneSwitchPollTimer = null;
 
   function _loxoneSwitchSetBtn(state) { // 'on' | 'off' | 'pending' | 'error'
-    const btn = document.getElementById('loxone-switch-btn');
-    if (!btn) return;
-    btn.hidden = false;
-    btn.classList.remove('on','off','pending','error');
-    btn.classList.add(state === 'on' ? 'on' : state === 'pending' ? 'pending' : state === 'error' ? 'error' : 'off');
-    const stateEl = btn.querySelector('.header-ewelink-state');
+    const ctrl = document.getElementById('chladak-ctrl');
+    const sw = document.getElementById('ck-switch');
+    if (!ctrl || !sw) return;
+    ctrl.hidden = false;
+    sw.classList.remove('on','off','pending','error');
+    sw.classList.add(state === 'on' ? 'on' : state === 'pending' ? 'pending' : state === 'error' ? 'error' : 'off');
+    const stateEl = sw.querySelector('.ck-state');
     if (stateEl) stateEl.textContent = state === 'on' ? 'ZAP' : state === 'pending' ? '…' : state === 'error' ? 'ERR' : 'VYP';
-    btn.disabled = (state === 'pending');
   }
 
   window.bukovarLoxoneSwitchRefresh = async function() {
@@ -4623,9 +4665,9 @@ function updateTabBadges() {
   };
 
   window.bukovarLoxoneSwitchClick = async function() {
-    const btn = document.getElementById('loxone-switch-btn');
-    if (!btn || btn.disabled) return;
-    const action = btn.classList.contains('on') ? 'off' : 'on';
+    const sw = document.getElementById('ck-switch');
+    if (!sw || sw.classList.contains('pending')) return;
+    const action = sw.classList.contains('on') ? 'off' : 'on';
     _loxoneSwitchSetBtn('pending');
     try {
       const r = await callLoxoneSwitch({ action });
@@ -4645,8 +4687,8 @@ function updateTabBadges() {
   }
   function loxoneSwitchStopPolling() {
     if (_loxoneSwitchPollTimer) { clearInterval(_loxoneSwitchPollTimer); _loxoneSwitchPollTimer = null; }
-    const btn = document.getElementById('loxone-switch-btn');
-    if (btn) btn.hidden = true;
+    const ctrl = document.getElementById('chladak-ctrl');
+    if (ctrl) ctrl.hidden = true;
   }
 
   // --- eWeLink Cloud Functions (V7.24) ---
